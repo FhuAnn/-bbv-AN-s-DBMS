@@ -1,3 +1,4 @@
+```mermaid
 sequenceDiagram
     participant AdminClient
     participant RoleService
@@ -12,3 +13,4 @@ sequenceDiagram
     else Role Assignment Not Found
         RoleService -->> AdminClient: Return error (no such assignment)
     end
+```

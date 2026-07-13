@@ -1,3 +1,5 @@
+User Story: "Create a policy and return a policy ID or a detailed validation error when the definition is invalid"
+
 ```mermaid
 sequenceDiagram
     participant AdminClient
