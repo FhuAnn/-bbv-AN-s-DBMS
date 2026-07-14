@@ -25,7 +25,6 @@ classDiagram
     class SessionContext {
         +String sessionId
         +String userId
-        +String authToken
         +String ipAddress
         +DateTime expiresAt
         +DateTime lastActiveAt
