@@ -1,18 +1,17 @@
-package classes;
+package classes.authentication;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import classes.authentication.UserRole;
-import classes.authentication.UserRoleRepository;
+import classes.IRoleService;
 
 public class RoleService implements IRoleService {
     private final UserRoleRepository userRoleRepo = new UserRoleRepository();
     private final PermissionRepository permRepo = new PermissionRepository();
     private final Map<String, Role> roles = new HashMap<>();
 
-    void createRole(String name, List<Permission> permissions) {
+    public void createRole(String name, List<Permission> permissions) {
         Role role = new Role(java.util.UUID.randomUUID().toString(), name, permissions);
         roles.put(name, role);
         for (Permission permission : permissions) {
@@ -20,7 +19,7 @@ public class RoleService implements IRoleService {
         }
     }
 
-    void assignRole(String userID, String roleID) {
+    public void assignRole(String userID, String roleID) {
         Role role = roles.get(roleID);
         if (role == null) {
             role = roles.getOrDefault("admin", null);
@@ -31,7 +30,7 @@ public class RoleService implements IRoleService {
         userRoleRepo.save(new UserRole(userID, role.id, userID));
     }
 
-    void unassignRole(String userID, String roleID) {
+    public void unassignRole(String userID, String roleID) {
         userRoleRepo.delete(userID, roleID);
     }
 

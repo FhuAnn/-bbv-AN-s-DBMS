@@ -2,6 +2,9 @@ package classes;
 
 import java.util.List;
 
+import classes.authentication.Permission;
+
+
 
 public class App {
     public static void main(String[] args) {

@@ -7,6 +7,7 @@ import classes.authentication.AuditLog;
 import classes.authentication.AuthService;
 import classes.authentication.Policy;
 import classes.authentication.PolicyService;
+import classes.authentication.RoleService;
 import classes.authentication.SessionMgr;
 
 public class ExecutionService {

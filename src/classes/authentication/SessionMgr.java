@@ -1,7 +1,9 @@
 package classes.authentication;
 
+import java.util.ArrayList;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -77,6 +79,19 @@ public class SessionMgr {
         }
         if (authToken != null && authToken.equals(latestAuthToken)) {
             latestAuthToken = null;
+        }
+    }
+
+    public void revokeSessionsByUserId(String userId) {
+        List<String> authTokensToRemove = new ArrayList<>();
+        for (Map.Entry<String, SessionContext> entry : activeSessions.entrySet()) {
+            if (entry.getValue().userId.equals(userId)) {
+                authTokensToRemove.add(entry.getKey());
+            }
+        }
+
+        for (String authToken : authTokensToRemove) {
+            revokeSession(authToken);
         }
     }
 
