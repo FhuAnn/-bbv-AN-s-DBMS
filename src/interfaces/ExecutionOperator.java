@@ -1,4 +1,6 @@
-package classes.queryprocessor;
+package interfaces;
+
+import classes.queryprocessor.Tuple;
 
 public interface ExecutionOperator {
     void init();

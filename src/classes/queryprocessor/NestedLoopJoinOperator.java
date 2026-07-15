@@ -1,6 +1,7 @@
 package classes.queryprocessor;
 
 import classes.authentication.ExpressionNode;
+import interfaces.ExecutionOperator;
 
 public class NestedLoopJoinOperator implements ExecutionOperator {
     private final ExecutionOperator outerChild;

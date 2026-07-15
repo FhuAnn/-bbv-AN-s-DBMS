@@ -1,9 +1,11 @@
 package classes.queryprocessor;
 
 import classes.authentication.ExpressionNode;
-import classes.IRoleService;
+import interfaces.ASTNode;
+import interfaces.IQueryValidation;
+import interfaces.IRoleService;
 
-public class QueryValidation {
+public class QueryValidation implements IQueryValidation {
     private final IRoleService roleService;
     private final CatalogManager catalog;
 

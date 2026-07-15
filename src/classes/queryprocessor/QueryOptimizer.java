@@ -3,6 +3,8 @@ package classes.queryprocessor;
 import java.util.ArrayList;
 import java.util.List;
 
+import interfaces.ASTNode;
+
 public class QueryOptimizer {
     private final CatalogManager catalogManager;
     private final CostModel costModel;

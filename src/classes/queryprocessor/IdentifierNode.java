@@ -2,6 +2,7 @@ package classes.queryprocessor;
 
 import classes.authentication.ASTNodeType;
 import classes.authentication.ExpressionNode;
+import interfaces.ASTVisitor;
 
 public class IdentifierNode extends AbstractASTNode implements ExpressionNode {
     String name;

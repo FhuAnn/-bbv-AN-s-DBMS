@@ -1,5 +1,7 @@
 package classes.queryprocessor;
 
+import interfaces.ExecutionOperator;
+
 public class ExecutionPlanner {
     private final PlanCacheManager cacheManager;
     private final BufferPoolManager bufferPoolManager;

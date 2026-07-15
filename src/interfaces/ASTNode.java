@@ -1,4 +1,4 @@
-package classes.queryprocessor;
+package interfaces;
 
 import classes.authentication.ASTNodeType;
 

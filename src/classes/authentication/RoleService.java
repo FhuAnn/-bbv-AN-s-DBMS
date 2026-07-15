@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import classes.IRoleService;
+import interfaces.IRoleService;
 
 public class RoleService implements IRoleService {
     private final UserRoleRepository userRoleRepo = new UserRoleRepository();

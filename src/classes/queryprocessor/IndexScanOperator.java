@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import interfaces.ExecutionOperator;
+
 public class IndexScanOperator implements ExecutionOperator {
     private final String indexId;
     private final Object searchKey;

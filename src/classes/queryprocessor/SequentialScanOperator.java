@@ -2,6 +2,8 @@ package classes.queryprocessor;
 
 import java.util.List;
 
+import interfaces.ExecutionOperator;
+
 public class SequentialScanOperator implements ExecutionOperator {
     private final String tableId;
     private final BufferPoolManager bufferPoolManager;

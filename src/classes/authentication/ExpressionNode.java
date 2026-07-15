@@ -1,6 +1,6 @@
 package classes.authentication;
 
-import classes.queryprocessor.ASTNode;
+import interfaces.ASTNode;
 
 public interface ExpressionNode extends ASTNode {
 }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import classes.authentication.ASTNodeType;
+import interfaces.ASTVisitor;
 
 public class InsertStatementNode extends AbstractASTNode {
     TableReferenceNode targetTable;

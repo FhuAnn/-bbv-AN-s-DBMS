@@ -1,6 +1,8 @@
 package classes.queryprocessor;
 
 import classes.authentication.ExpressionNode;
+import interfaces.ASTNode;
+import interfaces.ASTVisitor;
 
 public class PolicyRewriterVisitor implements ASTVisitor<ASTNode> {
     private final ExpressionNode policyCondition;

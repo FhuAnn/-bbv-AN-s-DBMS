@@ -1,563 +1,201 @@
 ```mermaid
 
 classDiagram
-    direction BT
-
-    %% --- SQL Parser & AST ---
-    class ParserService {
-        -SyntaxErrorHandler errorHandler
-        +parserSQL(sql: String) ASTBuildResult
-    }
-
-    class SyntaxErrorHandler {
-        +handleError(errorTokens, rawSql) SyntaxErrorException
-        +formatErrorMessage(line: int, col: int) String
-    }
-
-    class ASTNode {
-        <<interface>>
-        +ASTNodeType type
-        +accept(visitor: ASTVisitor) T
-        +toString() String
-    }
-
-    class ExpressionNode {
-        <<interface>>
-    }
-
-    ExpressionNode --|> ASTNode
-
-    class SelectStatementNode {
-        +TableReferenceNode fromClause
-        +ExpressionNode whereClause
-        +List~ASTNode~ projectionList
-        +int limit
-        +int offset
-        +accept(visitor: ASTVisitor) T
-    }
-    SelectStatementNode ..|> ASTNode
-
-    class BinaryExpressionNode {
-        +ExpressionNode left
-        +String operator
-        +ExpressionNode right
-        +accept(visitor: ASTVisitor) T
-    }
-    BinaryExpressionNode ..|> ExpressionNode
-
-    class IdentifierNode {
-        +String name
-        +accept(visitor: ASTVisitor) T
-    }
-    IdentifierNode ..|> ExpressionNode
-
-    class LiteralNode {
-        +any value
-        +String rawType
-        +accept(visitor: ASTVisitor) T
-    }
-    LiteralNode ..|> ExpressionNode
-
-    class TableReferenceNode {
-        +String tableName
-        +String alias
-        +accept(visitor: ASTVisitor) T
-    }
-    TableReferenceNode ..|> ASTNode
-
-    %% --- AST Visitor & Policy Rewriter ---
-    class ASTVisitor~T~ {
-        <<interface>>
-        +visitSelectStatement(node: SelectStatementNode) T
-        +visitBinaryExpression(node: BinaryExpressionNode) T
-        +visitIdentifier(node: IdentifierNode) T
-        +visitLiteral(node: LiteralNode) T
-        +visitTableReference(node: TableReferenceNode) T
-    }
-
-    class PolicyRewriterVisitor {
-        -ExpressionNode policyCondition
-        +visitSelectStatement(node: SelectStatementNode) ASTNode
-        +visitBinaryExpression(node: BinaryExpressionNode) ASTNode
-        +visitTableReference(node: TableReferenceNode) ASTNode
-    }
-    class IPolicyRewriterVisitor {
-        <<interface>>
-        +visitSelectStatement(node: SelectStatementNode) ASTNode
-        +visitBinaryExpression(node: BinaryExpressionNode) ASTNode
-        +visitTableReference(node: TableReferenceNode) ASTNode
-    }
-    PolicyRewriterVisitor ..|> ASTVisitor
-
-    %% --- Validation & Catalog ---
-    class QueryValidation {
-        -IRoleService roleService
-        -CatalogManager catalog
-        +validateQuery(astBuild: ASTBuildResult, userID: String) Void
-    }
- class IQueryValidation {
-    +validateQuery(astBuild: ASTBuildResult, userID: String) Void
-
- }
-    class CatalogManager {
-        +getTableStatistics(tableName: String) TableStatistics
-        +getTableSchema(tableName: String) SchemaInfo
-    }
-
-    class TableStatistics {
-        +int rowCount
-        +int pageCount
-        +Map~String, String~ indexes
-    }
-
-    %% --- Optimizer & Cost Model ---
-    class QueryOptimizer {
-        -CatalogManager catalog
-        -CostModel costModel
-        -CardinalityEstimator cardinalityEstimator
-        +generateLogicalPlan(ast: ASTNode) LogicalPlan
-        +optimizeLogicalPlan(plan: LogicalPlan) LogicalPlan
-        +optimizePhysicalPlan(plan: LogicalPlan) PhysicalPlanTree
-        +applyPredicatePushdown(plan: LogicalPlan) LogicalPlan
-        +applyProjectionPruning(plan: LogicalPlan) LogicalPlan
-    }
-
-    class CostModel {
-        +calculateCost(node: PhysicalOperatorNode, stats: TableStatistics) Double
-    }
-
-    class CardinalityEstimator {
-        +estimateSelectivity(predicate: ExpressionNode, stats: TableStatistics) double
-    }
-
-    %% --- Plans ---
-    class LogicalOperator {
-        <<abstract>>
-        +List~LogicalOperator~ children
-    }
-    class LogicalGet { +String tableName }
-    class LogicalFilter { +ExpressionNode predicate }
-    LogicalGet --|> LogicalOperator
-    LogicalFilter --|> LogicalOperator
-
-    class PhysicalOperatorNode {
-        <<abstract>>
-        +List~PhysicalOperatorNode~ children
-        +double estimatedCost
-    }
-    class PhysicalSeqScan { +String tableId }
-    class PhysicalIndexScan { +String indexId, +any scanKey }
-    class PhysicalFilter { +ExpressionNode predicate }
-    PhysicalSeqScan --|> PhysicalOperatorNode
-    PhysicalIndexScan --|> PhysicalOperatorNode
-    PhysicalFilter --|> PhysicalOperatorNode
-
-    %% --- Execution Planning & Cache ---
-    class ExecutionPlanner {
-        -PlanCacheManager cacheManager
-        +buildExecutionTree(plan: PhysicalPlanTree) ExecutionOperator
-        +getPlanFromCache(sqlHash: String) PhysicalPlanTree
-    }
-
-    class PlanCacheManager {
-        -Map~String, PhysicalPlanTree~ cacheMap
-        +put(sqlHash: String, plan: PhysicalPlanTree) Void
-        +get(sqlHash: String) PhysicalPlanTree
-    }
-
-    %% --- Query Executor Operators ---
-    class ExecutionOperator {
-        <<interface>>
-        +init() Void
-        +next() Tuple
-        +close() Void
-    }
-
-    class SequentialScanOperator {
-        -String tableId
-        -int currentPageId
-        -int currentSlotId
-        +init() Void
-        +next() Tuple
-    }
-    class IndexScanOperator {
-        -String indexId
-        -any searchKey
-        +init() Void
-        +next() Tuple
-    }
-    class FilterOperator {
-        -ExecutionOperator childOperator
-        -ExpressionNode predicate
-        +init() Void
-        +next() Tuple
-    }
-    class NestedLoopJoinOperator {
-        -ExecutionOperator outerChild
-        -ExecutionOperator innerChild
-        -ExpressionNode joinPredicate
-        +init() Void
-        +next() Tuple
-    }
-    class InsertExecutionOperator {
-        -String tableId
-        -List~Tuple~ valuesToInsert
-        +init() Void
-        +next() Tuple
-    }
-
-    SequentialScanOperator ..|> ExecutionOperator
-    IndexScanOperator ..|> ExecutionOperator
-    FilterOperator ..|> ExecutionOperator
-    NestedLoopJoinOperator ..|> ExecutionOperator
-    InsertExecutionOperator ..|> ExecutionOperator
-
-    %% --- Execution Control Service ---
-    class ExecutionService {
-        -IParserService parser
-        -IQueryValidation validator
-        -IPolicyService policyService
-        -IQueryOptimizer optimizer
-        -IExecutionPlanner planner
-        -IResultFormatter formatter
-        -IPolicyRewriterVisitor policyRewriterVisitor
-        +execute(sql: String, authToken: String) ResultOutput
-    }
-
-    class ResultFormatter {
-        +formatAsJSON(tuples: List~Tuple~) String
-        +formatAsCSV(tuples: List~Tuple~) String
-    }
-
-    class IResultFormatter {
-        <<interface>>
-        +formatAsJSON(tuples: List~Tuple~) String
-        +formatAsCSV(tuples: List~Tuple~) String
-    }
-    class IParserService {
-        <<interface>>
-
-    + parserSQL(sl:String): ASTBuilderResult
-    }
-    class IQueryValidation {
-        <<interface>>
-
-        +validateQuery(astBuild: ASTBuildResult, userID: String) Void
-    }
-
-    class IQueryOptimizer {
-        <<interface>>
-        +generateLogicalPlan(ast: ASTNode) LogicalPlan
-        +optimizeLogicalPlan(plan: LogicalPlan) LogicalPlan
-        +optimizePhysicalPlan(plan: LogicalPlan) PhysicalPlanTree
-        +applyPredicatePushdown(plan: LogicalPlan) LogicalPlan
-        +applyProjectionPruning(plan: LogicalPlan) LogicalPlan
-    }
-    class ISyntaxErrorHandler {
-        <<interface>>
-        +handleError(errorTokens, rawSql) SyntaxErrorException
-        +formatErrorMessage(line: int, col: int) String
-    }
-    class IExecutionPlanner {
-        +buildExecutionTree(plan: PhysicalPlanTree) ExecutionOperator
-        +getPlanFromCache(sqlHash: String) PhysicalPlanTree
-    }
-    ExecutionService ..> IParserService: uses
-    ParserService ..|> IParserService
-    ExecutionService ..> IQueryValidation: uses
-    QueryValidation --|> IQueryValidation
-    ExecutionService ..> ISyntaxErrorHandler: uses
-    ISyntaxErrorHandler <|.. SyntaxErrorHandler
-    QueryValidation ..> RoleService: uses
-    ExecutionService ..> IPolicyRewriterVisitor: uses
-    PolicyRewriterVisitor --|> IPolicyRewriterVisitor
-    ExecutionService ..> IQueryOptimizer: uses
-    QueryOptimizer --|> IQueryOptimizer
-    ExecutionService ..> IExecutionPlanner: uses
-    ExecutionPlanner --|> IExecutionPlanner
-    ExecutionService ..> IResultFormatter: uses
-    ResultFormatter ..|> IResultFormatter 
-   
-
-%% classDiagram
-%%     direction BT
-
-%%     %% --- SQL Parser & AST ---
-%%     class ParserService {
-%%         -SyntaxErrorHandler errorHandler
-%%         +parserSQL(sql: String) ASTBuildResult
-%%     }
-
-%%     class SyntaxErrorHandler {
-%%         +handleError(errorTokens, rawSql) SyntaxErrorException
-%%         +formatErrorMessage(line: int, col: int) String
-%%     }
-
-%%     class ASTNode {
-%%         <<interface>>
-%%         +ASTNodeType type
-%%         +accept(visitor: ASTVisitor) T
-%%         +toString() String
-%%     }
-
-%%     class ExpressionNode {
-%%         <<interface>>
-%%     }
-
-%%     ExpressionNode --|> ASTNode
-
-%%     class SelectStatementNode {
-%%         +TableReferenceNode fromClause
-%%         +ExpressionNode whereClause
-%%         +List~ASTNode~ projectionList
-%%         +int limit
-%%         +int offset
-%%         +accept(visitor: ASTVisitor) T
-%%     }
-%%     SelectStatementNode ..|> ASTNode
-
-%%     class BinaryExpressionNode {
-%%         +ExpressionNode left
-%%         +String operator
-%%         +ExpressionNode right
-%%         +accept(visitor: ASTVisitor) T
-%%     }
-%%     BinaryExpressionNode ..|> ExpressionNode
-
-%%     class IdentifierNode {
-%%         +String name
-%%         +accept(visitor: ASTVisitor) T
-%%     }
-%%     IdentifierNode ..|> ExpressionNode
-
-%%     class LiteralNode {
-%%         +any value
-%%         +String rawType
-%%         +accept(visitor: ASTVisitor) T
-%%     }
-%%     LiteralNode ..|> ExpressionNode
-
-%%     class TableReferenceNode {
-%%         +String tableName
-%%         +String alias
-%%         +accept(visitor: ASTVisitor) T
-%%     }
-%%     TableReferenceNode ..|> ASTNode
-
-%%     %% --- AST Visitor & Policy Rewriter ---
-%%     class ASTVisitor~T~ {
-%%         <<interface>>
-%%         +visitSelectStatement(node: SelectStatementNode) T
-%%         +visitBinaryExpression(node: BinaryExpressionNode) T
-%%         +visitIdentifier(node: IdentifierNode) T
-%%         +visitLiteral(node: LiteralNode) T
-%%         +visitTableReference(node: TableReferenceNode) T
-%%     }
-
-%%     class PolicyRewriterVisitor {
-%%         -ExpressionNode policyCondition
-%%         +visitSelectStatement(node: SelectStatementNode) ASTNode
-%%         +visitBinaryExpression(node: BinaryExpressionNode) ASTNode
-%%         +visitTableReference(node: TableReferenceNode) ASTNode
-%%     }
-%%     class IPolicyRewriterVisitor {
-%%         <<interface>>
-%%         +visitSelectStatement(node: SelectStatementNode) ASTNode
-%%         +visitBinaryExpression(node: BinaryExpressionNode) ASTNode
-%%         +visitTableReference(node: TableReferenceNode) ASTNode
-%%     }
-%%     PolicyRewriterVisitor ..|> ASTVisitor
-
-%%     %% --- Validation & Catalog ---
-%%     class QueryValidation {
-%%         -IRoleService roleService
-%%         -CatalogManager catalog
-%%         +validateQuery(astBuild: ASTBuildResult, userID: String) Void
-%%     }
-%%  class IQueryValidation {
-%%     +validateQuery(astBuild: ASTBuildResult, userID: String) Void
-
-%%  }
-%%     class CatalogManager {
-%%         +getTableStatistics(tableName: String) TableStatistics
-%%         +getTableSchema(tableName: String) SchemaInfo
-%%     }
-
-%%     class TableStatistics {
-%%         +int rowCount
-%%         +int pageCount
-%%         +Map~String, String~ indexes
-%%     }
-
-%%     %% --- Optimizer & Cost Model ---
-%%     class QueryOptimizer {
-%%         -CatalogManager catalog
-%%         -CostModel costModel
-%%         -CardinalityEstimator cardinalityEstimator
-%%         +generateLogicalPlan(ast: ASTNode) LogicalPlan
-%%         +optimizeLogicalPlan(plan: LogicalPlan) LogicalPlan
-%%         +optimizePhysicalPlan(plan: LogicalPlan) PhysicalPlanTree
-%%         +applyPredicatePushdown(plan: LogicalPlan) LogicalPlan
-%%         +applyProjectionPruning(plan: LogicalPlan) LogicalPlan
-%%     }
-
-%%     class CostModel {
-%%         +calculateCost(node: PhysicalOperatorNode, stats: TableStatistics) Double
-%%     }
-
-%%     class CardinalityEstimator {
-%%         +estimateSelectivity(predicate: ExpressionNode, stats: TableStatistics) double
-%%     }
-
-%%     %% --- Plans ---
-%%     class LogicalOperator {
-%%         <<abstract>>
-%%         +List~LogicalOperator~ children
-%%     }
-%%     class LogicalGet { +String tableName }
-%%     class LogicalFilter { +ExpressionNode predicate }
-%%     LogicalGet --|> LogicalOperator
-%%     LogicalFilter --|> LogicalOperator
-
-%%     class PhysicalOperatorNode {
-%%         <<abstract>>
-%%         +List~PhysicalOperatorNode~ children
-%%         +double estimatedCost
-%%     }
-%%     class PhysicalSeqScan { +String tableId }
-%%     class PhysicalIndexScan { +String indexId, +any scanKey }
-%%     class PhysicalFilter { +ExpressionNode predicate }
-%%     PhysicalSeqScan --|> PhysicalOperatorNode
-%%     PhysicalIndexScan --|> PhysicalOperatorNode
-%%     PhysicalFilter --|> PhysicalOperatorNode
-
-%%     %% --- Execution Planning & Cache ---
-%%     class ExecutionPlanner {
-%%         -PlanCacheManager cacheManager
-%%         +buildExecutionTree(plan: PhysicalPlanTree) ExecutionOperator
-%%         +getPlanFromCache(sqlHash: String) PhysicalPlanTree
-%%     }
-
-%%     class PlanCacheManager {
-%%         -Map~String, PhysicalPlanTree~ cacheMap
-%%         +put(sqlHash: String, plan: PhysicalPlanTree) Void
-%%         +get(sqlHash: String) PhysicalPlanTree
-%%     }
-
-%%     %% --- Query Executor Operators ---
-%%     class ExecutionOperator {
-%%         <<interface>>
-%%         +init() Void
-%%         +next() Tuple
-%%         +close() Void
-%%     }
-
-%%     class SequentialScanOperator {
-%%         -String tableId
-%%         -int currentPageId
-%%         -int currentSlotId
-%%         +init() Void
-%%         +next() Tuple
-%%     }
-%%     class IndexScanOperator {
-%%         -String indexId
-%%         -any searchKey
-%%         +init() Void
-%%         +next() Tuple
-%%     }
-%%     class FilterOperator {
-%%         -ExecutionOperator childOperator
-%%         -ExpressionNode predicate
-%%         +init() Void
-%%         +next() Tuple
-%%     }
-%%     class NestedLoopJoinOperator {
-%%         -ExecutionOperator outerChild
-%%         -ExecutionOperator innerChild
-%%         -ExpressionNode joinPredicate
-%%         +init() Void
-%%         +next() Tuple
-%%     }
-%%     class InsertExecutionOperator {
-%%         -String tableId
-%%         -List~Tuple~ valuesToInsert
-%%         +init() Void
-%%         +next() Tuple
-%%     }
-
-%%     SequentialScanOperator ..|> ExecutionOperator
-%%     IndexScanOperator ..|> ExecutionOperator
-%%     FilterOperator ..|> ExecutionOperator
-%%     NestedLoopJoinOperator ..|> ExecutionOperator
-%%     InsertExecutionOperator ..|> ExecutionOperator
-
-%%     %% --- Execution Control Service ---
-%%     class ExecutionService {
-%%         -IParserService parser
-%%         -IQueryValidation validator
-%%         -IPolicyService policyService
-%%         -IQueryOptimizer optimizer
-%%         -IExecutionPlanner planner
-%%         -IResultFormatter formatter
-%%         -IPolicyRewriterVisitor policyRewriterVisitor
-%%         +execute(sql: String, authToken: String) ResultOutput
-%%     }
-
-%%     class ResultFormatter {
-%%         +formatAsJSON(tuples: List~Tuple~) String
-%%         +formatAsCSV(tuples: List~Tuple~) String
-%%     }
-
-%%     class IResultFormatter {
-%%         <<interface>>
-%%         +formatAsJSON(tuples: List~Tuple~) String
-%%         +formatAsCSV(tuples: List~Tuple~) String
-%%     }
-%%     class IParserService {
-%%         <<interface>>
-
-%%     + parserSQL(sl:String): ASTBuilderResult
-%%     }
-%%     class IQueryValidation {
-%%         <<interface>>
-
-%%         +validateQuery(astBuild: ASTBuildResult, userID: String) Void
-%%     }
-
-%%     class IQueryOptimizer {
-%%         <<interface>>
-%%         +generateLogicalPlan(ast: ASTNode) LogicalPlan
-%%         +optimizeLogicalPlan(plan: LogicalPlan) LogicalPlan
-%%         +optimizePhysicalPlan(plan: LogicalPlan) PhysicalPlanTree
-%%         +applyPredicatePushdown(plan: LogicalPlan) LogicalPlan
-%%         +applyProjectionPruning(plan: LogicalPlan) LogicalPlan
-%%     }
-%%     class ISyntaxErrorHandler {
-%%         <<interface>>
-%%         +handleError(errorTokens, rawSql) SyntaxErrorException
-%%         +formatErrorMessage(line: int, col: int) String
-%%     }
-%%     class IExecutionPlanner {
-%%         +buildExecutionTree(plan: PhysicalPlanTree) ExecutionOperator
-%%         +getPlanFromCache(sqlHash: String) PhysicalPlanTree
-%%     }
-%%     ExecutionService ..> IParserService: uses
-%%     ParserService ..|> IParserService
-%%     ExecutionService ..> IQueryValidation: uses
-%%     QueryValidation --|> IQueryValidation
-%%     ExecutionService ..> ISyntaxErrorHandler: uses
-%%     ISyntaxErrorHandler <|.. SyntaxErrorHandler
-%%     QueryValidation ..> RoleService: uses
-%%     ExecutionService ..> IPolicyRewriterVisitor: uses
-%%     PolicyRewriterVisitor --|> IPolicyRewriterVisitor
-%%     ExecutionService ..> IQueryOptimizer: uses
-%%     QueryOptimizer --|> IQueryOptimizer
-%%     ExecutionService ..> IExecutionPlanner: uses
-%%     ExecutionPlanner --|> IExecutionPlanner
-%%     ExecutionService ..> IResultFormatter: uses
-%%     ResultFormatter ..|> IResultFormatter 
-   
-
-
+    direction LR
+
+    %% ==========================================
+    %% SUBGRAPH 1: SQL PARSER & AST
+    %% ==========================================
+    subgraph AST_and_Parser
+        class ParserService {
+            -SyntaxErrorHandler errorHandler
+            +parserSQL(sql: String) ASTBuildResult
+        }
+        class SyntaxErrorHandler {
+            +handleError(errorTokens, rawSql) SyntaxErrorException
+            +formatErrorMessage(line: int, col: int) String
+        }
+        class ASTNode {
+            <<interface>>
+            +ASTNodeType type
+            +accept(visitor: ASTVisitor) T
+        }
+        class ExpressionNode {
+            <<interface>>
+        }
+        class SelectStatementNode {
+            +TableReferenceNode fromClause
+            +ExpressionNode whereClause
+            +List~ASTNode~ projectionList
+        }
+        class BinaryExpressionNode {
+            +ExpressionNode left
+            +String operator
+            +ExpressionNode right
+        }
+        class IdentifierNode {
+            +String name
+        }
+        class LiteralNode {
+            +any value
+            +String rawType
+        }
+        class TableReferenceNode {
+            +String tableName
+            +String alias
+        }
+
+        ExpressionNode --|> ASTNode
+        SelectStatementNode ..|> ASTNode
+        TableReferenceNode ..|> ASTNode
+        BinaryExpressionNode ..|> ExpressionNode
+        IdentifierNode ..|> ExpressionNode
+        LiteralNode ..|> ExpressionNode
+    end
+
+    %% ==========================================
+    %% SUBGRAPH 2: VISITOR & REWRITER
+    %% ==========================================
+    subgraph AST_Visitors_Writers
+        class ASTVisitor~T~ {
+            <<interface>>
+            +visitSelectStatement(node: SelectStatementNode) T
+            +visitBinaryExpression(node: BinaryExpressionNode) T
+        }
+        class IPolicyRewriterVisitor {
+            <<interface>>
+            +visitSelectStatement(node: SelectStatementNode) ASTNode
+        }
+        class PolicyRewriterVisitor {
+            -ExpressionNode policyCondition
+        }
+        PolicyRewriterVisitor --|> IPolicyRewriterVisitor
+        PolicyRewriterVisitor ..|> ASTVisitor
+    end
+
+    %% ==========================================
+    %% SUBGRAPH 3: VALIDATION & CATALOG
+    %% ==========================================
+    subgraph Catalog_and_Validation
+        class IQueryValidation {
+            <<interface>>
+            +validateQuery(astBuild, userID) Void
+        }
+        class QueryValidation {
+            -IRoleService roleService
+            -CatalogManager catalog
+        }
+        class RoleService {
+            +createRole(name, permissions) void
+            +assignRole(userID, roleID) void
+        }
+        class CatalogManager {
+            +getTableStatistics(tableName) TableStatistics
+            +getTableSchema(tableName) SchemaInfo
+        }
+        class TableStatistics {
+            +int rowCount
+            +int pageCount
+        }
+        QueryValidation --|> IQueryValidation
+        QueryValidation ..> RoleService : uses
+        QueryValidation ..> CatalogManager : uses
+    end
+
+    %% ==========================================
+    %% SUBGRAPH 4: OPTIMIZER & PLANS
+    %% ==========================================
+    subgraph Query Optimization
+        class QueryOptimizer {
+            -CatalogManager catalog
+            -CostModel costModel
+            -CardinalityEstimator estimator
+            +generateLogicalPlan(ast) LogicalPlan
+            +optimizePhysicalPlan(plan) PhysicalPlanTree
+        }
+        class CostModel {
+            +calculateCost(node, stats) Double
+        }
+        class CardinalityEstimator {
+            +estimateSelectivity(pred, stats) double
+        }
+        class LogicalOperator {
+            <<abstract>>
+            +List~LogicalOperator~ children
+        }
+        class PhysicalOperatorNode {
+            <<abstract>>
+            +double estimatedCost
+        }
+        QueryOptimizer ..> CostModel : uses
+        QueryOptimizer ..> CardinalityEstimator : uses
+    end
+
+    %% ==========================================
+    %% SUBGRAPH 5: EXECUTION ENGINE
+    %% ==========================================
+    subgraph Execution_Engine
+        class ExecutionPlanner {
+            -PlanCacheManager cacheManager
+            +buildExecutionTree(plan) ExecutionOperator
+        }
+        class PlanCacheManager {
+            -Map~String, PhysicalPlanTree~ cacheMap
+        }
+        class ExecutionOperator {
+            <<interface>>
+            +init() Void
+            +next() Tuple
+            +close() Void
+        }
+        class SequentialScanOperator {
+            - Int currentPageId
+            - Int currentSlotId
+            - BufferPoolManager bufferPoolMgr
+
+        }
+        class IndexScanOperator {
+            - String indexId
+            - Object searchKey
+            - Int currentSlotId
+        }
+        class FilterOperator {
+            -ExecutionOperator childOperator
+            -ExpressionNode predicate
+        }
+
+        SequentialScanOperator ..|> ExecutionOperator
+        IndexScanOperator ..|> ExecutionOperator
+        FilterOperator ..|> ExecutionOperator
+        ExecutionPlanner ..> PlanCacheManager : uses
+    end
+
+    %% ==========================================
+    %% SUBGRAPH 6: CONTROL SERVICE (Orchestrator)
+    %% ==========================================
+    subgraph Main_Service
+        class ExecutionService {
+            -ParserService parser
+            -IQueryValidation validator
+            -IPolicyRewriterVisitor policyRewriter
+            -QueryOptimizer optimizer
+            -ExecutionPlanner planner
+            -ResultFormatter formatter
+            +execute(sql, authToken) ResultOutput
+        }
+        class ResultFormatter {
+            +formatAsJSON(tuples) String
+            +formatAsCSV(tuples) String
+        }
+    end
+
+    %% Core orchestration flow links
+    ExecutionService ..> ParserService : coordinates
+    ExecutionService ..> IQueryValidation : coordinates
+    ExecutionService ..> IPolicyRewriterVisitor : coordinates
+    ExecutionService ..> QueryOptimizer : coordinates
+    ExecutionService ..> ExecutionPlanner : coordinates
+    ExecutionService ..> ResultFormatter : coordinates
+    ExecutionService ..> SyntaxErrorHandler: uses
 
 ```

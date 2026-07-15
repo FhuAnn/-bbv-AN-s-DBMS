@@ -5,6 +5,8 @@ import java.util.List;
 
 import classes.authentication.ASTNodeType;
 import classes.authentication.ExpressionNode;
+import interfaces.ASTNode;
+import interfaces.ASTVisitor;
 
 public class SelectStatementNode extends AbstractASTNode {
     TableReferenceNode fromClause;

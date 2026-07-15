@@ -1,6 +1,7 @@
 package classes.queryprocessor;
 
 import classes.authentication.ASTNodeType;
+import interfaces.ASTVisitor;
 
 public class TableReferenceNode extends AbstractASTNode {
     String tableName;

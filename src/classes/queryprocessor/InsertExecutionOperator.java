@@ -2,13 +2,15 @@ package classes.queryprocessor;
 
 import java.util.List;
 
+import interfaces.ExecutionOperator;
+
 public class InsertExecutionOperator implements ExecutionOperator {
     private final String tableId;
     private final List<Tuple> valuesToInsert;
     private final BufferPoolManager bufferPoolManager;
     private boolean executed;
 
-    InsertExecutionOperator(String tableId, List<Tuple> valuesToInsert, BufferPoolManager bufferPoolManager) {
+    public InsertExecutionOperator(String tableId, List<Tuple> valuesToInsert, BufferPoolManager bufferPoolManager) {
         this.tableId = tableId;
         this.valuesToInsert = valuesToInsert;
         this.bufferPoolManager = bufferPoolManager;

@@ -14,7 +14,6 @@ import classes.queryprocessor.BufferPoolManager;
 import classes.queryprocessor.CatalogManager;
 import classes.queryprocessor.ColumnInfo;
 import classes.queryprocessor.ConstraintInfo;
-import classes.queryprocessor.ExecutionOperator;
 import classes.queryprocessor.ExecutionPlanner;
 import classes.queryprocessor.InsertExecutionOperator;
 import classes.queryprocessor.InsertStatementNode;
@@ -28,6 +27,7 @@ import classes.queryprocessor.SchemaInfo;
 import classes.queryprocessor.SelectStatementNode;
 import classes.queryprocessor.SequentialScanOperator;
 import classes.queryprocessor.Tuple;
+import interfaces.ExecutionOperator;
 
 public class QueryProcessorUnitTest {
     @Test
@@ -70,7 +70,7 @@ public class QueryProcessorUnitTest {
         ExecutionPlanner planner = new ExecutionPlanner(new PlanCacheManager(), new BufferPoolManager());
 
         PhysicalPlanTree insertPlan = new PhysicalPlanTree(new PhysicalInsert("Orders", List.of(singleRow())));
-        ExecutionOperator insertOperator = planner.buildExecutionTree(insertPlan);
+       ExecutionOperator insertOperator = planner.buildExecutionTree(insertPlan);
         assertInstanceOf(InsertExecutionOperator.class, insertOperator);
 
         PhysicalPlanTree scanPlan = new PhysicalPlanTree(new PhysicalSeqScan("Orders"));

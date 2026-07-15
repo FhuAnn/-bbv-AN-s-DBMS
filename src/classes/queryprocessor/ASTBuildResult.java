@@ -1,5 +1,7 @@
 package classes.queryprocessor;
 
+import interfaces.ASTNode;
+
 public class ASTBuildResult {
    public  final boolean success;
     public final ASTNode root;

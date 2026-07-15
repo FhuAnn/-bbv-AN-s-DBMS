@@ -1,5 +1,7 @@
 package classes.queryprocessor;
 
+import interfaces.ExecutionOperator;
+
 public class EmptyOperator implements ExecutionOperator {
     @Override
     public void init() {
