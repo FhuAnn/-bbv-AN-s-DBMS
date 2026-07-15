@@ -6,4 +6,8 @@ import java.util.List;
 public abstract class PhysicalOperatorNode {
     final List<PhysicalOperatorNode> children = new ArrayList<>();
     double estimatedCost;
+
+    public List<PhysicalOperatorNode> getChildren() {
+        return children;
+    }
 }

@@ -29,4 +29,12 @@ public class Permission {
         // Implementation for assigning a permission to a role
         return true;
     }
+
+    public String getResource() {
+        return resource;
+    }
+
+    public String getAction() {
+        return action;
+    }
 }

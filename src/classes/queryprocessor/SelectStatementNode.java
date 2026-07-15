@@ -43,4 +43,12 @@ public class SelectStatementNode extends AbstractASTNode {
     public int getOffset() {
         return offset;
     }
+
+    public void setFromClause(TableReferenceNode fromClause) {
+        this.fromClause = fromClause;
+    }
+
+    public void setWhereClause(ExpressionNode whereClause) {
+        this.whereClause = whereClause;
+    }
 }

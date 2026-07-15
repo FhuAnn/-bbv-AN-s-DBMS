@@ -6,4 +6,8 @@ public class PhysicalPlanTree {
     public PhysicalPlanTree(PhysicalOperatorNode root) {
         this.root = root;
     }
+
+    public PhysicalOperatorNode getRoot() {
+        return root;
+    }
 }

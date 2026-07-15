@@ -6,4 +6,8 @@ public class PhysicalSeqScan extends PhysicalOperatorNode {
     public PhysicalSeqScan(String tableId) {
         this.tableId = tableId;
     }
+
+    public String getTableId() {
+        return tableId;
+    }
 }

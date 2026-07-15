@@ -10,4 +10,10 @@ public class LogicalInsert extends LogicalOperator {
         this.tableName = tableName;
         this.rows = rows;
     }
+    public String getTableName() {
+        return tableName;
+    }
+    public List<Tuple> getRows() {
+        return rows;
+    }
 }

@@ -10,13 +10,13 @@ public class QueryOptimizer {
     private final CostModel costModel;
     private final CardinalityEstimator cardinalityEstimator;
 
-    QueryOptimizer(CatalogManager catalogManager, CostModel costModel, CardinalityEstimator cardinalityEstimator) {
+    public QueryOptimizer(CatalogManager catalogManager, CostModel costModel, CardinalityEstimator cardinalityEstimator) {
         this.catalogManager = catalogManager;
         this.costModel = costModel;
         this.cardinalityEstimator = cardinalityEstimator;
     }
 
-    LogicalOperator generateLogicalPlan(ASTNode ast) {
+    public LogicalOperator generateLogicalPlan(ASTNode ast) {
         if (ast instanceof SelectStatementNode selectStatement) {
             if (selectStatement.whereClause != null) {
                 LogicalFilter filter = new LogicalFilter(selectStatement.whereClause);
@@ -31,11 +31,11 @@ public class QueryOptimizer {
         throw new InvalidASTException("Unsupported AST type: " + ast.getClass().getSimpleName());
     }
 
-    LogicalOperator optimizeLogicalPlan(LogicalOperator logicalPlan) {
+    public LogicalOperator optimizeLogicalPlan(LogicalOperator logicalPlan) {
         return logicalPlan;
     }
 
-    PhysicalPlanTree optimizePhysicalPlan(LogicalOperator logicalPlan) {
+    public PhysicalPlanTree optimizePhysicalPlan(LogicalOperator logicalPlan) {
         return new PhysicalPlanTree(toPhysical(logicalPlan));
     }
 

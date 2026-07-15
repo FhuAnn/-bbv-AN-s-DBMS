@@ -8,4 +8,9 @@ public class PhysicalFilter extends PhysicalOperatorNode {
     PhysicalFilter(ExpressionNode predicate) {
         this.predicate = predicate;
     }
+
+    public ExpressionNode getPredicate() {
+        return predicate;
+    }
+    
 }

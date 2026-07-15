@@ -16,9 +16,9 @@ public class AuditLog {
         this.actorID = actorID;
         this.action = action;
         this.targetId = targetId;
-        this.timestamp = Instant.now().toString();
+    this.timestamp = Instant.now().toString();
         this.ipAddress = ipAddress;
-    }
+}
 
     public void logging(String info) {
     }

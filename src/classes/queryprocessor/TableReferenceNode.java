@@ -7,7 +7,7 @@ public class TableReferenceNode extends AbstractASTNode {
     String tableName;
     String alias;
 
-    TableReferenceNode(String tableName, String alias) {
+    public TableReferenceNode(String tableName, String alias) {
         this.tableName = tableName;
         this.alias = alias;
     }

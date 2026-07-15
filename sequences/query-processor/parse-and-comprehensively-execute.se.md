@@ -35,7 +35,7 @@ sequenceDiagram
             ExecService ->> Audit: logging("Parse Failure: Syntax Error", userId, timestamp)
             ExecService -->> Client: Error ("Syntax error: Misspelled SELEKT at line 1")
         else Valid syntax (happy path)
-            QP -->> ExecService: SelectStatementNode (AST)
+            QP -->> ExecService: Select Statement Node (AST)
         end
     end
 

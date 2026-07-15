@@ -8,7 +8,7 @@ public class LiteralNode extends AbstractASTNode implements ExpressionNode {
     Object value;
     String rawType;
 
-    LiteralNode(Object value, String rawType) {
+    public LiteralNode(Object value, String rawType) {
         this.value = value;
         this.rawType = rawType;
     }

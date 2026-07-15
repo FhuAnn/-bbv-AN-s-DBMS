@@ -27,4 +27,11 @@ public class InsertStatementNode extends AbstractASTNode {
     public List<LiteralNode> getValues() {
         return values;
     }
+
+    public void setTargetTable(TableReferenceNode targetTable) {
+        this.targetTable = targetTable;
+    }
+    public void setValues(List<LiteralNode> values) {
+        this.values = values;
+    }
 }

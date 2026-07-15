@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 public class ResultFormatter {
-    String formatAsJSON(List<Tuple> tuples) {
+   public String formatAsJSON(List<Tuple> tuples) {
         StringBuilder builder = new StringBuilder("[");
         for (int i = 0; i < tuples.size(); i++) {
             Tuple tuple = tuples.get(i);
@@ -32,7 +32,7 @@ public class ResultFormatter {
         return builder.toString();
     }
 
-    String formatAsCSV(List<Tuple> tuples) {
+   public  String formatAsCSV(List<Tuple> tuples) {
         if (tuples.isEmpty()) {
             return "";
         }

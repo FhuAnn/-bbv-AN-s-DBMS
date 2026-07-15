@@ -8,4 +8,9 @@ public class LogicalFilter extends LogicalOperator {
     LogicalFilter(ExpressionNode predicate) {
         this.predicate = predicate;
     }
+
+    public ExpressionNode getPredicate() {
+        return predicate;
+    }
+    
 }

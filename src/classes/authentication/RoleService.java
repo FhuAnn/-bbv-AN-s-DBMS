@@ -42,7 +42,7 @@ public class RoleService implements IRoleService {
                 continue;
             }
             for (Permission permission : permRepo.findByRoleId(role.id)) {
-                if (permission.resource.equalsIgnoreCase(resource) && permission.action.equalsIgnoreCase(action)) {
+                if (permission.getResource().equalsIgnoreCase(resource) && permission.getAction().equalsIgnoreCase(action)) {
                     return true;
                 }
             }
