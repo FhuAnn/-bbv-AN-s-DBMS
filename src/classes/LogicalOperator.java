@@ -1,8 +1,0 @@
-package classes;
-
-import java.util.ArrayList;
-import java.util.List;
-
-public abstract class LogicalOperator {
-    final List<LogicalOperator> children = new ArrayList<>();
-}
