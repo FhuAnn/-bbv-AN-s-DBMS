@@ -4,9 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import interfaces.IRoleService;
 
-public class RoleService implements IRoleService {
+public class RoleService  {
     private final UserRoleRepository userRoleRepo = new UserRoleRepository();
     private final PermissionRepository permRepo = new PermissionRepository();
     private final Map<String, Role> roles = new HashMap<>();
@@ -34,7 +33,6 @@ public class RoleService implements IRoleService {
         userRoleRepo.delete(userID, roleID);
     }
 
-    @Override
     public boolean checkAccess(String userId, String resource, String action) {
         for (UserRole userRole : userRoleRepo.findByUserId(userId)) {
             Role role = roles.values().stream().filter(item -> item.id.equals(userRole.roleId)).findFirst().orElse(null);

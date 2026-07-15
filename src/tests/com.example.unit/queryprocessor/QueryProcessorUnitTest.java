@@ -58,8 +58,8 @@ public class QueryProcessorUnitTest {
     public void validationShouldRejectUnauthorizedTableAccess() {
         CatalogManager catalog = new CatalogManager();
         catalog.registerTable("Orders", ordersSchema());
-
-        QueryValidation validation = new QueryValidation(new RoleService(), catalog);
+        RoleService roleService = new RoleService();
+        QueryValidation validation = new QueryValidation(roleService, catalog);
         ASTBuildResult astBuild = new ParserService().parserSQL("SELECT * FROM Orders");
 
         assertThrows(SecurityException.class, () -> validation.validateQuery(astBuild, "u1"));
