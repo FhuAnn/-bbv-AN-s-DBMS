@@ -1,32 +1,29 @@
 package classes.queryprocessor;
 
 import java.util.List;
+import java.util.Map;
 
 import interfaces.ASTNode;
 
 public class ParserService {
     private final SyntaxErrorHandler errorHandler = new SyntaxErrorHandler();
-    private final List<StatementParser> statementParsers = List.of(
-            new SelectStatementParser(),
-            new InsertStatementParser()
-    );
 
+private final Map<String, StatementParser> parserMap = Map.of(
+        "SELECT", new SelectStatementParser(),
+        "INSERT", new InsertStatementParser()
+    );
     public ASTBuildResult parserSQL(String sql) {
-        try {
-            String normalized = sql.trim();
-            StatementParser parser = statementParsers.stream()
-                    .filter(candidate -> candidate.supports(normalized))
-                    .findFirst()
-                    .orElse(null);
-            if (parser != null) {
-                ASTNode root = parser.parse(normalized, errorHandler);
-                return new ASTBuildResult(true, root, null);
-            }
-            throw errorHandler.handleError(null, sql);
-        } catch (SyntaxErrorException ex) {
-            return new ASTBuildResult(false, null, ex.getMessage());
-        } catch (RuntimeException ex) {
-            return new ASTBuildResult(false, null, ex.getMessage());
+        String normalized = sql.trim();
+        // Lấy từ đầu tiên của câu SQL (ví dụ: "SELECT * FROM..." -> "SELECT")
+        String firstWord = normalized.split("\\s+")[0].toUpperCase(); 
+
+        // Tìm trực tiếp parser trong Map, không cần duyệt List nữa
+        StatementParser parser = parserMap.get(firstWord);
+
+        if (parser != null) {
+            ASTNode root = parser.parse(normalized, errorHandler);
+            return new ASTBuildResult(true, root, null);
         }
+        throw errorHandler.handleError(null, sql);
     }
 }

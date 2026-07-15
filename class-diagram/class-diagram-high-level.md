@@ -288,6 +288,15 @@ classDiagram
 	QueryValidation --> IRoleService
 	SessionMgr --> SessionContext
 	SessionMgr --> TokenSet
+	SessionMgr ..> SessionContext : manages
+	User "1" -- "*" SessionContext : has
+	User "1" -- "*" UserRole : has
+	UserRole "*" -- "1" Role : has
+	Role "1" *-- "*" Permission : contains
+	PolicyService  o--> Policy : evaluates
+	AuditLog "*" --> "1" User : logs
+	AuthService ..> User : authenticates
+	RoleService --> UserRole : queries
 	RoleService --> UserRoleRepository
 	RoleService --> PermissionRepository
 	PolicyService --> Policy
