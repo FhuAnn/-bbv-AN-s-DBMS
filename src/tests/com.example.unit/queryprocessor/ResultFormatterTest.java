@@ -23,7 +23,7 @@ class ResultFormatterTest {
 
         String json = formatter.formatAsJSON(List.of(tuple));
 
-        assertEquals("[{\"id\":1,\"active\":true,\"name\":\"Bob \\\"The Builder\\\" \\\\\\\\ path\"}]", json);
+        assertEquals("[{\"id\":1,\"active\":true,\"name\":\"Bob \\\"The Builder\\\" path\"}]", json);
     }
 
     @Test

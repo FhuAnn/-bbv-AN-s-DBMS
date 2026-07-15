@@ -93,11 +93,11 @@ classDiagram
             +getTableStatistics(tableName) TableStatistics
             +getTableSchema(tableName) SchemaInfo
         }
-        class TableStatistics {
-            +int rowCount
-            +int pageCount
-        }
-        QueryValidation --|> IQueryValidation
+        %% class TableStatistics {
+        %%     +int rowCount
+        %%     +int pageCount
+        %% }
+        QueryValidation ..|> IQueryValidation
         QueryValidation ..> RoleService : uses
         QueryValidation ..> CatalogManager : uses
     end
@@ -197,5 +197,7 @@ classDiagram
     ExecutionService ..> ExecutionPlanner : coordinates
     ExecutionService ..> ResultFormatter : coordinates
     ExecutionService ..> SyntaxErrorHandler: uses
-
+    ExecutionPlanner ..> SequentialScanOperator: uses
+    ExecutionPlanner ..> IndexScanOperator:uses
+    ExecutionPlanner ..> FilterOperator:uses
 ```

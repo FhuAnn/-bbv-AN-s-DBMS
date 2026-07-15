@@ -38,13 +38,6 @@ classDiagram
     }
 
     %% --- Authorization (RBAC) ---
-    class IRoleService {
-        <<interface>>
-        +createRole(name, permissions) Void
-        +assignRole(userID, roleID) Void
-        +unassignRole(userID, roleID) Void
-        +checkAccess(userId: String, resource: String, action: String) Boolean
-    }
 
     class RoleService {
         -UserRoleRepository userRoleRepo
@@ -115,10 +108,9 @@ classDiagram
 
     %% --- Relationships ---
     SessionMgr ..> SessionContext : manages
-    RoleService ..|> IRoleService
     RoleService --> UserRole : queries
     Role "1" *-- "*" Permission : contains
-    PolicyService "*" --> "1" Policy : evaluates
+    PolicyService  o--> Policy : evaluates
     User "1" -- "*" SessionContext : has
     User "1" -- "*" UserRole : has
     UserRole "*" -- "1" Role : has
