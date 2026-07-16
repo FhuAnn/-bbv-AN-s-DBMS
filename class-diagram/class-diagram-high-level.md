@@ -1,308 +1,273 @@
+# DBMS Core Architecture
+
 ```mermaid
-
 classDiagram
-	direction BT
+direction LR
 
-	class DBMS {
-		-QueryProcessor queryProcessor
-		-SecurityManager securityManager
-		-StorageManager storageManager
-		-TransactionManager transactionManager
-		-ConnectionNetworkManager connectionNetworkManager
-		-BackupRestoreLoging backupRestoreLoging
-		-AdminstrationMonitoring adminstrationMonitoring
-		-MedataManager medataManager
-		+executeQuery(sql: String, authToken: String) ResultOutput
-		+connect() Void
-	}
+class DatabaseServer{
+    +serverId
+    +version
+    +status
+    +start()
+    +stop()
+    +restart()
+}
 
-	class QueryProcessor
-	class SecurityManager
-	class StorageManager
-	class TransactionManager
-	class ConnectionNetworkManager
-	class BackupRestoreLoging
-	class AdminstrationMonitoring
-	class MedataManager
+class DatabaseManager{
+    +createDatabase()
+    +dropDatabase()
+    +getDatabase()
+    +listDatabases()
+}
 
-	DBMS o--> QueryProcessor
-	DBMS o--> SecurityManager
-	DBMS o--> StorageManager
-	DBMS o--> TransactionManager
-	DBMS o--> ConnectionNetworkManager
-	DBMS o--> BackupRestoreLoging
-	DBMS o--> AdminstrationMonitoring
-	DBMS o--> MedataManager
+class Database{
+    +databaseId
+    +name
+    +owner
+    +open()
+    +close()
+}
 
-	%% =========================================================
-	%% Query processing pipeline
-	%% =========================================================
-	class ExecutionService {
-		-ParserService parser
-		-CatalogManager catalog
-		-RoleService roleService
-		-PolicyService policyService
-		-QueryValidation validator
-		-QueryOptimizer optimizer
-		-ExecutionPlanner planner
-		-ResultFormatter formatter
-		-SessionMgr sessionMgr
-		-AuditLog auditLog
-		-AuthService authService
-		+execute(sql: String, authToken: String) ResultOutput
-	}
+class Schema{
+    +schemaId
+    +name
+    +createTable()
+    +dropTable()
+}
 
-	class ResultOutput {
-		+Boolean success
-		+String message
-		+int rowCount
-		+String payload
-	}
+class Table{
+    +tableId
+    +name
+    +insert()
+    +update()
+    +delete()
+}
 
-	class ParserService {
-		-SyntaxErrorHandler errorHandler
-		-Map~String, StatementParser~ parserMap
-		+parserSQL(sql: String) ASTBuildResult
-	}
+class Column{
+    +columnId
+    +name
+    +dataType
+    +nullable
+}
 
-	class SyntaxErrorHandler
-	class ASTBuildResult {
-		+Boolean success
-		+ASTNode root
-		+String errorMessage
-	}
+class Row{
+    +rowId
+    +values
+    +version
+}
 
-	class ASTNode {
-		<<interface>>
-	}
-	class SelectStatementNode
-	class InsertStatementNode
-	class ExpressionNode {
-		<<interface>>
-	}
-	class BinaryExpressionNode
-	class IdentifierNode
-	class LiteralNode
-	class TableReferenceNode
-	class ASTVisitor~T~ {
-		<<interface>>
-	}
-	class PolicyRewriterVisitor {
-		-ExpressionNode policyCondition
-	}
+class DataType{
+    <<enumeration>>
+}
 
-	ASTNode <|.. SelectStatementNode
-	ASTNode <|.. InsertStatementNode
-	ASTNode <|.. TableReferenceNode
-	ASTNode <|.. ExpressionNode
-	ExpressionNode <|.. BinaryExpressionNode
-	ExpressionNode <|.. IdentifierNode
-	ExpressionNode <|.. LiteralNode
-	PolicyRewriterVisitor ..|> ASTVisitor
+class Constraint{
+    <<abstract>>
+    +validate()
+}
 
-	class QueryValidation {
-		-CatalogManager catalog
-		-RoleService roleService
-		+validateQuery(astBuild: ASTBuildResult, userID: String) Void
-	}
+class PrimaryKey{
+    +columns
+}
 
-	class QueryOptimizer {
-		-CatalogManager catalogManager
-		-CostModel costModel
-		-CardinalityEstimator cardinalityEstimator
-		+generateLogicalPlan(ast: ASTNode) LogicalOperator
-		+optimizeLogicalPlan(logicalPlan: LogicalOperator) LogicalOperator
-		+optimizePhysicalPlan(logicalPlan: LogicalOperator) PhysicalPlanTree
-	}
+class ForeignKey{
+    +referenceTable
+}
 
-	class CostModel
-	class CardinalityEstimator
-	class LogicalOperator {
-		<<abstract>>
-	}
-	class LogicalGet
-	class LogicalFilter
-	class LogicalInsert
-	class PhysicalPlanTree
-	class PhysicalOperatorNode {
-		<<abstract>>
-	}
-	class PhysicalSeqScan
-	class PhysicalFilter
-	class PhysicalInsert
+class UniqueConstraint
 
-	LogicalGet --|> LogicalOperator
-	LogicalFilter --|> LogicalOperator
-	LogicalInsert --|> LogicalOperator
-	PhysicalSeqScan --|> PhysicalOperatorNode
-	PhysicalFilter --|> PhysicalOperatorNode
-	PhysicalInsert --|> PhysicalOperatorNode
+class CheckConstraint
 
-	class ExecutionPlanner {
-		-PlanCacheManager cacheManager
-		-BufferPoolManager bufferPoolManager
-		+buildExecutionTree(plan: PhysicalPlanTree) ExecutionOperator
-	}
+class Index{
+    <<abstract>>
+    +search()
+    +insertKey()
+    +deleteKey()
+}
 
-	class PlanCacheManager
-	class ExecutionOperator {
-		<<interface>>
-	}
-	class SequentialScanOperator
-	class IndexScanOperator
-	class FilterOperator
-	class InsertExecutionOperator
-	class BufferPoolManager
-	class Tuple
-	class ResultFormatter {
-		-TupleFormatStrategy jsonStrategy
-		-TupleFormatStrategy csvStrategy
-		+formatAsJSON(tuples: List~Tuple~) String
-		+formatAsCSV(tuples: List~Tuple~) String
-	}
-	class TupleFormatStrategy {
-		<<interface>>
-	}
-	class JsonTupleFormatStrategy
-	class CsvTupleFormatStrategy
+class BTreeIndex
 
-	ExecutionOperator <|.. SequentialScanOperator
-	ExecutionOperator <|.. IndexScanOperator
-	ExecutionOperator <|.. FilterOperator
-	ExecutionOperator <|.. InsertExecutionOperator
-	TupleFormatStrategy <|.. JsonTupleFormatStrategy
-	TupleFormatStrategy <|.. CsvTupleFormatStrategy
+class HashIndex
 
-	ExecutionService --> ParserService
-	ExecutionService --> QueryValidation
-	ExecutionService --> PolicyService
-	ExecutionService --> QueryOptimizer
-	ExecutionService --> ExecutionPlanner
-	ExecutionService --> ResultFormatter
-	ExecutionService --> SessionMgr
-	ExecutionService --> AuditLog
-	ExecutionService --> AuthService
-	ExecutionService --> ResultOutput
-	ExecutionService --> PolicyRewriterVisitor
-	ParserService --> SyntaxErrorHandler
-	ParserService --> ASTBuildResult
-	QueryValidation --> CatalogManager
-	QueryValidation --> RoleService
-	QueryOptimizer --> CatalogManager
-	QueryOptimizer --> CostModel
-	QueryOptimizer --> CardinalityEstimator
-	QueryOptimizer --> LogicalOperator
-	QueryOptimizer --> PhysicalPlanTree
-	ExecutionPlanner --> PlanCacheManager
-	ExecutionPlanner --> BufferPoolManager
-	ExecutionPlanner --> PhysicalPlanTree
-	ExecutionPlanner --> ExecutionOperator
-	ResultFormatter --> Tuple
-	ResultFormatter --> TupleFormatStrategy
-	PolicyRewriterVisitor --> Policy
-	PolicyRewriterVisitor --> ASTNode
+class BitmapIndex
 
-	%% =========================================================
-	%% Security and access control
-	%% =========================================================
-	class AuthService {
-		-SessionMgr sessionMgr
-		-EmailService emailService
-		-Map~String, User~ usersByUsername
-		-Map~String, User~ usersByEmail
-		-Map~String, String~ resetTokens
-		+register(username: String, email: String, rawPassword: String) User
-		+login(username: String, password: String) TokenSet
-		+logout(authToken: String) Void
-		+forgotPassword(email: String) String
-		+resetPassword(resetToken: String, newPassword: String) Void
-		+generateAuthAndRefreshToken(userId: String) TokenSet
-		+verifyToken(authToken: TokenSet) Boolean
-	}
+class Partition{
+    +partitionKey
+}
 
-	class SessionMgr {
-		+Map~String, SessionContext~ activeSessions
-		+createSession(userId: String, ip: String, device: String) TokenSet
-		+validateSession(authToken: String) Boolean
-		+refreshSession(refreshToken: String) TokenSet
-		+revokeSession(authToken: String) Void
-		+revokeSessionsByUserId(userId: String) Void
-	}
+class View{
+    +queryDefinition
+}
 
-	class SessionContext
-	class TokenSet
-	class EmailService {
-		<<interface>>
-	}
-	class InMemoryEmailService
-	class User
-	class RoleService {
-		-UserRoleRepository userRoleRepo
-		-PermissionRepository permRepo
-		-Map~String, Role~ roles
-		+createRole(name: String, permissions: List~Permission~) Void
-		+assignRole(userID: String, roleID: String) Void
-		+unassignRole(userID: String, roleID: String) Void
-		+checkAccess(userId: String, resource: String, action: String) Boolean
-	}
-	class Role
-	class Permission
-	class UserRole
-	class UserRoleRepository
-	class PermissionRepository
-	class PolicyService {
-		-Map~String, List~Policy~~ policyCache
-		+createPolicy(name: String, target: String, conditions: ExpressionNode) Policy
-		+assignPolicy(policyId: String, targetId: String, type: String) Void
-		+togglePolicyStatus(policyId: String, isEnabled: Boolean) Void
-		+getEnabledPoliciesForTable(tableName: String, actionType: String) List~Policy~
-	}
-	class Policy
-	class AuditLog
-	class SecurityException
+class StoredProcedure{
+    +execute()
+}
 
-	AuthService --> SessionMgr
-	AuthService --> EmailService
-	AuthService --> User
-	SessionMgr --> SessionContext
-	SessionMgr --> TokenSet
-	SessionMgr --> User
-	RoleService --> UserRoleRepository
-	RoleService --> PermissionRepository
-	RoleService --> Role
-	RoleService --> UserRole
-	RoleService --> Permission
-	PolicyService --> Policy
-	PolicyService --> ExpressionNode
-	AuditLog --> User
+class Trigger{
+    +fire()
+}
 
-	%% =========================================================
-	%% Storage and catalog
-	%% =========================================================
-	class CatalogManager {
-		+getTableStatistics(tableName: String) TableStatistics
-		+getTableSchema(tableName: String) SchemaInfo
-		+getBufferPoolManager() BufferPoolManager
-	}
-	class TableStatistics
-	class SchemaInfo
-	class ColumnInfo
-	class ConstraintInfo
-	class Page
+class Sequence{
+    +nextValue()
+}
 
-	CatalogManager --> TableStatistics
-	CatalogManager --> SchemaInfo
-	CatalogManager --> BufferPoolManager
-	SchemaInfo --> ColumnInfo
-	SchemaInfo --> ConstraintInfo
-	BufferPoolManager --> Page
-	BufferPoolManager --> Tuple
+class Transaction{
+    +transactionId
+    +begin()
+    +commit()
+    +rollback()
+}
 
-	class SyntaxErrorException
-	class InvalidASTException
+class TransactionManager{
+    +beginTransaction()
+    +commit()
+    +rollback()
+}
 
-	ExecutionService --> SecurityException
-	ExecutionService --> InvalidASTException
-	ExecutionService --> SyntaxErrorException
-	DBMS --> ExecutionService
+class LockManager{
+    +acquireLock()
+    +releaseLock()
+}
+
+class MVCCManager{
+    +createVersion()
+    +garbageCollect()
+}
+
+class BufferPool{
+    +pinPage()
+    +flushPage()
+}
+
+class Page{
+    +pageId
+}
+
+class StorageEngine{
+    +readPage()
+    +writePage()
+}
+
+class FileManager{
+    +read()
+    +write()
+}
+
+class WALManager{
+    +appendLog()
+    +flush()
+}
+
+class RecoveryManager{
+    +recover()
+}
+
+class CatalogManager{
+    +registerTable()
+    +findTable()
+}
+
+class SQLParser{
+    +parse()
+}
+
+class Lexer{
+    +tokenize()
+}
+
+class AST{
+    +root
+}
+
+class QueryOptimizer{
+    +optimize()
+}
+
+class LogicalPlan{
+    +operators
+}
+
+class PhysicalPlan{
+    +operators
+}
+
+class QueryExecutor{
+    +execute()
+}
+
+class StatisticsManager{
+    +collect()
+}
+
+class SecurityManager{
+    +authenticate()
+    +authorize()
+}
+
+class User
+
+class Role
+
+class Permission
+
+DatabaseServer --> DatabaseManager
+DatabaseServer --> TransactionManager
+DatabaseServer --> StorageEngine
+DatabaseServer --> CatalogManager
+DatabaseServer --> SecurityManager
+
+DatabaseManager --> Database
+Database --> Schema
+Schema --> Table
+Schema --> View
+Schema --> StoredProcedure
+Schema --> Sequence
+
+Table --> Column
+Table --> Row
+Table --> Index
+Table --> Constraint
+Table --> Partition
+Table --> Trigger
+
+Constraint <|-- PrimaryKey
+Constraint <|-- ForeignKey
+Constraint <|-- UniqueConstraint
+Constraint <|-- CheckConstraint
+
+Index <|-- BTreeIndex
+Index <|-- HashIndex
+Index <|-- BitmapIndex
+
+Column --> DataType
+ForeignKey --> Table
+
+TransactionManager --> Transaction
+TransactionManager --> LockManager
+TransactionManager --> MVCCManager
+TransactionManager --> WALManager
+
+StorageEngine --> BufferPool
+StorageEngine --> FileManager
+BufferPool --> Page
+
+RecoveryManager --> WALManager
+
+CatalogManager --> Table
+CatalogManager --> Index
+CatalogManager --> Schema
+
+SQLParser --> Lexer
+SQLParser --> AST
+AST --> LogicalPlan
+QueryOptimizer --> LogicalPlan
+QueryOptimizer --> PhysicalPlan
+QueryExecutor --> PhysicalPlan
+QueryExecutor --> Transaction
+
+StatisticsManager --> Table
+QueryOptimizer --> StatisticsManager
+
+SecurityManager --> User
+SecurityManager --> Role
+Role --> Permission
 ```

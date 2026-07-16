@@ -1,5 +1,4 @@
 ```mermaid
-
 classDiagram
     direction LR
 
@@ -201,3 +200,4 @@ classDiagram
     ExecutionPlanner ..> IndexScanOperator:uses
     ExecutionPlanner ..> FilterOperator:uses
 ```
+
