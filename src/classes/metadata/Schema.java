@@ -25,6 +25,10 @@ public class Schema {
         this.ownerId = ownerId;
     }
 
+    public Schema() {
+        this.id = UUID.randomUUID();
+    }
+
     // Getters + Setters
 
     public UUID getId() {
@@ -62,7 +66,6 @@ public class Schema {
     public List<TableMetadata> getTables() {
         return tables;
     }
-
     public void setTables(List<TableMetadata> tables) {
         this.tables = tables;
     }

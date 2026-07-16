@@ -24,14 +24,14 @@ public class TableMetadata {
 
     private List<Constraint> constraints = new ArrayList<>();
 
-
-
     public TableMetadata(String name, UUID schemaId) {
 
-      
+    }
+    public TableMetadata() {
+
+        this.id = UUID.randomUUID();
 
     }
-
     // Getters + Setters
 
     public UUID getId() {
@@ -139,7 +139,9 @@ public class TableMetadata {
 
     }
 
+    public void addConstraint(Constraint constraint) {
+        this.constraints.add(constraint);
+    }
 
-    
 
 }

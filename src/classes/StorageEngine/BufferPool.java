@@ -32,5 +32,33 @@ public class BufferPool {
 
     }
 
+    //get set
+
+    public int getPoolSize() {
+
+        return poolSize;
+
+    }
+
+    public void setPoolSize(int poolSize) {
+
+        this.poolSize = poolSize;
+
+    }
+
+    public Map<Integer, PageFrame> getCache() {
+
+        return cache;
+
+    }
+
+    public void setCache(Map<Integer, PageFrame> cache) {
+
+        this.cache = cache;
+
+    }
+
+    
+
 }
 

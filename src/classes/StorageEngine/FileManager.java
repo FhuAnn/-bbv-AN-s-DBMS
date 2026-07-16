@@ -10,6 +10,11 @@ public class FileManager {
     private final Map<String, RandomAccessFile> openFiles = new HashMap<>();
     private final String baseDataDir;
 
+    public FileManager() {
+        this.baseDataDir = "data";
+    }
+
+
     public FileManager(String baseDataDir) {
         this.baseDataDir = baseDataDir;
     }

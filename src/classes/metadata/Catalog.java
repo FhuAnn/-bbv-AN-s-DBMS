@@ -44,11 +44,23 @@ public class Catalog {
 
     }
 
- public void setSchemas(Map<UUID, Schema> schemas) {
+    public void setSchemas(Map<UUID, Schema> schemas) {
 
         this.schemas = schemas;
 
     }
+
+    public Catalog() {
+        this.tables = new HashMap<>();
+        this.schemas = new HashMap<>();
+    }
     
+   public void putTable(TableMetadata table) {
+        this.tables.put(table.getId(), table);
+    }
+
+    public void putSchema(Schema schema) {
+        this.schemas.put(schema.getId(), schema);
+    }
 
 }

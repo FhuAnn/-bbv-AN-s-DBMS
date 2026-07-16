@@ -20,7 +20,31 @@ public class Page {
         this.pinCount = 0;
     }
 
+
+    
+    public Page(int pageId, byte[] data) {
+        this.pageId = pageId;
+        this.data = data;
+        this.header = new PageHeader(pageId);
+        this.isDirty = false;
+        this.pinCount = 0;
+    }
+
+     public Page() {
+        this.pageId = -1; // Invalid page ID
+        this.data = new byte[PAGE_SIZE];
+        this.header = new PageHeader(-1);
+        this.isDirty = false;
+        this.pinCount = 0;
+
+
+    }
+
     public int getPageId() {
+        return pageId;
+    }
+
+    public int setPageId(int pageId) {
         return pageId;
     }
 
@@ -55,8 +79,27 @@ public class Page {
     public int getPinCount() {
         return pinCount;
     }
-
+ public void setPinCount(int pinCount) {
+        this.pinCount = pinCount;
+    }
     public int getFreeSpace() {
         return PAGE_SIZE - header.getFreeSpacePointer();
     }
+
+    public void setFreeSpacePointer(int pointer) {
+        header.setFreeSpacePointer(pointer);
+    }
+
+    //getter setter 
+
+    public void setDirty(boolean dirty) {
+        isDirty = dirty;
+    }
+
+    public void setPinCount(Integer pinCount) {
+        this.pinCount = pinCount;
+    }
+
+    
+    
 }

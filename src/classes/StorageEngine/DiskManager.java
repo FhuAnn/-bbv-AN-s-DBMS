@@ -6,7 +6,10 @@ import java.io.RandomAccessFile;
 public class DiskManager {
     private final FileManager fileManager;
 
-    
+    public DiskManager() {
+      this.fileManager = new FileManager();
+    }
+        
     public DiskManager(FileManager fileManager) {
         this.fileManager = fileManager;
     }

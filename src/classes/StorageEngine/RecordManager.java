@@ -1,10 +1,8 @@
 package classes.storageengine;
 
 public class RecordManager {
-    private final StorageEngine storageEngine;
 
-    public RecordManager(StorageEngine storageEngine) {
-        this.storageEngine = storageEngine;
+    public RecordManager() {
     }
 
     public RecordId insert(Record record, String tableFile) {
