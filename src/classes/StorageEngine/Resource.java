@@ -1,0 +1,9 @@
+package classes.storageengine;
+
+public class Resource {
+    public String resourceId;
+
+    public Resource(String resourceId) {
+        this.resourceId = resourceId;
+    }
+}

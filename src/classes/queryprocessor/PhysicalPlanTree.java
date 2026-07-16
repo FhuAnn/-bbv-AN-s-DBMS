@@ -1,13 +1,24 @@
-package classes.queryprocessor;
-
-public class PhysicalPlanTree {
-    PhysicalOperatorNode root;
-
+package classes.queryprocessor;
+
+
+
+public class PhysicalPlanTree {
+
+    PhysicalOperatorNode root;
+
+
+
     public PhysicalPlanTree(PhysicalOperatorNode root) {
         this.root = root;
-    }
-
-    public PhysicalOperatorNode getRoot() {
-        return null;
-    }
-}
+    }
+
+
+
+    public PhysicalOperatorNode getRoot() {
+
+        return this.root;
+
+    }
+
+}
+
