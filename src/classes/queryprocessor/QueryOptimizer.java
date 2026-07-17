@@ -1,71 +1,25 @@
 package classes.queryprocessor;
 
-
-
-import java.util.ArrayList;
-
-import java.util.List;
-
-
-
-import interfaces.ASTNode;
-
-
-
 public class QueryOptimizer {
+    private final Object catalogManager;
+    private final Object costModel;
+    private final Object cardinalityEstimator;
 
-    private final CatalogManager catalogManager;
-
-    private final CostModel costModel;
-
-    private final CardinalityEstimator cardinalityEstimator;
-
-
-
-    public QueryOptimizer(CatalogManager catalogManager, CostModel costModel, CardinalityEstimator cardinalityEstimator) {
+    public QueryOptimizer(Object catalogManager, Object costModel, Object cardinalityEstimator) {
         this.catalogManager = catalogManager;
         this.costModel = costModel;
         this.cardinalityEstimator = cardinalityEstimator;
     }
 
-
-
-    public LogicalOperator generateLogicalPlan(ASTNode ast) {
-
+    public Object generateLogicalPlan(ASTBuildResult ast) {
         return null;
-
     }
 
-
-
-    public LogicalOperator optimizeLogicalPlan(LogicalOperator logicalPlan) {
-
+    public Object optimizeLogicalPlan(Object logicalPlan) {
         return null;
-
     }
 
-
-
-    public PhysicalPlanTree optimizePhysicalPlan(LogicalOperator logicalPlan) {
-
+    public Object optimizePhysicalPlan(Object logicalPlan) {
         return null;
-
     }
-
-
-
-    private PhysicalOperatorNode toPhysical(LogicalOperator logicalPlan) {
-
-        return null;
-
-    }
-
-
-
-    private List<Tuple> toRows(List<LiteralNode> literalNodes) {
-
-        return null;
-
-    }
-
 }

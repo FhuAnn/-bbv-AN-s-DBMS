@@ -1,5 +1,10 @@
 package interfaces;
 
+public interface ASTVisitor<T> {
+    T visit(ASTNode node);
+}
+package interfaces;
+
 import classes.queryprocessor.BinaryExpressionNode;
 import classes.queryprocessor.IdentifierNode;
 import classes.queryprocessor.InsertStatementNode;

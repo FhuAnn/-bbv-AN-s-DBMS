@@ -1,35 +1,23 @@
 package classes.metadata;
 
-
-
-import java.util.*;
-
-
+import java.util.List;
+import java.util.UUID;
 
 public class Schema {
-
     private UUID id;
-
     private String name;
-
     private UUID databaseId;
-
     private UUID ownerId;
-
-    private List<TableMetadata> tables = new ArrayList<>();
+    private List<TableMetadata> tables;
 
     public Schema(String name, UUID databaseId, UUID ownerId) {
-        this.id = UUID.randomUUID();
         this.name = name;
         this.databaseId = databaseId;
         this.ownerId = ownerId;
     }
 
     public Schema() {
-        this.id = UUID.randomUUID();
     }
-
-    // Getters + Setters
 
     public UUID getId() {
         return id;
@@ -66,8 +54,8 @@ public class Schema {
     public List<TableMetadata> getTables() {
         return tables;
     }
+
     public void setTables(List<TableMetadata> tables) {
         this.tables = tables;
     }
-
 }

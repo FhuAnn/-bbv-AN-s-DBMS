@@ -5,7 +5,6 @@ public class TableStats {
     private long pageCount;
     private long deadTuples;
 
-    // Getters and Setters
     public long getRowCount() {
         return rowCount;
     }

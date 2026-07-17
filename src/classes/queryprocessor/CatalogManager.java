@@ -1,25 +1,18 @@
-package classes.queryprocessor;
-
-import java.util.HashMap;
-import java.util.Map;
-
-public class CatalogManager {
-    private final Map<String, SchemaInfo> schemas = new HashMap<>();
-    private final Map<String, TableStatistics> statistics = new HashMap<>();
-    private final BufferPoolManager bufferPoolManager = new BufferPoolManager();
-
-    public void registerTable(String tableName, SchemaInfo schemaInfo) {
-    }
-
-    public TableStatistics getTableStatistics(String tableName) {
-        return null;
-    }
-
-    public SchemaInfo getTableSchema(String tableName) {
-        return null;
-    }
-
-    public BufferPoolManager getBufferPoolManager() {
-        return null;
-    }
-}
+package classes.queryprocessor;
+
+public class CatalogManager {
+    public void registerTable(String tableName) {
+    }
+
+    public Object getTableSchema(String tableName) {
+        return null;
+    }
+
+    public Object getTableStatistics(String tableName) {
+        return null;
+    }
+
+    public Object getBufferPoolManager() {
+        return null;
+    }
+}

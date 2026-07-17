@@ -1,7 +1,7 @@
 package classes.queryprocessor;
 
 public class SyntaxErrorException extends RuntimeException {
-    SyntaxErrorException(String message) {
+    public SyntaxErrorException(String message) {
         super(message);
     }
 }

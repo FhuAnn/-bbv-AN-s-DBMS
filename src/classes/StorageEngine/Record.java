@@ -3,12 +3,11 @@ package classes.storageengine;
 public class Record {
     private RecordId recordId;
     private byte[] data;
-    private boolean isDeleted; // For soft delete
+    private boolean isDeleted;
 
     public Record(RecordId recordId, byte[] data) {
         this.recordId = recordId;
         this.data = data;
-        this.isDeleted = false;
     }
 
     public RecordId getRecordId() {
@@ -28,10 +27,9 @@ public class Record {
     }
 
     public void markDeleted() {
-        this.isDeleted = true;
     }
 
     public int getSize() {
-        return data.length;
+        return 0;
     }
 }

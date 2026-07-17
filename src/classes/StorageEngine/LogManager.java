@@ -1,7 +1,7 @@
 package classes.storageengine;
 
 public class LogManager {
-    public void writeLog(LogRecord record) {
+    public void writeLog(Object record) {
     }
 
     public void flush() {

@@ -1,6 +1,5 @@
-package classes.storageengine;
+package classes.tx;
 
-import classes.tx.Transaction;
 import enums.LockMode;
 
 public class Lock {

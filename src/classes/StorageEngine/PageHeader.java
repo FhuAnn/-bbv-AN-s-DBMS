@@ -1,19 +1,13 @@
 package classes.storageengine;
 
-/**
- * Header metadata for each database page
- */
 public class PageHeader {
-    private final int pageId;
-    private int freeSpacePointer;   // Points to start of free space
-    private int slotCount;          // Number of record slots used
-    private int checksum;           // For data integrity
+    private int pageId;
+    private int freeSpacePointer;
+    private int slotCount;
+    private int checksum;
 
     public PageHeader(int pageId) {
         this.pageId = pageId;
-        this.freeSpacePointer = 0;
-        this.slotCount = 0;
-        this.checksum = 0;
     }
 
     public int getPageId() {
@@ -33,7 +27,6 @@ public class PageHeader {
     }
 
     public void incrementSlotCount() {
-        this.slotCount++;
     }
 
     public int getChecksum() {
@@ -41,7 +34,5 @@ public class PageHeader {
     }
 
     public void updateChecksum() {
-        // Simple checksum calculation in real impl
-        this.checksum = 0; // placeholder
     }
 }

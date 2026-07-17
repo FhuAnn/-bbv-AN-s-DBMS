@@ -1,7 +1,5 @@
 package classes.tx;
 
-import classes.storageengine.Lock;
-import classes.storageengine.Resource;
 import enums.LockMode;
 
 public class LockManager {

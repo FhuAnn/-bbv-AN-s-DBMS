@@ -1,26 +1,21 @@
 package classes.metadata;
 
-import classes.storageengine.BTreeStructure;
-import classes.storageengine.Key;
-import classes.storageengine.Pointer;
-import enums.IndexType;
-
 import java.util.UUID;
+
+import enums.IndexType;
 
 public class Index {
     public UUID id;
     public String name;
     public IndexType type;
-    public BTreeStructure btree;
 
     public Index() {
-        this.id = UUID.randomUUID();
     }
 
-    public void insert(Key key, Pointer pointer) {
+    public void insert(Object key, Object pointer) {
     }
 
-    public Pointer search(Key key) {
+    public Object search(Object key) {
         return null;
     }
 }

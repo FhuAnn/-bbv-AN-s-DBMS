@@ -1,66 +1,40 @@
 package classes.metadata;
 
-
-
-import java.util.*;
-
-
+import java.util.Map;
 
 public class Catalog {
-
-    private Map<UUID, TableMetadata> tables = new HashMap<>();
-
-    private Map<UUID, Schema> schemas = new HashMap<>();
-
-
+    private Map tables;
+    private Map schemas;
 
     public TableMetadata getTable(String name) {
-
         return null;
-
     }
-
-
 
     public void registerTable(TableMetadata meta) {
-
     }
 
-    public Map<UUID, TableMetadata> getTables() {
-
+    public Map getTables() {
         return tables;
-
     }
 
-      public void setTables( Map<UUID, TableMetadata> tables) {
-
+    public void setTables(Map tables) {
         this.tables = tables;
-
-
     }
-    public Map<UUID, Schema> getSchemas() {
 
+    public Map getSchemas() {
         return schemas;
-
     }
 
-    public void setSchemas(Map<UUID, Schema> schemas) {
-
+    public void setSchemas(Map schemas) {
         this.schemas = schemas;
-
     }
 
     public Catalog() {
-        this.tables = new HashMap<>();
-        this.schemas = new HashMap<>();
     }
-    
-   public void putTable(TableMetadata table) {
-        this.tables.put(table.getId(), table);
+
+    public void putTable(TableMetadata table) {
     }
 
     public void putSchema(Schema schema) {
-        this.schemas.put(schema.getId(), schema);
     }
-
 }
