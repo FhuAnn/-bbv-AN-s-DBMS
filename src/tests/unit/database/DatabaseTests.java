@@ -1,82 +1,48 @@
-import org.junit.jupiter.api.DisplayName;
+package unit.database;
 
-@DisplayName("Database Unit Tests")
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("Database Tests")
 class DatabaseTests {
 
-    // ============================
-    // Dependencies
-    // ============================
-
-    private Database database;
-
-    @Mock
-    private Catalog catalog;
-
-    @Mock
-    private StorageEngine storageEngine;
-
-    @Mock
-    private TransactionManager transactionManager;
-
-    @Mock
-    private SecurityManager securityManager;
-
-    // ============================
-    // Setup
-    // ============================
-
-    @BeforeEach
-    void setUp();
-
-    @AfterEach
-    void tearDown();
-
-    // ============================
-    // Constructor Tests
-    // ============================
-
     @Test
-    void shouldCreateDatabase();
-
-    @Test
-    void shouldGenerateDatabaseId();
-
-    @Test
-    void shouldInitializeCatalog();
-
-    ...
-
-    // ============================
-    // Execute SQL Tests
-    // ============================
-
-    @Nested
-    class ExecuteSQLTests{
-
-        @Test
-        void shouldExecuteSelect();
-
-        @Test
-        void shouldExecuteInsert();
-
-        @Test
-        void shouldRollbackOnFailure();
-
+    void Open() {
     }
 
-    // ============================
-    // Metadata Tests
-    // ============================
-
-    @Nested
-    class MetadataTests{
-
-        @Test
-        void shouldReturnCatalog();
-
-        @Test
-        void shouldReturnStorageEngine();
-
+    @Test
+    void Close() {
     }
 
+    @Test
+    void SetReadOnly() {
+    }
+
+    @Test
+    void ChangeRecoveryModel() {
+    }
+
+    @Test
+    void AddSchema() {
+    }
+
+    @Test
+    void RemoveSchema() {
+    }
+
+    @Test
+    void GrantAccess() {
+    }
+
+    @Test
+    void RevokeAccess() {
+    }
+
+    @Test
+    void CalculateDatabaseSize() {
+    }
+
+    @Test
+    void UpdateStatistics() {
+    }
 }

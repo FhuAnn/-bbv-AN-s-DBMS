@@ -1,42 +1,28 @@
 ```mermaid
----
-config:
-  layout: elk
----
-classDiagram
-    direction LR
+graph TD
 
-    class DBMS {
-      -StorageManager storageManager
-      -QueryProcessor queryProcessor
-      -SecurityManager securityManager
-      -TransactionManager transactionManager
-      -ConnectionNetworkManager connectionNetworkManager
-      -BackupRestoreLoging backupRestoreLoging
-      -AdminstrationMonitoring adminstrationMonitoring
-      -MedataManager medataManager
-      +executeQuery(query)
-      +connect()
-    }
+    DBMS["An's DBMS"]
 
-    namespace Subsystems {
-        class StorageManager
-        class SecurityManager
-        class QueryProcessor
-        class TransactionManager
-        class ConnectionNetworkManager
-        class BackupRestoreLoging
-        class AdminstrationMonitoring
-        class MedataManager
-    }
+   
 
-    %% Các đường kết nối từ DBMS tới các Subsystems
-    DBMS o--> StorageManager
-    DBMS o--> SecurityManager
-    DBMS o--> QueryProcessor
-    DBMS o--> TransactionManager
-    DBMS o--> ConnectionNetworkManager
-    DBMS o--> BackupRestoreLoging
-    DBMS o--> AdminstrationMonitoring
-    DBMS o--> MedataManager
+    Storage --> BufferPool["Buffer Pool"]
+    Storage --> PageManager["Page Manager"]
+    Storage --> FileManager["File Manager"]
+    Storage --> RecordManager["Record Manager"]
+    Storage --> IndexManager["Index Manager"]
+
+  
+
+    Transaction --> TxManager["Transaction Manager"]
+    Transaction --> LockManager["Lock Manager"]
+    Transaction --> MVCC["MVCC"]
+    Transaction --> Deadlock["Deadlock Detector"]
+
+
+     DBMS --> Storage["Storage Engine"]
+    DBMS --> Query["Query Processor"]
+    DBMS --> Transaction["Transaction Management"]
+    DBMS --> Metadata["Catalog & Metadata"]
+    DBMS --> Security["User Access & Security"]
+    DBMS --> Recovery["Recovery & Logging"]
 ```
