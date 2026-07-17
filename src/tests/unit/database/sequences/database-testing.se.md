@@ -1,319 +1,641 @@
-# Database Testing - Main Functional Sequences
 
 ---
 
-## 1. Open Database
+## 1. Constructor_ShouldCreateDatabase
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Database
-participant StorageEngine
-participant Catalog
+    autonumber
 
-Test->>Database: open()
-Database->>StorageEngine: initialize()
-StorageEngine-->>Database: ready
-Database->>Catalog: loadMetadata()
-Catalog-->>Database: loaded
-Database-->>Test: opened
+    participant Test as DatabaseTests
+    participant Database
+
+    Test->>Database: new Database(name, mockedDependencies)
+    Database-->>Test: database
+
+    Test->>Database: getName()
+    Database-->>Test: name
+
+    Test->>Database: getId()
+    Database-->>Test: databaseId
+
+    Test->>Test: assertEquals(expectedName, name)
+    Test->>Test: assertNotNull(databaseId)
 ```
 
 ---
 
-## 2. Close Database
+## 2. Constructor_ShouldInitializeDependencies
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Database
-participant StorageEngine
+    autonumber
 
-Test->>Database: close()
-Database->>StorageEngine: flushAll()
-StorageEngine-->>Database: flushed
-Database->>StorageEngine: shutdown()
-StorageEngine-->>Database: closed
-Database-->>Test: closed
+    participant Test as DatabaseTests
+    participant Database
+
+    Test->>Database: new Database(name, catalog, storage, txManager, security)
+    Database-->>Test: database
+
+    Test->>Database: getCatalog()
+    Database-->>Test: catalog
+
+    Test->>Database: getStorageEngine()
+    Database-->>Test: storage
+
+    Test->>Database: getTransactionManager()
+    Database-->>Test: txManager
+
+    Test->>Database: getSecurityManager()
+    Database-->>Test: security
+
+    Test->>Test: assertSame(mockedDependencies)
 ```
 
 ---
 
-## 3. Set Read Only
+## 3. Constructor_ShouldInitializeSchemaCollection
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Database
+    autonumber
 
-Test->>Database: setReadOnly(true)
-Database->>Database: updateMode()
-Database-->>Test: success
+    participant Test as DatabaseTests
+    participant Database
+
+    Test->>Database: new Database(name, mockedDependencies)
+    Database-->>Test: database
+
+    Test->>Database: getSchemas()
+    Database-->>Test: emptySchemaCollection
+
+    Test->>Test: assertNotNull(collection)
+    Test->>Test: assertTrue(collection.isEmpty())
 ```
 
 ---
 
-## 4. Add Schema
+## 4. Open_ShouldLoadDatabaseSuccessfully
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Database
-participant Catalog
-participant Schema
+    autonumber
 
-Test->>Database: addSchema(schema)
-Database->>Catalog: registerSchema(schema)
-Catalog-->>Database: registered
-Database-->>Test: success
+    participant Test as DatabaseTests
+    participant Database
+    participant Storage as MockStorageEngine
+
+    Test->>Storage: stub openDatabase() returns success
+    Test->>Database: open()
+
+    Database->>Storage: openDatabase(databaseId)
+    Storage-->>Database: success
+    Database-->>Test: success
+
+    Test->>Database: getState()
+    Database-->>Test: OPEN
+
+    Test->>Test: assertEquals(OPEN, state)
+    Test->>Storage: verify openDatabase() called once
 ```
 
 ---
 
-## 5. Remove Schema
+## 5. Close_ShouldFlushResourcesSuccessfully
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Database
-participant Catalog
+    autonumber
 
-Test->>Database: removeSchema(name)
-Database->>Catalog: removeSchema(name)
-Catalog-->>Database: removed
-Database-->>Test: success
+    participant Test as DatabaseTests
+    participant Database
+    participant Storage as MockStorageEngine
+
+    Test->>Storage: stub flush() returns success
+    Test->>Storage: stub closeDatabase() returns success
+    Test->>Database: close()
+
+    Database->>Storage: flush()
+    Storage-->>Database: success
+
+    Database->>Storage: closeDatabase(databaseId)
+    Storage-->>Database: success
+
+    Database-->>Test: success
+
+    Test->>Database: getState()
+    Database-->>Test: CLOSED
+
+    Test->>Test: assertEquals(CLOSED, state)
 ```
 
 ---
 
-## 6. Grant Access
+## 6. SetReadOnly_ShouldChangeDatabaseMode
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Database
-participant SecurityManager
+    autonumber
 
-Test->>Database: grantAccess(user, permission)
-Database->>SecurityManager: authorize(user, permission)
-SecurityManager-->>Database: granted
-Database-->>Test: success
+    participant Test as DatabaseTests
+    participant Database
+    participant Security as MockSecurityManager
+
+    Test->>Security: stub authorize() returns true
+    Test->>Database: setReadOnly(true, session)
+
+    Database->>Security: authorize(session, ALTER_DATABASE)
+    Security-->>Database: true
+
+    Database-->>Test: success
+
+    Test->>Database: isReadOnly()
+    Database-->>Test: true
+
+    Test->>Test: assertTrue(readOnly)
 ```
 
 ---
 
-## 7. Revoke Access
+## 7. SetReadOnly_ShouldRejectUnauthorizedUser
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Database
-participant SecurityManager
+    autonumber
 
-Test->>Database: revokeAccess(user, permission)
-Database->>SecurityManager: revokePermission(user, permission)
-SecurityManager-->>Database: revoked
-Database-->>Test: success
+    participant Test as DatabaseTests
+    participant Database
+    participant Security as MockSecurityManager
+
+    Test->>Security: stub authorize() returns false
+    Test->>Database: setReadOnly(true, session)
+
+    Database->>Security: authorize(session, ALTER_DATABASE)
+    Security-->>Database: false
+
+    Database--xTest: AuthorizationException
+
+    Test->>Test: assertThrows(AuthorizationException)
 ```
 
 ---
 
-## 8. Update Statistics
+## 8. AddSchema_ShouldRegisterSchema
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Database
-participant Catalog
+    autonumber
 
-Test->>Database: updateStatistics()
-Database->>Catalog: refreshStatistics()
-Catalog-->>Database: updated
-Database-->>Test: success
+    participant Test as DatabaseTests
+    participant Database
+    participant Catalog as MockCatalog
+
+    Test->>Catalog: stub schemaExists("sales") returns false
+    Test->>Database: addSchema(schema)
+
+    Database->>Catalog: schemaExists("sales")
+    Catalog-->>Database: false
+
+    Database->>Catalog: registerSchema(schema)
+    Catalog-->>Database: success
+
+    Database-->>Test: success
+
+    Test->>Catalog: verify registerSchema(schema) called once
+    Test->>Test: assert schema added
 ```
 
 ---
 
-## 9. Execute SQL
+## 9. AddSchema_ShouldRejectDuplicateSchema
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Database
-participant QueryProcessor
+    autonumber
 
-Test->>Database: executeSQL(sql)
-Database->>QueryProcessor: process(sql)
-QueryProcessor-->>Database: QueryResult
-Database-->>Test: QueryResult
+    participant Test as DatabaseTests
+    participant Database
+    participant Catalog as MockCatalog
+
+    Test->>Catalog: stub schemaExists("sales") returns true
+    Test->>Database: addSchema(schema)
+
+    Database->>Catalog: schemaExists("sales")
+    Catalog-->>Database: true
+
+    Database--xTest: DuplicateSchemaException
+
+    Test->>Test: assertThrows(DuplicateSchemaException)
+    Test->>Catalog: verify registerSchema() never called
 ```
 
 ---
 
-## 10. Get Catalog
+## 10. RemoveSchema_ShouldRemoveSchemaMetadata
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Database
-participant Catalog
+    autonumber
 
-Test->>Database: getCatalog()
-Database->>Catalog: returnCatalog()
-Catalog-->>Database: catalog
-Database-->>Test: catalog
+    participant Test as DatabaseTests
+    participant Database
+    participant Catalog as MockCatalog
+
+    Test->>Catalog: stub getSchema("sales") returns schema
+    Test->>Database: removeSchema("sales")
+
+    Database->>Catalog: getSchema("sales")
+    Catalog-->>Database: schema
+
+    Database->>Catalog: unregisterSchema(schemaId)
+    Catalog-->>Database: success
+
+    Database-->>Test: success
+
+    Test->>Catalog: verify unregisterSchema(schemaId) called once
 ```
 
 ---
 
-## 11. Get Storage
+## 11. RemoveSchema_ShouldThrowWhenSchemaNotFound
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Database
-participant StorageEngine
+    autonumber
 
-Test->>Database: getStorage()
-Database->>StorageEngine: returnStorage()
-StorageEngine-->>Database: storage
-Database-->>Test: storage
+    participant Test as DatabaseTests
+    participant Database
+    participant Catalog as MockCatalog
+
+    Test->>Catalog: stub getSchema("unknown") returns null
+    Test->>Database: removeSchema("unknown")
+
+    Database->>Catalog: getSchema("unknown")
+    Catalog-->>Database: null
+
+    Database--xTest: SchemaNotFoundException
+
+    Test->>Test: assertThrows(SchemaNotFoundException)
+    Test->>Catalog: verify unregisterSchema() never called
 ```
 
 ---
 
-## 12. Get Transaction Manager
+## 12. GrantAccess_ShouldAssignPermission
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Database
-participant TransactionManager
+    autonumber
 
-Test->>Database: getTransactionManager()
-Database->>TransactionManager: returnManager()
-TransactionManager-->>Database: manager
-Database-->>Test: manager
+    participant Test as DatabaseTests
+    participant Database
+    participant Security as MockSecurityManager
+
+    Test->>Security: stub userExists(userId) returns true
+    Test->>Database: grantAccess(userId, permission)
+
+    Database->>Security: userExists(userId)
+    Security-->>Database: true
+
+    Database->>Security: grantPermission(userId, databaseId, permission)
+    Security-->>Database: success
+
+    Database-->>Test: success
+
+    Test->>Security: verify grantPermission() called once
 ```
 
 ---
 
-## 13. Get Security Manager
+## 13. GrantAccess_ShouldThrowWhenUserInvalid
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Database
-participant SecurityManager
+    autonumber
 
-Test->>Database: getSecurityManager()
-Database->>SecurityManager: returnManager()
-SecurityManager-->>Database: manager
-Database-->>Test: manager
+    participant Test as DatabaseTests
+    participant Database
+    participant Security as MockSecurityManager
+
+    Test->>Security: stub userExists(userId) returns false
+    Test->>Database: grantAccess(userId, permission)
+
+    Database->>Security: userExists(userId)
+    Security-->>Database: false
+
+    Database--xTest: UserNotFoundException
+
+    Test->>Test: assertThrows(UserNotFoundException)
+    Test->>Security: verify grantPermission() never called
 ```
 
 ---
 
-## 14. Backup Database
+## 14. RevokeAccess_ShouldRemovePermission
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Database
-participant BackupManager
+    autonumber
 
-Test->>Database: backup()
-Database->>BackupManager: fullBackup()
-BackupManager-->>Database: backupId
-Database-->>Test: backupId
+    participant Test as DatabaseTests
+    participant Database
+    participant Security as MockSecurityManager
+
+    Test->>Security: stub hasPermission() returns true
+    Test->>Database: revokeAccess(userId, permission)
+
+    Database->>Security: hasPermission(userId, databaseId, permission)
+    Security-->>Database: true
+
+    Database->>Security: revokePermission(userId, databaseId, permission)
+    Security-->>Database: success
+
+    Database-->>Test: success
+
+    Test->>Security: verify revokePermission() called once
 ```
 
 ---
 
-## 15. Restore Database
+## 15. RevokeAccess_ShouldThrowWhenPermissionMissing
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Database
-participant BackupManager
+    autonumber
 
-Test->>Database: restore(backupId)
-Database->>BackupManager: restoreBackup(backupId)
-BackupManager-->>Database: restored
-Database-->>Test: success
+    participant Test as DatabaseTests
+    participant Database
+    participant Security as MockSecurityManager
+
+    Test->>Security: stub hasPermission() returns false
+    Test->>Database: revokeAccess(userId, permission)
+
+    Database->>Security: hasPermission(userId, databaseId, permission)
+    Security-->>Database: false
+
+    Database--xTest: PermissionNotFoundException
+
+    Test->>Test: assertThrows(PermissionNotFoundException)
+    Test->>Security: verify revokePermission() never called
 ```
 
 ---
 
-## 16. Clone Database
+## 16. UpdateStatistics_ShouldRefreshDatabaseStatistics
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Database
-participant Catalog
+    autonumber
 
-Test->>Database: cloneDatabase(newName)
-Database->>Catalog: copyDatabaseState()
-Catalog-->>Database: cloned
-Database-->>Test: success
+    participant Test as DatabaseTests
+    participant Database
+    participant Catalog as MockCatalog
+
+    Test->>Catalog: stub calculateStatistics() returns statistics
+    Test->>Database: updateStatistics()
+
+    Database->>Catalog: calculateStatistics(databaseId)
+    Catalog-->>Database: statistics
+
+    Database->>Catalog: updateDatabaseStatistics(databaseId, statistics)
+    Catalog-->>Database: success
+
+    Database-->>Test: statistics
+
+    Test->>Catalog: verify updateDatabaseStatistics() called once
 ```
 
 ---
 
-## 17. Export State
+## 17. CalculateDatabaseSize_ShouldReturnCorrectSize
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Database
+    autonumber
 
-Test->>Database: exportState()
-Database->>Database: snapshotState()
-Database-->>Test: snapshot
+    participant Test as DatabaseTests
+    participant Database
+    participant Storage as MockStorageEngine
+
+    Test->>Storage: stub calculateDatabaseSize() returns 1024
+    Test->>Database: calculateDatabaseSize()
+
+    Database->>Storage: calculateDatabaseSize(databaseId)
+    Storage-->>Database: 1024
+
+    Database-->>Test: 1024
+
+    Test->>Test: assertEquals(1024, result)
 ```
 
 ---
 
-## 18. Health Check
+## 18. ChangeRecoveryModel_ShouldUpdateConfiguration
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Database
-participant StorageEngine
+    autonumber
 
-Test->>Database: healthCheck()
-Database->>StorageEngine: ping()
-StorageEngine-->>Database: healthy
-Database-->>Test: healthy
+    participant Test as DatabaseTests
+    participant Database
+    participant Recovery as MockRecoveryManager
+
+    Test->>Recovery: stub supports(FULL) returns true
+    Test->>Database: changeRecoveryModel(FULL)
+
+    Database->>Recovery: supports(FULL)
+    Recovery-->>Database: true
+
+    Database->>Recovery: updateModel(databaseId, FULL)
+    Recovery-->>Database: success
+
+    Database-->>Test: success
+
+    Test->>Database: getRecoveryModel()
+    Database-->>Test: FULL
+
+    Test->>Test: assertEquals(FULL, model)
 ```
 
 ---
 
-## 19. Validate Name
+## 19. Open_ShouldThrowWhenStorageUnavailable
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Database
+    autonumber
 
-Test->>Database: validateName(name)
-Database->>Database: inspectName()
-Database-->>Test: valid
+    participant Test as DatabaseTests
+    participant Database
+    participant Storage as MockStorageEngine
+
+    Test->>Storage: stub openDatabase() throws StorageException
+    Test->>Database: open()
+
+    Database->>Storage: openDatabase(databaseId)
+    Storage--xDatabase: StorageException
+
+    Database--xTest: DatabaseOpenException
+
+    Test->>Test: assertThrows(DatabaseOpenException)
+    Test->>Database: getState()
+    Database-->>Test: ERROR
 ```
 
 ---
 
-## 20. Report Status
+## 20. Close_ShouldThrowWhenFlushFails
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Database
+    autonumber
 
-Test->>Database: reportStatus()
-Database->>Database: summarizeRuntimeState()
-Database-->>Test: status
+    participant Test as DatabaseTests
+    participant Database
+    participant Storage as MockStorageEngine
+
+    Test->>Storage: stub flush() throws FlushException
+    Test->>Database: close()
+
+    Database->>Storage: flush()
+    Storage--xDatabase: FlushException
+
+    Database--xTest: DatabaseCloseException
+
+    Test->>Test: assertThrows(DatabaseCloseException)
+    Test->>Storage: verify closeDatabase() never called
+```
+
+---
+
+## 21. ValidateRecoveryModel_ShouldAcceptSupportedMode
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    participant Test as DatabaseTests
+    participant Database
+    participant Recovery as MockRecoveryManager
+
+    Test->>Recovery: stub supports(FULL) returns true
+    Test->>Database: validateRecoveryModel(FULL)
+
+    Database->>Recovery: supports(FULL)
+    Recovery-->>Database: true
+
+    Database-->>Test: true
+
+    Test->>Test: assertTrue(result)
+```
+
+---
+
+## 22. ValidateDatabaseMetadata_ShouldRemainConsistent
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    participant Test as DatabaseTests
+    participant Database
+    participant Catalog as MockCatalog
+
+    Test->>Catalog: stub validateMetadata() returns true
+    Test->>Database: validateMetadata()
+
+    Database->>Catalog: validateMetadata(databaseId)
+    Catalog-->>Database: true
+
+    Database-->>Test: true
+
+    Test->>Test: assertTrue(result)
+```
+
+---
+
+## 23. ConcurrentOpen_ShouldMaintainDatabaseState
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    participant Test as DatabaseTests
+    participant Database
+    participant Storage as MockStorageEngine
+
+    Test->>Storage: stub openDatabase() returns success
+
+    par Call 1
+        Test->>Database: open()
+        Database->>Storage: openDatabase(databaseId)
+        Storage-->>Database: success
+        Database-->>Test: success
+    and Call 2
+        Test->>Database: open()
+        Database-->>Test: alreadyOpen
+    end
+
+    Test->>Storage: verify openDatabase() called once
+    Test->>Database: getState()
+    Database-->>Test: OPEN
+```
+
+---
+
+## 24. ConcurrentSchemaCreation_ShouldPreventConflict
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    participant Test as DatabaseTests
+    participant Database
+    participant Catalog as MockCatalog
+
+    Test->>Catalog: first schemaExists() returns false
+    Test->>Catalog: second schemaExists() returns true
+
+    par Call 1
+        Test->>Database: addSchema(schema)
+        Database->>Catalog: schemaExists("sales")
+        Catalog-->>Database: false
+        Database->>Catalog: registerSchema(schema)
+        Catalog-->>Database: success
+        Database-->>Test: success
+    and Call 2
+        Test->>Database: addSchema(schema)
+        Database->>Catalog: schemaExists("sales")
+        Catalog-->>Database: true
+        Database--xTest: DuplicateSchemaException
+    end
+
+    Test->>Catalog: verify registerSchema() called once
+```
+
+---
+
+## 25. ConcurrentPermissionUpdate_ShouldBeThreadSafe
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    participant Test as DatabaseTests
+    participant Database
+    participant Security as MockSecurityManager
+
+    par Grant call
+        Test->>Database: grantAccess(userId, permission)
+        Database->>Security: grantPermission(userId, databaseId, permission)
+        Security-->>Database: success
+        Database-->>Test: success
+    and Revoke call
+        Test->>Database: revokeAccess(userId, permission)
+        Database->>Security: revokePermission(userId, databaseId, permission)
+        Security-->>Database: success
+        Database-->>Test: success
+    end
+
+    Test->>Test: assert no inconsistent state
 ```
