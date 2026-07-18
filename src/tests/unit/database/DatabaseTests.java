@@ -1,7 +1,12 @@
+import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 
-import static org.mockito.Mockito.mock;
+import classes.database.Database;
+import classes.metadata.Catalog;
+import classes.storageengine.StorageEngine;
+import classes.tx.TransactionManager;
+
 
 @DisplayName("Database Tests")
 class DatabaseTests {
@@ -13,7 +18,6 @@ class DatabaseTests {
     private StorageEngine mockStorageEngine;
     private TransactionManager mockTransactionManager;
     private SecurityManager mockSecurityManager;
-
     private Database database;
 
     @BeforeEach
@@ -22,15 +26,13 @@ class DatabaseTests {
         mockStorageEngine = mock(StorageEngine.class);
         mockTransactionManager = mock(TransactionManager.class);
         mockSecurityManager = mock(SecurityManager.class);
-        mockRecoveryManager = mock(RecoveryManager.class);
 
         database = new Database(
-                DATABASE_NAME,
+                DATABASE_NAME,  
                 mockCatalog,
                 mockStorageEngine,
                 mockTransactionManager,
                 mockSecurityManager,
-                mockRecoveryManager
         );
     }
 
@@ -47,7 +49,6 @@ class DatabaseTests {
                 mockStorageEngine,
                 mockTransactionManager,
                 mockSecurityManager,
-                mockRecoveryManager
         );
 
         assertEquals(DATABASE_NAME, createdDatabase.getName());
@@ -443,7 +444,7 @@ class DatabaseTests {
         );
 
         assertEquals(DatabaseState.ERROR, database.getState());
-    }
+    } 
 
     @Test
     @DisplayName("Should throw when storage flush fails")
