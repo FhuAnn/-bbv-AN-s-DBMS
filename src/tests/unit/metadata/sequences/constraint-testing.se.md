@@ -1,463 +1,287 @@
-# Constraint Testing - Main Functional Sequences
+# Constraint Testing — Important Unit Test Sequence Diagrams
 
----
-
-## 1. Create Constraint
+## 1. Constructor_ShouldCreateConstraint
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Constraint
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+    participant UUID as UUID
 
-Test->>Constraint: new Constraint()
-
-Constraint->>Constraint: initialize()
-
-Constraint-->>Test: Constraint
+    Test->>Constraint: new Constraint("pk_users", PRIMARY_KEY, ["id"])
+    Constraint->>Constraint: validateName()
+    Constraint->>Constraint: validateType()
+    Constraint->>Constraint: validateColumns()
+    Constraint->>UUID: randomUUID()
+    UUID-->>Constraint: constraintId
+    Constraint->>Constraint: enabled = true
+    Constraint-->>Test: constraint
 ```
 
----
-
-## 2. Validate Primary Key
+## 2. Rename_ShouldChangeConstraintName
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Table
-participant PrimaryKeyConstraint
-participant Index
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
 
-Test->>Table: insert(row)
-
-Table->>PrimaryKeyConstraint: validate(row)
-
-PrimaryKeyConstraint->>Index: exists(key)
-
-Index-->>PrimaryKeyConstraint: false
-
-PrimaryKeyConstraint-->>Table: valid
-
-Table-->>Test: inserted
+    Test->>Constraint: rename("pk_customer")
+    Constraint->>Constraint: validateName("pk_customer")
+    Constraint->>Constraint: name = "pk_customer"
+    Constraint-->>Test: void
 ```
 
----
-
-## 3. Validate Unique Constraint
+## 3. Disable_ShouldDisableConstraint
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Table
-participant UniqueConstraint
-participant Index
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
 
-Test->>Table: insert(row)
+    Test->>Constraint: disable()
+    Constraint->>Constraint: enabled = false
+    Constraint-->>Test: void
 
-Table->>UniqueConstraint: validate(row)
-
-UniqueConstraint->>Index: exists(value)
-
-Index-->>UniqueConstraint: false
-
-UniqueConstraint-->>Table: valid
-
-Table-->>Test: inserted
+    Test->>Constraint: isEnabled()
+    Constraint-->>Test: false
 ```
 
----
-
-## 4. Validate Foreign Key
+## 4. Validate_ShouldSkipDisabledConstraint
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant ChildTable
-participant ForeignKeyConstraint
-participant ParentTable
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+    participant Row as Row
 
-Test->>ChildTable: insert(row)
+    Test->>Constraint: disable()
+    Test->>Constraint: validate(Row)
+    Constraint->>Constraint: check enabled
 
-ChildTable->>ForeignKeyConstraint: validate(row)
-
-ForeignKeyConstraint->>ParentTable: exists(parentKey)
-
-ParentTable-->>ForeignKeyConstraint: true
-
-ForeignKeyConstraint-->>ChildTable: valid
-
-ChildTable-->>Test: inserted
+    alt Constraint is disabled
+        Constraint-->>Test: true
+    end
 ```
 
----
-
-## 5. Validate Check Constraint
+## 5. PrimaryKey_ShouldAcceptUniqueNonNullValue
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Table
-participant CheckConstraint
-participant ExpressionEngine
+    autonumber
+    actor Test as ConstraintTests
+    participant PK as PrimaryKeyConstraint
+    participant Row as Row
+    participant Existing as Existing Keys
 
-Test->>Table: insert(row)
-
-Table->>CheckConstraint: validate(row)
-
-CheckConstraint->>ExpressionEngine: evaluate()
-
-ExpressionEngine-->>CheckConstraint: true
-
-CheckConstraint-->>Table: valid
-
-Table-->>Test: inserted
+    Test->>PK: validatePrimaryKey(Row, Existing)
+    PK->>Row: getValue("id")
+    Row-->>PK: 1
+    PK->>PK: verify value is not null
+    PK->>Existing: contains([1])
+    Existing-->>PK: false
+    PK-->>Test: true
 ```
 
----
-
-## 6. Cascade Delete
+## 6. PrimaryKey_ShouldRejectNullValue
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant ParentTable
-participant ForeignKeyConstraint
-participant ChildTable
+    autonumber
+    actor Test as ConstraintTests
+    participant PK as PrimaryKeyConstraint
+    participant Row as Row
 
-Test->>ParentTable: delete(parent)
+    Test->>PK: validatePrimaryKey(Row, Existing)
+    PK->>Row: getValue("id")
+    Row-->>PK: null
 
-ParentTable->>ForeignKeyConstraint: onDelete()
-
-ForeignKeyConstraint->>ChildTable: deleteChildren()
-
-ChildTable-->>ForeignKeyConstraint: completed
-
-ForeignKeyConstraint-->>ParentTable: completed
-
-ParentTable-->>Test: deleted
+    alt Primary key value is null
+        PK-->>Test: false
+    end
 ```
 
----
-
-## 7. Cascade Update
+## 7. PrimaryKey_ShouldRejectDuplicateValue
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant ParentTable
-participant ForeignKeyConstraint
-participant ChildTable
+    autonumber
+    actor Test as ConstraintTests
+    participant PK as PrimaryKeyConstraint
+    participant Row as Row
+    participant Existing as Existing Keys
 
-Test->>ParentTable: update(primaryKey)
-
-ParentTable->>ForeignKeyConstraint: onUpdate()
-
-ForeignKeyConstraint->>ChildTable: updateForeignKeys()
-
-ChildTable-->>ForeignKeyConstraint: updated
-
-ForeignKeyConstraint-->>ParentTable: completed
-
-ParentTable-->>Test: updated
+    Test->>PK: validatePrimaryKey(Row, Existing)
+    PK->>Row: getValue("id")
+    Row-->>PK: 1
+    PK->>Existing: contains([1])
+    Existing-->>PK: true
+    PK-->>Test: false
 ```
 
----
-
-## 8. Restrict Delete
+## 8. Unique_ShouldAcceptUniqueValue
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant ParentTable
-participant ForeignKeyConstraint
-participant ChildTable
+    autonumber
+    actor Test as ConstraintTests
+    participant Unique as UniqueConstraint
+    participant Row as Row
+    participant Existing as Existing Values
 
-Test->>ParentTable: delete(parent)
-
-ParentTable->>ForeignKeyConstraint: validateDelete()
-
-ForeignKeyConstraint->>ChildTable: existsReference()
-
-ChildTable-->>ForeignKeyConstraint: true
-
-ForeignKeyConstraint-->>ParentTable: RestrictDeleteException
-
-ParentTable-->>Test: failed
+    Test->>Unique: validateUnique(Row, Existing)
+    Unique->>Row: getValue("email")
+    Row-->>Unique: "an@example.com"
+    Unique->>Existing: contains(["an@example.com"])
+    Existing-->>Unique: false
+    Unique-->>Test: true
 ```
 
----
-
-## 9. Enable Constraint
+## 9. Unique_ShouldRejectDuplicateValue
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Constraint
+    autonumber
+    actor Test as ConstraintTests
+    participant Unique as UniqueConstraint
+    participant Row as Row
+    participant Existing as Existing Values
 
-Test->>Constraint: enable()
-
-Constraint->>Constraint: setEnabled(true)
-
-Constraint-->>Test: enabled
+    Test->>Unique: validateUnique(Row, Existing)
+    Unique->>Row: getValue("email")
+    Row-->>Unique: "an@example.com"
+    Unique->>Existing: contains(["an@example.com"])
+    Existing-->>Unique: true
+    Unique-->>Test: false
 ```
 
----
-
-## 10. Disable Constraint
+## 10. NotNull_ShouldAcceptNonNullValue
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Constraint
+    autonumber
+    actor Test as ConstraintTests
+    participant NotNull as NotNullConstraint
+    participant Row as Row
 
-Test->>Constraint: disable()
-
-Constraint->>Constraint: setEnabled(false)
-
-Constraint-->>Test: disabled
+    Test->>NotNull: validateNotNull(Row)
+    NotNull->>Row: getValue("name")
+    Row-->>NotNull: "An"
+    NotNull-->>Test: true
 ```
 
----
-
-## 11. Duplicate Primary Key
+## 11. NotNull_ShouldRejectNullValue
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Table
-participant PrimaryKeyConstraint
-participant Index
+    autonumber
+    actor Test as ConstraintTests
+    participant NotNull as NotNullConstraint
+    participant Row as Row
 
-Test->>Table: insert(row)
-
-Table->>PrimaryKeyConstraint: validate()
-
-PrimaryKeyConstraint->>Index: exists(key)
-
-Index-->>PrimaryKeyConstraint: true
-
-PrimaryKeyConstraint-->>Table: DuplicateKeyException
-
-Table-->>Test: failed
+    Test->>NotNull: validateNotNull(Row)
+    NotNull->>Row: getValue("name")
+    Row-->>NotNull: null
+    NotNull-->>Test: false
 ```
 
----
-
-## 12. Foreign Key Violation
+## 12. ForeignKey_ShouldAcceptExistingReference
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant ChildTable
-participant ForeignKeyConstraint
-participant ParentTable
+    autonumber
+    actor Test as ConstraintTests
+    participant FK as ForeignKeyConstraint
+    participant Row as Row
+    participant References as Referenced Values
 
-Test->>ChildTable: insert(row)
-
-ChildTable->>ForeignKeyConstraint: validate()
-
-ForeignKeyConstraint->>ParentTable: exists(parentKey)
-
-ParentTable-->>ForeignKeyConstraint: false
-
-ForeignKeyConstraint-->>ChildTable: ForeignKeyViolationException
-
-ChildTable-->>Test: failed
+    Test->>FK: validateForeignKey(Row, References)
+    FK->>Row: getValue("user_id")
+    Row-->>FK: 10
+    FK->>References: contains([10])
+    References-->>FK: true
+    FK-->>Test: true
 ```
 
----
-
-## 13. Check Constraint Failure
+## 13. ForeignKey_ShouldRejectMissingReference
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Table
-participant CheckConstraint
+    autonumber
+    actor Test as ConstraintTests
+    participant FK as ForeignKeyConstraint
+    participant Row as Row
+    participant References as Referenced Values
 
-Test->>Table: insert(row)
-Table->>CheckConstraint: validate(row)
-CheckConstraint-->>Table: false
-Table-->>Test: CheckConstraintViolationException
+    Test->>FK: validateForeignKey(Row, References)
+    FK->>Row: getValue("user_id")
+    Row-->>FK: 99
+    FK->>References: contains([99])
+    References-->>FK: false
+    FK-->>Test: false
 ```
 
----
-
-## 14. Toggle Constraint State
+## 14. Check_ShouldAcceptMatchingExpression
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Constraint
+    autonumber
+    actor Test as ConstraintTests
+    participant Check as CheckConstraint
+    participant Row as Row
 
-Test->>Constraint: toggleState()
-Constraint->>Constraint: switchEnabledFlag()
-Constraint-->>Test: toggled
+    Test->>Check: validateCheck(Row)
+    Check->>Row: getValue("age")
+    Row-->>Check: 22
+    Check->>Check: evaluate age >= 18
+    Check-->>Test: true
 ```
 
----
-
-## 15. Validate Cascade Path
+## 15. Check_ShouldRejectNonMatchingExpression
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant ForeignKeyConstraint
-participant ChildTable
+    autonumber
+    actor Test as ConstraintTests
+    participant Check as CheckConstraint
+    participant Row as Row
 
-Test->>ForeignKeyConstraint: validateCascadePath()
-ForeignKeyConstraint->>ChildTable: inspectDependencies()
-ChildTable-->>ForeignKeyConstraint: path
-ForeignKeyConstraint-->>Test: valid
+    Test->>Check: validateCheck(Row)
+    Check->>Row: getValue("age")
+    Row-->>Check: 16
+    Check->>Check: evaluate age >= 18
+    Check-->>Test: false
 ```
 
----
-
-## 16. Validate Restrict Path
+## 16. ForeignKeyDefinition_ShouldRequireReference
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant ForeignKeyConstraint
-participant ChildTable
+    autonumber
+    actor Test as ConstraintTests
+    participant FK as ForeignKeyConstraint
 
-Test->>ForeignKeyConstraint: validateRestrictPath()
-ForeignKeyConstraint->>ChildTable: inspectDependencies()
-ChildTable-->>ForeignKeyConstraint: blocked
-ForeignKeyConstraint-->>Test: valid
+    Test->>FK: isValidDefinition()
+    FK->>FK: check referencedTableId
+    FK->>FK: check referencedColumnNames
+
+    alt Reference metadata is missing
+        FK-->>Test: false
+    else Reference metadata exists
+        FK-->>Test: true
+    end
 ```
 
----
+## Recommended order
 
-## 17. Export Constraint Definition
-
-```mermaid
-sequenceDiagram
-actor Test
-participant Constraint
-
-Test->>Constraint: exportDefinition()
-Constraint->>Constraint: buildDDL()
-Constraint-->>Test: DDL
-```
-
----
-
-## 18. Refresh Constraint Metadata
-
-```mermaid
-sequenceDiagram
-actor Test
-participant Constraint
-participant Index
-
-Test->>Constraint: refreshMetadata()
-Constraint->>Index: updateConstraintIndex()
-Index-->>Constraint: updated
-Constraint-->>Test: success
-```
-
----
-
-## 19. Attach Constraint To Table
-
-```mermaid
-sequenceDiagram
-actor Test
-participant Constraint
-participant Table
-
-Test->>Constraint: attachToTable(table)
-Constraint->>Table: registerConstraint()
-Table-->>Constraint: attached
-Constraint-->>Test: success
-```
-
----
-
-## 20. Detach Constraint From Table
-
-```mermaid
-sequenceDiagram
-actor Test
-participant Constraint
-participant Table
-
-Test->>Constraint: detachFromTable(table)
-Constraint->>Table: unregisterConstraint()
-Table-->>Constraint: detached
-Constraint-->>Test: success
-```
-
-ForeignKeyConstraint-->>ChildTable: ForeignKeyViolationException
-
-ChildTable-->>Test: failed
-
-````
-
----
-
-## 13. Invalid Check Expression
-
-```mermaid
-sequenceDiagram
-actor Test
-participant CheckConstraint
-participant ExpressionEngine
-
-Test->>CheckConstraint: compile(expression)
-
-CheckConstraint->>ExpressionEngine: parse()
-
-ExpressionEngine-->>CheckConstraint: syntax error
-
-CheckConstraint-->>Test: InvalidConstraintException
-````
-
----
-
-## 14. Concurrent Insert
-
-```mermaid
-sequenceDiagram
-actor Tx1
-actor Tx2
-
-participant Table
-participant PrimaryKeyConstraint
-participant Index
-
-Tx1->>Table: insert(pk=100)
-
-Tx2->>Table: insert(pk=100)
-
-Table->>PrimaryKeyConstraint: validate()
-
-PrimaryKeyConstraint->>Index: check()
-
-Index-->>Tx1: success
-
-Index-->>Tx2: DuplicateKeyException
-```
-
----
-
-## 15. Concurrent Delete
-
-```mermaid
-sequenceDiagram
-actor Tx1
-actor Tx2
-
-participant ParentTable
-participant ForeignKeyConstraint
-
-Tx1->>ParentTable: delete()
-
-Tx2->>ParentTable: delete()
-
-ParentTable->>ForeignKeyConstraint: validate()
-
-ForeignKeyConstraint-->>Tx1: success
-
-ForeignKeyConstraint-->>Tx2: already deleted
-```
+1. Constructor and metadata
+2. Enable and disable state
+3. Primary key
+4. Unique
+5. Not-null
+6. Foreign key
+7. Check constraint
+8. Definition validation

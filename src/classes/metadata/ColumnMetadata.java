@@ -5,19 +5,45 @@ import java.util.UUID;
 import enums.DataType;
 
 public class ColumnMetadata {
+
     private UUID id;
     private String name;
-    private DataType type;
+    private DataType dataType;
     private boolean nullable;
+    private Object defaultValue;
     private int position;
-    private ColumnStats stats;
-
-    public ColumnMetadata(String name, DataType type) {
-        this.name = name;
-        this.type = type;
-    }
+    private Integer length;
+    private Integer precision;
+    private Integer scale;
+    private boolean identity;
+    private long nextIdentityValue;
 
     public ColumnMetadata() {
+        this.id = UUID.randomUUID();
+        this.name = "";
+        this.dataType = null;
+        this.nullable = true;
+        this.defaultValue = null;
+        this.position = 0;
+        this.length = null;
+        this.precision = null;
+        this.scale = null;
+        this.identity = false;
+        this.nextIdentityValue = 1L;
+    }
+
+    public ColumnMetadata(String name, DataType dataType) {
+        this.id = UUID.randomUUID();
+        this.name = name;
+        this.dataType = dataType;
+        this.nullable = true;
+        this.defaultValue = null;
+        this.position = 0;
+        this.length = null;
+        this.precision = null;
+        this.scale = null;
+        this.identity = false;
+        this.nextIdentityValue = 1L;
     }
 
     public UUID getId() {
@@ -25,23 +51,23 @@ public class ColumnMetadata {
     }
 
     public void setId(UUID id) {
-        this.id = id;
+        // TODO: Implement
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void rename(String newName) {
+        // TODO: Implement
     }
 
-    public DataType getType() {
-        return type;
+    public DataType getDataType() {
+        return dataType;
     }
 
-    public void setType(DataType type) {
-        this.type = type;
+    public void setDataType(DataType dataType) {
+        // TODO: Implement
     }
 
     public boolean isNullable() {
@@ -49,7 +75,15 @@ public class ColumnMetadata {
     }
 
     public void setNullable(boolean nullable) {
-        this.nullable = nullable;
+        // TODO: Implement
+    }
+
+    public Object getDefaultValue() {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(Object defaultValue) {
+        // TODO: Implement
     }
 
     public int getPosition() {
@@ -57,14 +91,62 @@ public class ColumnMetadata {
     }
 
     public void setPosition(int position) {
-        this.position = position;
+        // TODO: Implement
     }
 
-    public ColumnStats getStats() {
-        return stats;
+    public Integer getLength() {
+        return length;
     }
 
-    public void setStats(ColumnStats stats) {
-        this.stats = stats;
+    public void setLength(Integer length) {
+        // TODO: Implement
+    }
+
+    public Integer getPrecision() {
+        return precision;
+    }
+
+    public void setPrecision(Integer precision) {
+        // TODO: Implement
+    }
+
+    public Integer getScale() {
+        return scale;
+    }
+
+    public void setScale(Integer scale) {
+        // TODO: Implement
+    }
+
+    public boolean isIdentity() {
+        return identity;
+    }
+
+    public void setIdentity(boolean identity) {
+        // TODO: Implement
+    }
+
+    public long getNextIdentityValue() {
+        return nextIdentityValue;
+    }
+
+    public long generateIdentityValue() {
+        return 0L;
+    }
+
+    public boolean validateValue(Object value) {
+        return false;
+    }
+
+    public boolean validateLength(Object value) {
+        return false;
+    }
+
+    public boolean validatePrecision(Object value) {
+        return false;
+    }
+
+    public Object applyDefaultValue(Object value) {
+        return null;
     }
 }

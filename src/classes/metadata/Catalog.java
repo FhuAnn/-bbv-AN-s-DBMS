@@ -6,11 +6,11 @@ public class Catalog {
     private Map tables;
     private Map schemas;
 
-    public TableMetadata getTable(String name) {
+    public Table getTable(String name) {
         return null;
     }
 
-    public void registerTable(TableMetadata meta) {
+    public void registerTable(Table meta) {
     }
 
     public Map getTables() {
@@ -32,7 +32,7 @@ public class Catalog {
     public Catalog() {
     }
 
-    public void putTable(TableMetadata table) {
+    public void putTable(Table table) {
     }
 
     public void putSchema(Schema schema) {

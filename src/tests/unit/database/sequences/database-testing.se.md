@@ -1,5 +1,4 @@
-
----
+# Database Testing Sequence Diagrams
 
 ## 1. Constructor_ShouldCreateDatabase
 
@@ -7,635 +6,1262 @@
 sequenceDiagram
     autonumber
 
-    participant Test as DatabaseTests
-    participant Database
+    actor Test as DatabaseTests
+    participant DB as Database
+    participant UUID as UUID
+    participant C as Catalog
+    participant SC as SchemaCollection
 
-    Test->>Database: new Database(name, mockedDependencies)
-    Database-->>Test: database
+    Test->>DB: new Database("shop_db")
 
-    Test->>Database: getName()
-    Database-->>Test: name
+    DB->>DB: validateName("shop_db")
+    DB->>UUID: randomUUID()
+    UUID-->>DB: databaseId
 
-    Test->>Database: getId()
-    Database-->>Test: databaseId
+    DB->>C: new Catalog()
+    C-->>DB: catalog
 
-    Test->>Test: assertEquals(expectedName, name)
-    Test->>Test: assertNotNull(databaseId)
+    DB->>SC: new ArrayList()
+    SC-->>DB: empty schemas
+
+    DB->>DB: state = CLOSED
+    DB->>DB: readOnly = false
+
+    DB-->>Test: database
+
+    Test->>DB: getName()
+    DB-->>Test: "shop_db"
+
+    Test->>DB: getId()
+    DB-->>Test: databaseId
+
+    Test->>DB: getCatalog()
+    DB-->>Test: catalog
 ```
 
 ---
 
-## 2. Constructor_ShouldInitializeDependencies
+## 2. Constructor_ShouldGenerateDatabaseId
 
 ```mermaid
 sequenceDiagram
     autonumber
 
-    participant Test as DatabaseTests
-    participant Database
+    actor Test as DatabaseTests
+    participant DB1 as Database
+    participant DB2 as Database
+    participant UUID as UUID
 
-    Test->>Database: new Database(name, catalog, storage, txManager, security)
-    Database-->>Test: database
+    Test->>DB1: new Database("database_1")
+    DB1->>UUID: randomUUID()
+    UUID-->>DB1: id1
 
-    Test->>Database: getCatalog()
-    Database-->>Test: catalog
+    Test->>DB2: new Database("database_2")
+    DB2->>UUID: randomUUID()
+    UUID-->>DB2: id2
 
-    Test->>Database: getStorageEngine()
-    Database-->>Test: storage
+    Test->>DB1: getId()
+    DB1-->>Test: id1
 
-    Test->>Database: getTransactionManager()
-    Database-->>Test: txManager
+    Test->>DB2: getId()
+    DB2-->>Test: id2
 
-    Test->>Database: getSecurityManager()
-    Database-->>Test: security
-
-    Test->>Test: assertSame(mockedDependencies)
+    Test->>Test: assertNotNull(id1)
+    Test->>Test: assertNotNull(id2)
+    Test->>Test: assertNotEquals(id1, id2)
 ```
 
 ---
 
-## 3. Constructor_ShouldInitializeSchemaCollection
+## 3. Constructor_ShouldInitializeCatalog
 
 ```mermaid
 sequenceDiagram
     autonumber
 
-    participant Test as DatabaseTests
-    participant Database
+    actor Test as DatabaseTests
+    participant DB as Database
+    participant C as Catalog
 
-    Test->>Database: new Database(name, mockedDependencies)
-    Database-->>Test: database
+    Test->>DB: new Database("shop_db")
 
-    Test->>Database: getSchemas()
-    Database-->>Test: emptySchemaCollection
+    DB->>C: new Catalog()
+    C->>C: tables = new HashMap()
+    C->>C: schemas = new HashMap()
+    C-->>DB: catalog
 
-    Test->>Test: assertNotNull(collection)
-    Test->>Test: assertTrue(collection.isEmpty())
+    Test->>DB: getCatalog()
+    DB-->>Test: catalog
+
+    Test->>C: getTables()
+    C-->>Test: empty map
+
+    Test->>C: getSchemas()
+    C-->>Test: empty map
+
+    Test->>Test: assertNotNull(catalog)
+    Test->>Test: assertTrue(tables.isEmpty())
+    Test->>Test: assertTrue(schemas.isEmpty())
 ```
 
 ---
 
-## 4. Open_ShouldLoadDatabaseSuccessfully
+## 4. Constructor_ShouldInitializeSchemaCollection
 
 ```mermaid
 sequenceDiagram
     autonumber
 
-    participant Test as DatabaseTests
-    participant Database
-    participant Storage as MockStorageEngine
+    actor Test as DatabaseTests
+    participant DB as Database
+    participant Schemas as List~Schema~
 
-    Test->>Storage: stub openDatabase() returns success
-    Test->>Database: open()
+    Test->>DB: new Database("shop_db")
+    DB->>Schemas: new ArrayList()
+    Schemas-->>DB: empty collection
 
-    Database->>Storage: openDatabase(databaseId)
-    Storage-->>Database: success
-    Database-->>Test: success
+    Test->>DB: getSchemas()
+    DB-->>Test: schemas
 
-    Test->>Database: getState()
-    Database-->>Test: OPEN
+    Test->>Test: assertNotNull(schemas)
+    Test->>Test: assertEquals(0, schemas.size())
+```
+
+---
+
+## 5. Constructor_ShouldRejectNullName
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor Test as DatabaseTests
+    participant DB as Database
+
+    Test->>DB: new Database(null)
+    DB->>DB: validateName(null)
+
+    alt Name is null
+        DB-->>Test: throw IllegalArgumentException
+        Test->>Test: assertThrows(...)
+    end
+```
+
+---
+
+## 6. Constructor_ShouldRejectBlankName
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor Test as DatabaseTests
+    participant DB as Database
+
+    Test->>DB: new Database("   ")
+    DB->>DB: validateName("   ")
+
+    alt Name is blank
+        DB-->>Test: throw IllegalArgumentException
+        Test->>Test: assertThrows(...)
+    end
+```
+
+---
+
+## 7. Constructor_ShouldRejectTooLongName
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor Test as DatabaseTests
+    participant DB as Database
+
+    Test->>DB: new Database(nameLongerThan128Characters)
+    DB->>DB: validateName(name)
+
+    alt name.length() > 128
+        DB-->>Test: throw IllegalArgumentException
+        Test->>Test: assertThrows(...)
+    end
+```
+
+---
+
+## 8. Open_ShouldChangeDatabaseStateToOpen
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor Test as DatabaseTests
+    participant DB as Database
+
+    Test->>DB: new Database("shop_db")
+    DB-->>Test: database state = CLOSED
+
+    Test->>DB: open()
+    DB->>DB: validateCurrentState()
+    DB->>DB: state = OPEN
+    DB-->>Test: void
+
+    Test->>DB: getState()
+    DB-->>Test: OPEN
 
     Test->>Test: assertEquals(OPEN, state)
-    Test->>Storage: verify openDatabase() called once
 ```
 
 ---
 
-## 5. Close_ShouldFlushResourcesSuccessfully
+## 9. Open_ShouldBeIdempotent
+
+Calling `open()` twice should not duplicate resources or corrupt state.
 
 ```mermaid
 sequenceDiagram
     autonumber
 
-    participant Test as DatabaseTests
-    participant Database
-    participant Storage as MockStorageEngine
+    actor Test as DatabaseTests
+    participant DB as Database
 
-    Test->>Storage: stub flush() returns success
-    Test->>Storage: stub closeDatabase() returns success
-    Test->>Database: close()
+    Test->>DB: new Database("shop_db")
 
-    Database->>Storage: flush()
-    Storage-->>Database: success
+    Test->>DB: open()
+    DB->>DB: state = OPEN
+    DB-->>Test: void
 
-    Database->>Storage: closeDatabase(databaseId)
-    Storage-->>Database: success
+    Test->>DB: open()
 
-    Database-->>Test: success
+    alt Database is already OPEN
+        DB->>DB: keep state unchanged
+        DB-->>Test: void
+    end
 
-    Test->>Database: getState()
-    Database-->>Test: CLOSED
+    Test->>DB: getState()
+    DB-->>Test: OPEN
+
+    Test->>Test: assertEquals(OPEN, state)
+```
+
+---
+
+## 10. Close_ShouldChangeDatabaseStateToClosed
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor Test as DatabaseTests
+    participant DB as Database
+
+    Test->>DB: new Database("shop_db")
+    Test->>DB: open()
+    DB->>DB: state = OPEN
+
+    Test->>DB: close()
+    DB->>DB: validateCurrentState()
+    DB->>DB: state = CLOSED
+    DB-->>Test: void
+
+    Test->>DB: getState()
+    DB-->>Test: CLOSED
 
     Test->>Test: assertEquals(CLOSED, state)
 ```
 
 ---
 
-## 6. SetReadOnly_ShouldChangeDatabaseMode
+## 11. Close_ShouldBeIdempotent
 
 ```mermaid
 sequenceDiagram
     autonumber
 
-    participant Test as DatabaseTests
-    participant Database
-    participant Security as MockSecurityManager
+    actor Test as DatabaseTests
+    participant DB as Database
 
-    Test->>Security: stub authorize() returns true
-    Test->>Database: setReadOnly(true, session)
+    Test->>DB: new Database("shop_db")
 
-    Database->>Security: authorize(session, ALTER_DATABASE)
-    Security-->>Database: true
+    Test->>DB: close()
 
-    Database-->>Test: success
+    alt Database is already CLOSED
+        DB->>DB: keep state unchanged
+        DB-->>Test: void
+    end
 
-    Test->>Database: isReadOnly()
-    Database-->>Test: true
+    Test->>DB: getState()
+    DB-->>Test: CLOSED
 
-    Test->>Test: assertTrue(readOnly)
+    Test->>Test: assertEquals(CLOSED, state)
 ```
 
 ---
 
-## 7. SetReadOnly_ShouldRejectUnauthorizedUser
+## 12. AddSchema_ShouldRegisterSchema
 
 ```mermaid
 sequenceDiagram
     autonumber
 
-    participant Test as DatabaseTests
-    participant Database
-    participant Security as MockSecurityManager
+    actor Test as DatabaseTests
+    participant DB as Database
+    participant S as Schema
+    participant C as Catalog
+    participant SC as SchemaCollection
 
-    Test->>Security: stub authorize() returns false
-    Test->>Database: setReadOnly(true, session)
+    Test->>DB: new Database("shop_db")
+    Test->>S: new Schema("sales", databaseId, ownerId)
+    S-->>Test: salesSchema
 
-    Database->>Security: authorize(session, ALTER_DATABASE)
-    Security-->>Database: false
+    Test->>DB: addSchema(salesSchema)
 
-    Database--xTest: AuthorizationException
+    DB->>DB: validateSchema(salesSchema)
+    DB->>DB: containsSchema("sales")
+    DB-->>DB: false
 
-    Test->>Test: assertThrows(AuthorizationException)
-```
+    DB->>SC: add(salesSchema)
+    SC-->>DB: true
 
----
+    DB->>C: putSchema(salesSchema)
+    C-->>DB: void
 
-## 8. AddSchema_ShouldRegisterSchema
+    DB-->>Test: void
 
-```mermaid
-sequenceDiagram
-    autonumber
-
-    participant Test as DatabaseTests
-    participant Database
-    participant Catalog as MockCatalog
-
-    Test->>Catalog: stub schemaExists("sales") returns false
-    Test->>Database: addSchema(schema)
-
-    Database->>Catalog: schemaExists("sales")
-    Catalog-->>Database: false
-
-    Database->>Catalog: registerSchema(schema)
-    Catalog-->>Database: success
-
-    Database-->>Test: success
-
-    Test->>Catalog: verify registerSchema(schema) called once
-    Test->>Test: assert schema added
-```
-
----
-
-## 9. AddSchema_ShouldRejectDuplicateSchema
-
-```mermaid
-sequenceDiagram
-    autonumber
-
-    participant Test as DatabaseTests
-    participant Database
-    participant Catalog as MockCatalog
-
-    Test->>Catalog: stub schemaExists("sales") returns true
-    Test->>Database: addSchema(schema)
-
-    Database->>Catalog: schemaExists("sales")
-    Catalog-->>Database: true
-
-    Database--xTest: DuplicateSchemaException
-
-    Test->>Test: assertThrows(DuplicateSchemaException)
-    Test->>Catalog: verify registerSchema() never called
-```
-
----
-
-## 10. RemoveSchema_ShouldRemoveSchemaMetadata
-
-```mermaid
-sequenceDiagram
-    autonumber
-
-    participant Test as DatabaseTests
-    participant Database
-    participant Catalog as MockCatalog
-
-    Test->>Catalog: stub getSchema("sales") returns schema
-    Test->>Database: removeSchema("sales")
-
-    Database->>Catalog: getSchema("sales")
-    Catalog-->>Database: schema
-
-    Database->>Catalog: unregisterSchema(schemaId)
-    Catalog-->>Database: success
-
-    Database-->>Test: success
-
-    Test->>Catalog: verify unregisterSchema(schemaId) called once
-```
-
----
-
-## 11. RemoveSchema_ShouldThrowWhenSchemaNotFound
-
-```mermaid
-sequenceDiagram
-    autonumber
-
-    participant Test as DatabaseTests
-    participant Database
-    participant Catalog as MockCatalog
-
-    Test->>Catalog: stub getSchema("unknown") returns null
-    Test->>Database: removeSchema("unknown")
-
-    Database->>Catalog: getSchema("unknown")
-    Catalog-->>Database: null
-
-    Database--xTest: SchemaNotFoundException
-
-    Test->>Test: assertThrows(SchemaNotFoundException)
-    Test->>Catalog: verify unregisterSchema() never called
-```
-
----
-
-## 12. GrantAccess_ShouldAssignPermission
-
-```mermaid
-sequenceDiagram
-    autonumber
-
-    participant Test as DatabaseTests
-    participant Database
-    participant Security as MockSecurityManager
-
-    Test->>Security: stub userExists(userId) returns true
-    Test->>Database: grantAccess(userId, permission)
-
-    Database->>Security: userExists(userId)
-    Security-->>Database: true
-
-    Database->>Security: grantPermission(userId, databaseId, permission)
-    Security-->>Database: success
-
-    Database-->>Test: success
-
-    Test->>Security: verify grantPermission() called once
-```
-
----
-
-## 13. GrantAccess_ShouldThrowWhenUserInvalid
-
-```mermaid
-sequenceDiagram
-    autonumber
-
-    participant Test as DatabaseTests
-    participant Database
-    participant Security as MockSecurityManager
-
-    Test->>Security: stub userExists(userId) returns false
-    Test->>Database: grantAccess(userId, permission)
-
-    Database->>Security: userExists(userId)
-    Security-->>Database: false
-
-    Database--xTest: UserNotFoundException
-
-    Test->>Test: assertThrows(UserNotFoundException)
-    Test->>Security: verify grantPermission() never called
-```
-
----
-
-## 14. RevokeAccess_ShouldRemovePermission
-
-```mermaid
-sequenceDiagram
-    autonumber
-
-    participant Test as DatabaseTests
-    participant Database
-    participant Security as MockSecurityManager
-
-    Test->>Security: stub hasPermission() returns true
-    Test->>Database: revokeAccess(userId, permission)
-
-    Database->>Security: hasPermission(userId, databaseId, permission)
-    Security-->>Database: true
-
-    Database->>Security: revokePermission(userId, databaseId, permission)
-    Security-->>Database: success
-
-    Database-->>Test: success
-
-    Test->>Security: verify revokePermission() called once
-```
-
----
-
-## 15. RevokeAccess_ShouldThrowWhenPermissionMissing
-
-```mermaid
-sequenceDiagram
-    autonumber
-
-    participant Test as DatabaseTests
-    participant Database
-    participant Security as MockSecurityManager
-
-    Test->>Security: stub hasPermission() returns false
-    Test->>Database: revokeAccess(userId, permission)
-
-    Database->>Security: hasPermission(userId, databaseId, permission)
-    Security-->>Database: false
-
-    Database--xTest: PermissionNotFoundException
-
-    Test->>Test: assertThrows(PermissionNotFoundException)
-    Test->>Security: verify revokePermission() never called
-```
-
----
-
-## 16. UpdateStatistics_ShouldRefreshDatabaseStatistics
-
-```mermaid
-sequenceDiagram
-    autonumber
-
-    participant Test as DatabaseTests
-    participant Database
-    participant Catalog as MockCatalog
-
-    Test->>Catalog: stub calculateStatistics() returns statistics
-    Test->>Database: updateStatistics()
-
-    Database->>Catalog: calculateStatistics(databaseId)
-    Catalog-->>Database: statistics
-
-    Database->>Catalog: updateDatabaseStatistics(databaseId, statistics)
-    Catalog-->>Database: success
-
-    Database-->>Test: statistics
-
-    Test->>Catalog: verify updateDatabaseStatistics() called once
-```
-
----
-
-## 17. CalculateDatabaseSize_ShouldReturnCorrectSize
-
-```mermaid
-sequenceDiagram
-    autonumber
-
-    participant Test as DatabaseTests
-    participant Database
-    participant Storage as MockStorageEngine
-
-    Test->>Storage: stub calculateDatabaseSize() returns 1024
-    Test->>Database: calculateDatabaseSize()
-
-    Database->>Storage: calculateDatabaseSize(databaseId)
-    Storage-->>Database: 1024
-
-    Database-->>Test: 1024
-
-    Test->>Test: assertEquals(1024, result)
-```
-
----
-
-## 18. ChangeRecoveryModel_ShouldUpdateConfiguration
-
-```mermaid
-sequenceDiagram
-    autonumber
-
-    participant Test as DatabaseTests
-    participant Database
-    participant Recovery as MockRecoveryManager
-
-    Test->>Recovery: stub supports(FULL) returns true
-    Test->>Database: changeRecoveryModel(FULL)
-
-    Database->>Recovery: supports(FULL)
-    Recovery-->>Database: true
-
-    Database->>Recovery: updateModel(databaseId, FULL)
-    Recovery-->>Database: success
-
-    Database-->>Test: success
-
-    Test->>Database: getRecoveryModel()
-    Database-->>Test: FULL
-
-    Test->>Test: assertEquals(FULL, model)
-```
-
----
-
-## 19. Open_ShouldThrowWhenStorageUnavailable
-
-```mermaid
-sequenceDiagram
-    autonumber
-
-    participant Test as DatabaseTests
-    participant Database
-    participant Storage as MockStorageEngine
-
-    Test->>Storage: stub openDatabase() throws StorageException
-    Test->>Database: open()
-
-    Database->>Storage: openDatabase(databaseId)
-    Storage--xDatabase: StorageException
-
-    Database--xTest: DatabaseOpenException
-
-    Test->>Test: assertThrows(DatabaseOpenException)
-    Test->>Database: getState()
-    Database-->>Test: ERROR
-```
-
----
-
-## 20. Close_ShouldThrowWhenFlushFails
-
-```mermaid
-sequenceDiagram
-    autonumber
-
-    participant Test as DatabaseTests
-    participant Database
-    participant Storage as MockStorageEngine
-
-    Test->>Storage: stub flush() throws FlushException
-    Test->>Database: close()
-
-    Database->>Storage: flush()
-    Storage--xDatabase: FlushException
-
-    Database--xTest: DatabaseCloseException
-
-    Test->>Test: assertThrows(DatabaseCloseException)
-    Test->>Storage: verify closeDatabase() never called
-```
-
----
-
-## 21. ValidateRecoveryModel_ShouldAcceptSupportedMode
-
-```mermaid
-sequenceDiagram
-    autonumber
-
-    participant Test as DatabaseTests
-    participant Database
-    participant Recovery as MockRecoveryManager
-
-    Test->>Recovery: stub supports(FULL) returns true
-    Test->>Database: validateRecoveryModel(FULL)
-
-    Database->>Recovery: supports(FULL)
-    Recovery-->>Database: true
-
-    Database-->>Test: true
+    Test->>DB: containsSchema("sales")
+    DB-->>Test: true
 
     Test->>Test: assertTrue(result)
 ```
 
 ---
 
-## 22. ValidateDatabaseMetadata_ShouldRemainConsistent
+## 13. AddSchema_ShouldIncreaseSchemaCount
 
 ```mermaid
 sequenceDiagram
     autonumber
 
-    participant Test as DatabaseTests
-    participant Database
-    participant Catalog as MockCatalog
+    actor Test as DatabaseTests
+    participant DB as Database
+    participant S as Schema
+    participant SC as SchemaCollection
 
-    Test->>Catalog: stub validateMetadata() returns true
-    Test->>Database: validateMetadata()
+    Test->>DB: new Database("shop_db")
 
-    Database->>Catalog: validateMetadata(databaseId)
-    Catalog-->>Database: true
+    Test->>DB: getSchemas()
+    DB-->>Test: empty collection
 
-    Database-->>Test: true
+    Test->>S: new Schema("sales", databaseId, ownerId)
+    S-->>Test: schema
+
+    Test->>DB: addSchema(schema)
+    DB->>SC: add(schema)
+    SC-->>DB: true
+
+    Test->>DB: getSchemas()
+    DB-->>Test: collection containing schema
+
+    Test->>Test: assertEquals(1, schemas.size())
+```
+
+---
+
+## 14. AddSchema_ShouldRejectNullSchema
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor Test as DatabaseTests
+    participant DB as Database
+
+    Test->>DB: new Database("shop_db")
+    Test->>DB: addSchema(null)
+
+    DB->>DB: validateSchema(null)
+
+    alt Schema is null
+        DB-->>Test: throw IllegalArgumentException
+        Test->>Test: assertThrows(...)
+    end
+```
+
+---
+
+## 15. AddSchema_ShouldRejectDuplicateSchemaName
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor Test as DatabaseTests
+    participant DB as Database
+    participant S1 as Schema
+    participant S2 as Schema
+
+    Test->>S1: new Schema("sales", databaseId, owner1)
+    Test->>S2: new Schema("sales", databaseId, owner2)
+
+    Test->>DB: addSchema(schema1)
+    DB->>DB: containsSchema("sales")
+    DB-->>DB: false
+    DB->>DB: register schema1
+    DB-->>Test: void
+
+    Test->>DB: addSchema(schema2)
+    DB->>DB: containsSchema("sales")
+    DB-->>DB: true
+
+    alt Duplicate schema name
+        DB-->>Test: throw SchemaAlreadyExistsException
+        Test->>Test: assertThrows(...)
+    end
+```
+
+---
+
+## 16. AddSchema_ShouldRejectSchemaFromAnotherDatabase
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor Test as DatabaseTests
+    participant DB as Database
+    participant S as Schema
+
+    Test->>DB: new Database("shop_db")
+    DB-->>Test: databaseId
+
+    Test->>S: new Schema("sales", anotherDatabaseId, ownerId)
+    S-->>Test: schema
+
+    Test->>DB: addSchema(schema)
+
+    DB->>S: getDatabaseId()
+    S-->>DB: anotherDatabaseId
+
+    DB->>DB: compare database IDs
+
+    alt IDs do not match
+        DB-->>Test: throw InvalidSchemaException
+        Test->>Test: assertThrows(...)
+    end
+```
+
+---
+
+## 17. AddSchema_ShouldRejectWhenDatabaseIsReadOnly
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor Test as DatabaseTests
+    participant DB as Database
+    participant S as Schema
+
+    Test->>DB: setReadOnly(true)
+    DB->>DB: readOnly = true
+
+    Test->>S: new Schema("sales", databaseId, ownerId)
+    S-->>Test: schema
+
+    Test->>DB: addSchema(schema)
+    DB->>DB: verifyWritable()
+
+    alt Database is read-only
+        DB-->>Test: throw ReadOnlyDatabaseException
+        Test->>Test: assertThrows(...)
+    end
+```
+
+---
+
+## 18. GetSchema_ShouldReturnExistingSchema
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor Test as DatabaseTests
+    participant DB as Database
+    participant S as Schema
+    participant C as Catalog
+
+    Test->>DB: addSchema(salesSchema)
+    DB->>C: putSchema(salesSchema)
+    C-->>DB: void
+
+    Test->>DB: getSchema("sales")
+    DB->>C: getSchema("sales")
+    C-->>DB: salesSchema
+    DB-->>Test: salesSchema
+
+    Test->>Test: assertSame(expectedSchema, actualSchema)
+```
+
+---
+
+## 19. GetSchema_ShouldThrowWhenSchemaDoesNotExist
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor Test as DatabaseTests
+    participant DB as Database
+    participant C as Catalog
+
+    Test->>DB: getSchema("unknown")
+
+    DB->>C: getSchema("unknown")
+    C-->>DB: null
+
+    alt Schema not found
+        DB-->>Test: throw SchemaNotFoundException
+        Test->>Test: assertThrows(...)
+    end
+```
+
+---
+
+## 20. ContainsSchema_ShouldReturnTrueForExistingSchema
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor Test as DatabaseTests
+    participant DB as Database
+    participant C as Catalog
+
+    Test->>DB: addSchema(salesSchema)
+    DB->>C: putSchema(salesSchema)
+    C-->>DB: void
+
+    Test->>DB: containsSchema("sales")
+    DB->>C: containsSchema("sales")
+    C-->>DB: true
+    DB-->>Test: true
 
     Test->>Test: assertTrue(result)
 ```
 
 ---
 
-## 23. ConcurrentOpen_ShouldMaintainDatabaseState
+## 21. ContainsSchema_ShouldReturnFalseForMissingSchema
 
 ```mermaid
 sequenceDiagram
     autonumber
 
-    participant Test as DatabaseTests
-    participant Database
-    participant Storage as MockStorageEngine
+    actor Test as DatabaseTests
+    participant DB as Database
+    participant C as Catalog
 
-    Test->>Storage: stub openDatabase() returns success
+    Test->>DB: containsSchema("unknown")
+    DB->>C: containsSchema("unknown")
+    C-->>DB: false
+    DB-->>Test: false
 
-    par Call 1
-        Test->>Database: open()
-        Database->>Storage: openDatabase(databaseId)
-        Storage-->>Database: success
-        Database-->>Test: success
-    and Call 2
-        Test->>Database: open()
-        Database-->>Test: alreadyOpen
-    end
-
-    Test->>Storage: verify openDatabase() called once
-    Test->>Database: getState()
-    Database-->>Test: OPEN
+    Test->>Test: assertFalse(result)
 ```
 
 ---
 
-## 24. ConcurrentSchemaCreation_ShouldPreventConflict
+## 22. RemoveSchema_ShouldRemoveExistingSchema
 
 ```mermaid
 sequenceDiagram
     autonumber
 
-    participant Test as DatabaseTests
-    participant Database
-    participant Catalog as MockCatalog
+    actor Test as DatabaseTests
+    participant DB as Database
+    participant C as Catalog
+    participant SC as SchemaCollection
 
-    Test->>Catalog: first schemaExists() returns false
-    Test->>Catalog: second schemaExists() returns true
+    Test->>DB: addSchema(salesSchema)
+    DB->>C: putSchema(salesSchema)
+    DB->>SC: add(salesSchema)
 
-    par Call 1
-        Test->>Database: addSchema(schema)
-        Database->>Catalog: schemaExists("sales")
-        Catalog-->>Database: false
-        Database->>Catalog: registerSchema(schema)
-        Catalog-->>Database: success
-        Database-->>Test: success
-    and Call 2
-        Test->>Database: addSchema(schema)
-        Database->>Catalog: schemaExists("sales")
-        Catalog-->>Database: true
-        Database--xTest: DuplicateSchemaException
-    end
+    Test->>DB: removeSchema("sales")
 
-    Test->>Catalog: verify registerSchema() called once
+    DB->>DB: containsSchema("sales")
+    DB-->>DB: true
+
+    DB->>SC: remove(salesSchema)
+    SC-->>DB: true
+
+    DB->>C: removeSchema("sales")
+    C-->>DB: salesSchema
+
+    DB-->>Test: void
+
+    Test->>DB: containsSchema("sales")
+    DB-->>Test: false
+
+    Test->>Test: assertFalse(result)
 ```
 
 ---
 
-## 25. ConcurrentPermissionUpdate_ShouldBeThreadSafe
+## 23. RemoveSchema_ShouldDecreaseSchemaCount
 
 ```mermaid
 sequenceDiagram
     autonumber
 
-    participant Test as DatabaseTests
-    participant Database
-    participant Security as MockSecurityManager
+    actor Test as DatabaseTests
+    participant DB as Database
+    participant SC as SchemaCollection
 
-    par Grant call
-        Test->>Database: grantAccess(userId, permission)
-        Database->>Security: grantPermission(userId, databaseId, permission)
-        Security-->>Database: success
-        Database-->>Test: success
-    and Revoke call
-        Test->>Database: revokeAccess(userId, permission)
-        Database->>Security: revokePermission(userId, databaseId, permission)
-        Security-->>Database: success
-        Database-->>Test: success
+    Test->>DB: addSchema(salesSchema)
+    DB->>SC: add(salesSchema)
+
+    Test->>DB: getSchemas()
+    DB-->>Test: one schema
+
+    Test->>DB: removeSchema("sales")
+    DB->>SC: remove(salesSchema)
+    SC-->>DB: true
+
+    Test->>DB: getSchemas()
+    DB-->>Test: empty collection
+
+    Test->>Test: assertEquals(0, schemas.size())
+```
+
+---
+
+## 24. RemoveSchema_ShouldThrowWhenSchemaNotFound
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor Test as DatabaseTests
+    participant DB as Database
+
+    Test->>DB: removeSchema("unknown")
+
+    DB->>DB: containsSchema("unknown")
+    DB-->>DB: false
+
+    alt Schema does not exist
+        DB-->>Test: throw SchemaNotFoundException
+        Test->>Test: assertThrows(...)
+    end
+```
+
+---
+
+## 25. RemoveSchema_ShouldRejectWhenSchemaContainsTables
+
+This behavior prevents accidental deletion of a non-empty schema.
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor Test as DatabaseTests
+    participant DB as Database
+    participant S as Schema
+    participant T as TableMetadata
+
+    Test->>DB: addSchema(salesSchema)
+
+    Test->>S: getTables()
+    S-->>Test: tables
+
+    Test->>T: new TableMetadata("orders", schemaId)
+    T-->>Test: ordersTable
+
+    Test->>S: addTable(ordersTable)
+    S-->>Test: void
+
+    Test->>DB: removeSchema("sales")
+    DB->>S: getTables()
+    S-->>DB: collection containing ordersTable
+
+    alt Schema is not empty
+        DB-->>Test: throw SchemaNotEmptyException
+        Test->>Test: assertThrows(...)
+    end
+```
+
+---
+
+## 26. SetReadOnly_ShouldChangeDatabaseMode
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor Test as DatabaseTests
+    participant DB as Database
+
+    Test->>DB: new Database("shop_db")
+
+    Test->>DB: setReadOnly(true)
+    DB->>DB: readOnly = true
+    DB-->>Test: void
+
+    Test->>DB: isReadOnly()
+    DB-->>Test: true
+
+    Test->>Test: assertTrue(result)
+```
+
+---
+
+## 27. SetReadOnlyFalse_ShouldAllowMetadataModification
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor Test as DatabaseTests
+    participant DB as Database
+    participant S as Schema
+
+    Test->>DB: setReadOnly(true)
+    DB->>DB: readOnly = true
+
+    Test->>DB: setReadOnly(false)
+    DB->>DB: readOnly = false
+
+    Test->>DB: addSchema(schema)
+    DB->>DB: verifyWritable()
+    DB-->>DB: writable
+
+    DB->>DB: register schema
+    DB-->>Test: void
+
+    Test->>DB: containsSchema("sales")
+    DB-->>Test: true
+```
+
+---
+
+## 28. Rename_ShouldChangeDatabaseName
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor Test as DatabaseTests
+    participant DB as Database
+
+    Test->>DB: new Database("old_name")
+
+    Test->>DB: rename("new_name")
+    DB->>DB: validateName("new_name")
+    DB->>DB: name = "new_name"
+    DB-->>Test: void
+
+    Test->>DB: getName()
+    DB-->>Test: "new_name"
+
+    Test->>Test: assertEquals("new_name", result)
+```
+
+---
+
+## 29. Rename_ShouldRejectInvalidName
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor Test as DatabaseTests
+    participant DB as Database
+
+    Test->>DB: new Database("shop_db")
+
+    Test->>DB: rename("")
+    DB->>DB: validateName("")
+
+    alt New name is blank
+        DB-->>Test: throw IllegalArgumentException
+        Test->>Test: assertThrows(...)
     end
 
-    Test->>Test: assert no inconsistent state
+    Test->>DB: getName()
+    DB-->>Test: "shop_db"
+
+    Test->>Test: assertEquals("shop_db", currentName)
+```
+
+---
+
+## 30. GetSchemas_ShouldReturnUnmodifiableCollection
+
+This prevents external code from modifying the internal database state.
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor Test as DatabaseTests
+    participant DB as Database
+    participant SC as SchemaCollection
+    participant Collections as Collections
+
+    Test->>DB: addSchema(salesSchema)
+    DB->>SC: add(salesSchema)
+
+    Test->>DB: getSchemas()
+    DB->>Collections: unmodifiableList(schemas)
+    Collections-->>DB: read-only schemas
+    DB-->>Test: schemas
+
+    Test->>SC: add(anotherSchema)
+
+    alt Collection is unmodifiable
+        SC-->>Test: throw UnsupportedOperationException
+        Test->>Test: assertThrows(...)
+    end
+```
+
+---
+
+## 31. Catalog_ShouldRemainConsistentAfterAddingSchema
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor Test as DatabaseTests
+    participant DB as Database
+    participant C as Catalog
+    participant S as Schema
+
+    Test->>DB: addSchema(salesSchema)
+
+    DB->>S: getName()
+    S-->>DB: "sales"
+
+    DB->>C: putSchema(salesSchema)
+    C-->>DB: void
+
+    Test->>DB: getSchemas()
+    DB-->>Test: schemas containing salesSchema
+
+    Test->>C: getSchema("sales")
+    C-->>Test: salesSchema
+
+    Test->>Test: assertTrue(databaseContainsSchema)
+    Test->>Test: assertSame(salesSchema, catalogSchema)
+```
+
+---
+
+## 32. Catalog_ShouldRemainConsistentAfterRemovingSchema
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor Test as DatabaseTests
+    participant DB as Database
+    participant C as Catalog
+
+    Test->>DB: addSchema(salesSchema)
+    DB->>C: putSchema(salesSchema)
+
+    Test->>DB: removeSchema("sales")
+    DB->>C: removeSchema("sales")
+    C-->>DB: salesSchema
+
+    Test->>DB: containsSchema("sales")
+    DB-->>Test: false
+
+    Test->>C: getSchema("sales")
+    C-->>Test: null
+
+    Test->>Test: assertFalse(databaseResult)
+    Test->>Test: assertNull(catalogResult)
+```
+
+---
+
+## 33. AddMultipleSchemas_ShouldPreserveInsertion
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor Test as DatabaseTests
+    participant DB as Database
+    participant C as Catalog
+
+    Test->>DB: addSchema(publicSchema)
+    DB->>C: putSchema(publicSchema)
+    C-->>DB: void
+
+    Test->>DB: addSchema(salesSchema)
+    DB->>C: putSchema(salesSchema)
+    C-->>DB: void
+
+    Test->>DB: addSchema(reportSchema)
+    DB->>C: putSchema(reportSchema)
+    C-->>DB: void
+
+    Test->>DB: getSchemas()
+    DB-->>Test: [public, sales, report]
+
+    Test->>Test: assertEquals(3, schemas.size())
+    Test->>Test: assertTrue(all schemas exist)
+```
+
+---
+
+## 34. SchemaNames_ShouldBeCaseInsensitive
+
+This test is optional, depending on your naming rule.
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor Test as DatabaseTests
+    participant DB as Database
+
+    Test->>DB: addSchema(schema named "Sales")
+    DB->>DB: normalizeName("Sales")
+    DB-->>DB: "sales"
+    DB->>DB: register schema
+    DB-->>Test: void
+
+    Test->>DB: containsSchema("SALES")
+    DB->>DB: normalizeName("SALES")
+    DB-->>DB: "sales"
+    DB-->>Test: true
+
+    Test->>Test: assertTrue(result)
+```
+
+---
+
+## 35. ConcurrentSchemaCreation_ShouldAllowOnlyOneSchema
+
+This is one of the few useful concurrency tests that can still be implemented without a real storage engine.
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor Test as DatabaseTests
+    participant T1 as Thread 1
+    participant T2 as Thread 2
+    participant DB as Database
+    participant Schemas as ConcurrentMap
+
+    par Thread 1
+        T1->>DB: addSchema(schema named "sales")
+        DB->>Schemas: putIfAbsent("sales", schema1)
+        Schemas-->>DB: null
+        DB-->>T1: success
+    and Thread 2
+        T2->>DB: addSchema(schema named "sales")
+        DB->>Schemas: putIfAbsent("sales", schema2)
+        Schemas-->>DB: existing schema
+        DB-->>T2: SchemaAlreadyExistsException
+    end
+
+    Test->>DB: getSchemas()
+    DB-->>Test: one sales schema
+
+    Test->>Test: assertEquals(1, schemas.size())
+```
+
+---
+
+## 36. ConcurrentSchemaReads_ShouldReturnConsistentResult
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor Test as DatabaseTests
+    participant T1 as Reader Thread 1
+    participant T2 as Reader Thread 2
+    participant DB as Database
+    participant C as Catalog
+
+    Test->>DB: addSchema(salesSchema)
+
+    par First reader
+        T1->>DB: getSchema("sales")
+        DB->>C: getSchema("sales")
+        C-->>DB: salesSchema
+        DB-->>T1: salesSchema
+    and Second reader
+        T2->>DB: getSchema("sales")
+        DB->>C: getSchema("sales")
+        C-->>DB: salesSchema
+        DB-->>T2: salesSchema
+    end
+
+    Test->>Test: assertSame(result1, result2)
+```
+
+---
+
+## 37. ConcurrentOpen_ShouldMaintainValidState
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor Test as DatabaseTests
+    participant T1 as Thread 1
+    participant T2 as Thread 2
+    participant DB as Database
+
+    par First open request
+        T1->>DB: open()
+        DB->>DB: compareAndSet(CLOSED, OPEN)
+        DB-->>T1: success
+    and Second open request
+        T2->>DB: open()
+        DB->>DB: compareAndSet(CLOSED, OPEN)
+        DB-->>T2: already OPEN
+    end
+
+    Test->>DB: getState()
+    DB-->>Test: OPEN
+
+    Test->>Test: assertEquals(OPEN, state)
+```
+
+---
+
+## 38. DatabaseSchemaIntegration_ShouldMaintainRelationship
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor Test as DatabaseIntegrationTests
+    participant DB as Database
+    participant S as Schema
+    participant C as Catalog
+
+    Test->>DB: new Database("shop_db")
+    DB-->>Test: database with databaseId
+
+    Test->>DB: getId()
+    DB-->>Test: databaseId
+
+    Test->>S: new Schema("sales", databaseId, ownerId)
+    S-->>Test: schema
+
+    Test->>DB: addSchema(schema)
+    DB->>S: getDatabaseId()
+    S-->>DB: databaseId
+    DB->>C: putSchema(schema)
+    C-->>DB: void
+
+    Test->>DB: getSchema("sales")
+    DB-->>Test: schema
+
+    Test->>S: getDatabaseId()
+    S-->>Test: databaseId
+
+    Test->>Test: assertEquals(DB.id, Schema.databaseId)
+```
+
+---
+
+## 39. DatabaseSchemaTableIntegration_ShouldBuildMetadataHierarchy
+
+This test covers only metadata objects. It does not insert rows or write pages.
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor Test as DatabaseIntegrationTests
+    participant DB as Database
+    participant S as Schema
+    participant T as TableMetadata
+    participant C as ColumnMetadata
+
+    Test->>DB: new Database("shop_db")
+    Test->>S: new Schema("sales", databaseId, ownerId)
+
+    Test->>DB: addSchema(schema)
+    DB-->>Test: void
+
+    Test->>T: new TableMetadata("orders", schemaId)
+    T-->>Test: table
+
+    Test->>C: new ColumnMetadata("id", INTEGER)
+    C-->>Test: idColumn
+
+    Test->>T: addColumn(idColumn)
+    T-->>Test: void
+
+    Test->>S: addTable(table)
+    S-->>Test: void
+
+    Test->>S: getTables()
+    S-->>Test: tables containing orders
+
+    Test->>T: getColumns()
+    T-->>Test: columns containing id
+
+    Test->>Test: assert hierarchy is correct
+```
+
+---
+
+## 40. DatabaseSchemaTableRowIntegration_ShouldStoreRowsInMemory
+
+Use this only after creating a simple in-memory `Table` and `Row` implementation.
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor Test as DatabaseIntegrationTests
+    participant DB as Database
+    participant S as Schema
+    participant T as Table
+    participant R as Row
+
+    Test->>DB: addSchema(salesSchema)
+    DB-->>Test: void
+
+    Test->>S: addTable(ordersTable)
+    S-->>Test: void
+
+    Test->>R: new Row()
+    R-->>Test: row
+
+    Test->>R: setValue("id", 1)
+    R->>R: values.put("id", 1)
+
+    Test->>R: setValue("customer", "An")
+    R->>R: values.put("customer", "An")
+
+    Test->>T: insertRow(row)
+    T->>T: validateRow(row)
+    T->>T: rows.add(row)
+    T-->>Test: void
+
+    Test->>T: getRows()
+    T-->>Test: collection containing row
+
+    Test->>Test: assertEquals(1, rows.size())
+```
+
+---
+
+# Recommended First Test Order
+
+Implement the tests in this order:
+
+1. `Constructor_ShouldCreateDatabase`
+2. `Constructor_ShouldGenerateDatabaseId`
+3. `Constructor_ShouldInitializeCatalog`
+4. `Constructor_ShouldInitializeSchemaCollection`
+5. `Constructor_ShouldRejectNullName`
+6. `Constructor_ShouldRejectBlankName`
+7. `Open_ShouldChangeDatabaseStateToOpen`
+8. `Close_ShouldChangeDatabaseStateToClosed`
+9. `AddSchema_ShouldRegisterSchema`
+10. `AddSchema_ShouldRejectDuplicateSchemaName`
+11. `GetSchema_ShouldReturnExistingSchema`
+12. `RemoveSchema_ShouldRemoveExistingSchema`
+13. `RemoveSchema_ShouldThrowWhenSchemaNotFound`
+14. `SetReadOnly_ShouldChangeDatabaseMode`
+15. `AddSchema_ShouldRejectWhenDatabaseIsReadOnly`
+16. `Catalog_ShouldRemainConsistentAfterAddingSchema`
+17. `Catalog_ShouldRemainConsistentAfterRemovingSchema`
+18. `DatabaseSchemaIntegration_ShouldMaintainRelationship`
+19. `DatabaseSchemaTableIntegration_ShouldBuildMetadataHierarchy`
+20. Concurrency tests last
+
+# Tests to Postpone
+
+Do not implement these in the first version:
+
+* `Open_ShouldLoadDatabaseSuccessfully`
+* `Close_ShouldFlushResourcesSuccessfully`
+* `Open_ShouldThrowWhenStorageUnavailable`
+* `Close_ShouldThrowWhenFlushFails`
+* `UpdateStatistics_ShouldRefreshDatabaseStatistics`
+* `CalculateDatabaseSize_ShouldReturnCorrectSize`
+* `ChangeRecoveryModel_ShouldUpdateRecoveryConfiguration`
+* `StorageEngine_ShouldPersistDatabaseData`
+* `TransactionManager_ShouldHandleTransactions`
+* `BufferPool_ShouldManageDatabasePages`
+* `RecoveryManager_ShouldRecoverDatabase`
+* `executeSQL()` tests
+
+These tests require difficult subsystems such as disk I/O, page management, query parsing, transaction management, recovery, or real persistence.
+
+# Simplified Database Testing Roadmap
+
+```mermaid
+graph LR
+
+DB[Database Testing]
+
+DB --> Constructor
+DB --> Lifecycle
+DB --> SchemaManagement
+DB --> Metadata
+DB --> Validation
+DB --> Exception
+DB --> SimpleConcurrency
+DB --> Integration
+
+Constructor --> CreateDatabase
+Constructor --> GenerateDatabaseId
+Constructor --> InitializeCatalog
+Constructor --> InitializeSchemaCollection
+Constructor --> InitializeDefaultState
+
+Lifecycle --> OpenDatabase
+Lifecycle --> CloseDatabase
+Lifecycle --> OpenTwice
+Lifecycle --> CloseTwice
+
+SchemaManagement --> AddSchema
+SchemaManagement --> GetSchema
+SchemaManagement --> ContainsSchema
+SchemaManagement --> RemoveSchema
+SchemaManagement --> ListSchemas
+
+Metadata --> GetDatabaseName
+Metadata --> RenameDatabase
+Metadata --> GetDatabaseId
+Metadata --> SetReadOnly
+Metadata --> CatalogConsistency
+
+Validation --> ValidateDatabaseName
+Validation --> ValidateSchema
+Validation --> ValidateSchemaDatabaseId
+Validation --> ValidateReadOnlyMode
+
+Exception --> NullDatabaseName
+Exception --> BlankDatabaseName
+Exception --> DuplicateSchema
+Exception --> SchemaNotFound
+Exception --> SchemaNotEmpty
+Exception --> ReadOnlyModification
+
+SimpleConcurrency --> ConcurrentOpen
+SimpleConcurrency --> ConcurrentSchemaRead
+SimpleConcurrency --> ConcurrentSchemaCreation
+
+Integration --> DatabaseAndCatalog
+Integration --> DatabaseAndSchema
+Integration --> DatabaseSchemaAndTable
+Integration --> DatabaseSchemaTableAndRow
 ```

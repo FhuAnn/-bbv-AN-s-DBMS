@@ -1,637 +1,825 @@
-import org.junit.Test;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
 import classes.database.Database;
 import classes.metadata.Catalog;
-import classes.storageengine.StorageEngine;
-import classes.tx.TransactionManager;
+import classes.metadata.ColumnMetadata;
+import classes.metadata.Schema;
+import classes.metadata.Table;
+import enums.DataType;
+import enums.DatabaseState;
+import exception.InvalidSchemaException;
+import exception.ReadOnlyDatabaseException;
+import exception.SchemaAlreadyExistsException;
+import exception.SchemaNotEmptyException;
+import exception.SchemaNotFoundException;
 
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayName("Database Tests")
 class DatabaseTests {
 
-    private static final String DATABASE_NAME = "test_database";
-    private static final String SCHEMA_NAME = "sales";
-
-    private Catalog mockCatalog;
-    private StorageEngine mockStorageEngine;
-    private TransactionManager mockTransactionManager;
-    private SecurityManager mockSecurityManager;
     private Database database;
+    private UUID ownerId;
 
     @BeforeEach
     void setUp() {
-        mockCatalog = mock(Catalog.class);
-        mockStorageEngine = mock(StorageEngine.class);
-        mockTransactionManager = mock(TransactionManager.class);
-        mockSecurityManager = mock(SecurityManager.class);
+        database = new Database("shop_db");
+        ownerId = UUID.randomUUID();
+    }
 
-        database = new Database(
-                DATABASE_NAME,  
-                mockCatalog,
-                mockStorageEngine,
-                mockTransactionManager,
-                mockSecurityManager,
+    private Schema createSchema(String name) {
+        return new Schema(
+                name,
+                database.getId(),
+                ownerId
         );
     }
 
-    // ==================================================
+    // =========================================================
     // Constructor Tests
-    // ==================================================
+    // =========================================================
 
-    @Test
-    @DisplayName("Should create database with valid name and generated ID")
-    void Constructor_ShouldCreateDatabase() {
-        Database createdDatabase = new Database(
-                DATABASE_NAME,
-                mockCatalog,
-                mockStorageEngine,
-                mockTransactionManager,
-                mockSecurityManager,
-        );
+    @Nested
+    @DisplayName("Constructor")
+    class ConstructorTests {
 
-        assertEquals(DATABASE_NAME, createdDatabase.getName());
-        assertNotNull(createdDatabase.getId());
+        @Test
+        @DisplayName("Should create database successfully")
+        void constructor_ShouldCreateDatabase() {
+            Database result = new Database("shop_db");
+
+            assertNotNull(result);
+            assertEquals("shop_db", result.getName());
+        }
+
+        @Test
+        @DisplayName("Should generate database ID")
+        void constructor_ShouldGenerateDatabaseId() {
+            Database result = new Database("shop_db");
+
+            assertNotNull(result.getId());
+        }
+
+        @Test
+        @DisplayName("Should generate different IDs for different databases")
+        void constructor_ShouldGenerateUniqueDatabaseId() {
+            Database firstDatabase = new Database("database_1");
+            Database secondDatabase = new Database("database_2");
+
+            assertNotNull(firstDatabase.getId());
+            assertNotNull(secondDatabase.getId());
+
+            assertNotEquals(
+                    firstDatabase.getId(),
+                    secondDatabase.getId()
+            );
+        }
+
+        @Test
+        @DisplayName("Should initialize catalog")
+        void constructor_ShouldInitializeCatalog() {
+            Catalog catalog = database.getCatalog();
+
+            assertNotNull(catalog);
+            assertNotNull(catalog.getSchemas());
+            assertNotNull(catalog.getTables());
+
+            assertTrue(catalog.getSchemas().isEmpty());
+            assertTrue(catalog.getTables().isEmpty());
+        }
+
+        @Test
+        @DisplayName("Should initialize schema collection")
+        void constructor_ShouldInitializeSchemaCollection() {
+            List<Schema> schemas = database.getSchemas();
+
+            assertNotNull(schemas);
+            assertTrue(schemas.isEmpty());
+        }
+
+        @Test
+        @DisplayName("Should initialize database as closed")
+        void constructor_ShouldInitializeClosedState() {
+            assertEquals(DatabaseState.CLOSED, database.getState());
+        }
+
+        @Test
+        @DisplayName("Should initialize database as writable")
+        void constructor_ShouldInitializeWritableMode() {
+            assertFalse(database.isReadOnly());
+        }
+
+        @Test
+        @DisplayName("Should reject null database name")
+        void constructor_ShouldRejectNullName() {
+            assertThrows(
+                    IllegalArgumentException.class,
+                    () -> new Database(null)
+            );
+        }
+
+        @Test
+        @DisplayName("Should reject empty database name")
+        void constructor_ShouldRejectEmptyName() {
+            assertThrows(
+                    IllegalArgumentException.class,
+                    () -> new Database("")
+            );
+        }
+
+        @Test
+        @DisplayName("Should reject blank database name")
+        void constructor_ShouldRejectBlankName() {
+            assertThrows(
+                    IllegalArgumentException.class,
+                    () -> new Database("   ")
+            );
+        }
+
+        @Test
+        @DisplayName("Should reject database name longer than 128 characters")
+        void constructor_ShouldRejectTooLongName() {
+            String invalidName = "a".repeat(129);
+
+            assertThrows(
+                    IllegalArgumentException.class,
+                    () -> new Database(invalidName)
+            );
+        }
+
+        @Test
+        @DisplayName("Should accept database name containing 128 characters")
+        void constructor_ShouldAcceptMaximumLengthName() {
+            String validName = "a".repeat(128);
+
+            Database result = new Database(validName);
+
+            assertEquals(validName, result.getName());
+        }
     }
 
-    @Test
-    @DisplayName("Should initialize all injected dependencies")
-    void Constructor_ShouldInitializeDependencies() {
-        assertSame(mockCatalog, database.getCatalog());
-        assertSame(mockStorageEngine, database.getStorageEngine());
-        assertSame(
-                mockTransactionManager,
-                database.getTransactionManager()
-        );
-        assertSame(mockSecurityManager, database.getSecurityManager());
-        assertSame(mockRecoveryManager, database.getRecoveryManager());
-    }
-
-    @Test
-    @DisplayName("Should initialize an empty schema collection")
-    void Constructor_ShouldInitializeSchemaCollection() {
-        assertNotNull(database.getSchemas());
-        assertTrue(database.getSchemas().isEmpty());
-    }
-
-    // ==================================================
+    // =========================================================
     // Lifecycle Tests
-    // ==================================================
+    // =========================================================
 
-    @Test
-    @DisplayName("Should load database successfully")
-    void Open_ShouldLoadDatabaseSuccessfully() {
-        doNothing().when(mockStorageEngine)
-                .openDatabase(database.getId());
+    @Nested
+    @DisplayName("Lifecycle")
+    class LifecycleTests {
 
-        database.open();
+        @Test
+        @DisplayName("Open should change database state to OPEN")
+        void open_ShouldChangeDatabaseStateToOpen() {
+            database.open();
 
-        assertEquals(DatabaseState.OPEN, database.getState());
+            assertEquals(DatabaseState.OPEN, database.getState());
+        }
 
-        verify(mockStorageEngine, times(1))
-                .openDatabase(database.getId());
+        @Test
+        @DisplayName("Open should be idempotent")
+        void open_ShouldBeIdempotent() {
+            database.open();
+            database.open();
+
+            assertEquals(DatabaseState.OPEN, database.getState());
+        }
+
+        @Test
+        @DisplayName("Close should change database state to CLOSED")
+        void close_ShouldChangeDatabaseStateToClosed() {
+            database.open();
+
+            database.close();
+
+            assertEquals(DatabaseState.CLOSED, database.getState());
+        }
+
+        @Test
+        @DisplayName("Close should be idempotent")
+        void close_ShouldBeIdempotent() {
+            database.close();
+            database.close();
+
+            assertEquals(DatabaseState.CLOSED, database.getState());
+        }
+
+        @Test
+        @DisplayName("Database should be able to reopen after closing")
+        void open_ShouldReopenClosedDatabase() {
+            database.open();
+            database.close();
+
+            database.open();
+
+            assertEquals(DatabaseState.OPEN, database.getState());
+        }
     }
 
-    @Test
-    @DisplayName("Should flush and close storage successfully")
-    void Close_ShouldFlushResourcesSuccessfully() {
-        doNothing().when(mockStorageEngine).flush();
+    // =========================================================
+    // Schema Management Tests
+    // =========================================================
 
-        doNothing().when(mockStorageEngine)
-                .closeDatabase(database.getId());
+    @Nested
+    @DisplayName("Schema management")
+    class SchemaManagementTests {
 
-        database.open();
-        database.close();
+        @Test
+        @DisplayName("Add schema should register schema")
+        void addSchema_ShouldRegisterSchema() {
+            Schema schema = createSchema("sales");
 
-        assertEquals(DatabaseState.CLOSED, database.getState());
+            database.addSchema(schema);
 
-        verify(mockStorageEngine, times(1)).flush();
+            assertTrue(database.containsSchema("sales"));
+            assertSame(schema, database.getSchema("sales"));
+        }
 
-        verify(mockStorageEngine, times(1))
-                .closeDatabase(database.getId());
+        @Test
+        @DisplayName("Add schema should increase schema count")
+        void addSchema_ShouldIncreaseSchemaCount() {
+            Schema schema = createSchema("sales");
+
+            database.addSchema(schema);
+
+            assertEquals(1, database.getSchemas().size());
+        }
+
+        @Test
+        @DisplayName("Add multiple schemas should register all schemas")
+        void addSchema_ShouldRegisterMultipleSchemas() {
+            database.addSchema(createSchema("public"));
+            database.addSchema(createSchema("sales"));
+            database.addSchema(createSchema("report"));
+
+            assertEquals(3, database.getSchemas().size());
+
+            assertTrue(database.containsSchema("public"));
+            assertTrue(database.containsSchema("sales"));
+            assertTrue(database.containsSchema("report"));
+        }
+
+        @Test
+        @DisplayName("Add schema should reject null schema")
+        void addSchema_ShouldRejectNullSchema() {
+            assertThrows(
+                    IllegalArgumentException.class,
+                    () -> database.addSchema(null)
+            );
+        }
+
+        @Test
+        @DisplayName("Add schema should reject duplicate schema name")
+        void addSchema_ShouldRejectDuplicateSchemaName() {
+            Schema firstSchema = createSchema("sales");
+            Schema duplicateSchema = createSchema("sales");
+
+            database.addSchema(firstSchema);
+
+            assertThrows(
+                    SchemaAlreadyExistsException.class,
+                    () -> database.addSchema(duplicateSchema)
+            );
+
+            assertEquals(1, database.getSchemas().size());
+        }
+
+        @Test
+        @DisplayName("Add schema should reject schema belonging to another database")
+        void addSchema_ShouldRejectSchemaFromAnotherDatabase() {
+            Schema schema = new Schema(
+                    "sales",
+                    UUID.randomUUID(),
+                    ownerId
+            );
+
+            assertThrows(
+                    InvalidSchemaException.class,
+                    () -> database.addSchema(schema)
+            );
+        }
+
+        @Test
+        @DisplayName("Get schema should return existing schema")
+        void getSchema_ShouldReturnExistingSchema() {
+            Schema schema = createSchema("sales");
+            database.addSchema(schema);
+
+            Schema result = database.getSchema("sales");
+
+            assertSame(schema, result);
+        }
+
+        @Test
+        @DisplayName("Get schema should throw when schema is missing")
+        void getSchema_ShouldThrowWhenSchemaDoesNotExist() {
+            assertThrows(
+                    SchemaNotFoundException.class,
+                    () -> database.getSchema("unknown")
+            );
+        }
+
+        @Test
+        @DisplayName("Contains schema should return true for existing schema")
+        void containsSchema_ShouldReturnTrueForExistingSchema() {
+            database.addSchema(createSchema("sales"));
+
+            boolean result = database.containsSchema("sales");
+
+            assertTrue(result);
+        }
+
+        @Test
+        @DisplayName("Contains schema should return false for missing schema")
+        void containsSchema_ShouldReturnFalseForMissingSchema() {
+            boolean result = database.containsSchema("unknown");
+
+            assertFalse(result);
+        }
+
+        @Test
+        @DisplayName("Remove schema should remove existing schema")
+        void removeSchema_ShouldRemoveExistingSchema() {
+            database.addSchema(createSchema("sales"));
+
+            database.removeSchema("sales");
+
+            assertFalse(database.containsSchema("sales"));
+        }
+
+        @Test
+        @DisplayName("Remove schema should decrease schema count")
+        void removeSchema_ShouldDecreaseSchemaCount() {
+            database.addSchema(createSchema("sales"));
+
+            assertEquals(1, database.getSchemas().size());
+
+            database.removeSchema("sales");
+
+            assertEquals(0, database.getSchemas().size());
+        }
+
+        @Test
+        @DisplayName("Remove schema should throw when schema is missing")
+        void removeSchema_ShouldThrowWhenSchemaNotFound() {
+            assertThrows(
+                    SchemaNotFoundException.class,
+                    () -> database.removeSchema("unknown")
+            );
+        }
+
+        @Test
+        @DisplayName("Remove schema should reject null schema name")
+        void removeSchema_ShouldRejectNullName() {
+            assertThrows(
+                    IllegalArgumentException.class,
+                    () -> database.removeSchema(null)
+            );
+        }
+
+        @Test
+        @DisplayName("Remove schema should reject blank schema name")
+        void removeSchema_ShouldRejectBlankName() {
+            assertThrows(
+                    IllegalArgumentException.class,
+                    () -> database.removeSchema(" ")
+            );
+        }
+
+        @Test
+        @DisplayName("Remove schema should reject schema containing tables")
+        void removeSchema_ShouldRejectNonEmptySchema() {
+            Schema schema = createSchema("sales");
+
+            schema.getTables().add(
+                    new Table(
+                            "orders",
+                            schema.getId()
+                    )
+            );
+
+            database.addSchema(schema);
+
+            assertThrows(
+                    SchemaNotEmptyException.class,
+                    () -> database.removeSchema("sales")
+            );
+
+            assertTrue(database.containsSchema("sales"));
+        }
     }
 
-    // ==================================================
-    // Database Mode Tests
-    // ==================================================
+    // =========================================================
+    // Read-only Tests
+    // =========================================================
 
-    @Test
-    @DisplayName("Should change database to read-only mode")
-    void SetReadOnly_ShouldChangeDatabaseMode() {
-        UserSession session = mock(UserSession.class);
+    @Nested
+    @DisplayName("Read-only mode")
+    class ReadOnlyTests {
 
-        when(
-                mockSecurityManager.authorize(
-                        session,
-                        Permission.ALTER_DATABASE
-                )
-        ).thenReturn(true);
+        @Test
+        @DisplayName("Set read-only should change database mode")
+        void setReadOnly_ShouldChangeDatabaseMode() {
+            database.setReadOnly(true);
 
-        database.setReadOnly(true, session);
+            assertTrue(database.isReadOnly());
+        }
 
-        assertTrue(database.isReadOnly());
+        @Test
+        @DisplayName("Disable read-only should restore writable mode")
+        void setReadOnlyFalse_ShouldRestoreWritableMode() {
+            database.setReadOnly(true);
+            database.setReadOnly(false);
 
-        verify(mockSecurityManager, times(1))
-                .authorize(session, Permission.ALTER_DATABASE);
+            assertFalse(database.isReadOnly());
+        }
+
+        @Test
+        @DisplayName("Add schema should throw when database is read-only")
+        void addSchema_ShouldRejectWhenDatabaseIsReadOnly() {
+            database.setReadOnly(true);
+
+            Schema schema = createSchema("sales");
+
+            assertThrows(
+                    ReadOnlyDatabaseException.class,
+                    () -> database.addSchema(schema)
+            );
+
+            assertFalse(database.containsSchema("sales"));
+        }
+
+        @Test
+        @DisplayName("Remove schema should throw when database is read-only")
+        void removeSchema_ShouldRejectWhenDatabaseIsReadOnly() {
+            Schema schema = createSchema("sales");
+            database.addSchema(schema);
+
+            database.setReadOnly(true);
+
+            assertThrows(
+                    ReadOnlyDatabaseException.class,
+                    () -> database.removeSchema("sales")
+            );
+
+            assertTrue(database.containsSchema("sales"));
+        }
+
+        @Test
+        @DisplayName("Writable database should allow schema modification")
+        void writableDatabase_ShouldAllowSchemaModification() {
+            database.setReadOnly(true);
+            database.setReadOnly(false);
+
+            database.addSchema(createSchema("sales"));
+
+            assertTrue(database.containsSchema("sales"));
+        }
     }
 
-    @Test
-    @DisplayName("Should reject unauthorized read-only mode change")
-    void SetReadOnly_ShouldRejectUnauthorizedUser() {
-        UserSession session = mock(UserSession.class);
+    // =========================================================
+    // Rename Tests
+    // =========================================================
 
-        when(
-                mockSecurityManager.authorize(
-                        session,
-                        Permission.ALTER_DATABASE
-                )
-        ).thenReturn(false);
+    @Nested
+    @DisplayName("Rename database")
+    class RenameTests {
 
-        assertThrows(
-                AuthorizationException.class,
-                () -> database.setReadOnly(true, session)
-        );
+        @Test
+        @DisplayName("Rename should change database name")
+        void rename_ShouldChangeDatabaseName() {
+            database.rename("new_shop_db");
 
-        assertFalse(database.isReadOnly());
+            assertEquals("new_shop_db", database.getName());
+        }
+
+        @Test
+        @DisplayName("Rename should reject null name")
+        void rename_ShouldRejectNullName() {
+            assertThrows(
+                    IllegalArgumentException.class,
+                    () -> database.rename(null)
+            );
+
+            assertEquals("shop_db", database.getName());
+        }
+
+        @Test
+        @DisplayName("Rename should reject blank name")
+        void rename_ShouldRejectBlankName() {
+            assertThrows(
+                    IllegalArgumentException.class,
+                    () -> database.rename("   ")
+            );
+
+            assertEquals("shop_db", database.getName());
+        }
+
+        @Test
+        @DisplayName("Rename should reject name longer than 128 characters")
+        void rename_ShouldRejectTooLongName() {
+            String invalidName = "a".repeat(129);
+
+            assertThrows(
+                    IllegalArgumentException.class,
+                    () -> database.rename(invalidName)
+            );
+
+            assertEquals("shop_db", database.getName());
+        }
+
+        @Test
+        @DisplayName("Rename should reject modification in read-only mode")
+        void rename_ShouldRejectWhenDatabaseIsReadOnly() {
+            database.setReadOnly(true);
+
+            assertThrows(
+                    ReadOnlyDatabaseException.class,
+                    () -> database.rename("new_name")
+            );
+
+            assertEquals("shop_db", database.getName());
+        }
     }
 
-    // ==================================================
-    // Schema Tests
-    // ==================================================
+    // =========================================================
+    // Collection Safety Tests
+    // =========================================================
 
-    @Test
-    @DisplayName("Should register schema in catalog")
-    void AddSchema_ShouldRegisterSchema() {
-        Schema schema = createSchema();
+    @Nested
+    @DisplayName("Collection safety")
+    class CollectionSafetyTests {
 
-        when(mockCatalog.schemaExists(SCHEMA_NAME))
-                .thenReturn(false);
+        @Test
+        @DisplayName("Get schemas should return unmodifiable collection")
+        void getSchemas_ShouldReturnUnmodifiableCollection() {
+            database.addSchema(createSchema("sales"));
 
-        database.addSchema(schema);
+            List<Schema> schemas = database.getSchemas();
 
-        verify(mockCatalog, times(1))
-                .schemaExists(SCHEMA_NAME);
+            assertThrows(
+                    UnsupportedOperationException.class,
+                    () -> schemas.add(createSchema("report"))
+            );
+        }
 
-        verify(mockCatalog, times(1))
-                .registerSchema(schema);
+        @Test
+        @DisplayName("External collection modification should not affect database")
+        void getSchemas_ShouldProtectInternalCollection() {
+            database.addSchema(createSchema("sales"));
 
-        assertTrue(database.getSchemas().contains(schema));
+            List<Schema> schemas = database.getSchemas();
+
+            assertThrows(
+                    UnsupportedOperationException.class,
+                    schemas::clear
+            );
+
+            assertEquals(1, database.getSchemas().size());
+            assertTrue(database.containsSchema("sales"));
+        }
     }
 
-    @Test
-    @DisplayName("Should reject duplicate schema")
-    void AddSchema_ShouldRejectDuplicateSchema() {
-        Schema schema = createSchema();
+    // =========================================================
+    // Catalog Consistency Tests
+    // =========================================================
 
-        when(mockCatalog.schemaExists(SCHEMA_NAME))
-                .thenReturn(true);
+    @Nested
+    @DisplayName("Catalog consistency")
+    class CatalogConsistencyTests {
 
-        assertThrows(
-                DuplicateSchemaException.class,
-                () -> database.addSchema(schema)
-        );
+        @Test
+        @DisplayName("Catalog should contain schema after adding it")
+        void catalog_ShouldRemainConsistentAfterAddingSchema() {
+            Schema schema = createSchema("sales");
 
-        verify(mockCatalog, never())
-                .registerSchema(schema);
+            database.addSchema(schema);
+
+            assertTrue(
+                    database.getCatalog()
+                            .getSchemas()
+                            .containsKey(schema.getId())
+            );
+
+            assertSame(
+                    schema,
+                    database.getCatalog()
+                            .getSchemas()
+                            .get(schema.getId())
+            );
+        }
+
+        @Test
+        @DisplayName("Catalog should not contain schema after removing it")
+        void catalog_ShouldRemainConsistentAfterRemovingSchema() {
+            Schema schema = createSchema("sales");
+            database.addSchema(schema);
+
+            database.removeSchema("sales");
+
+            assertFalse(
+                    database.getCatalog()
+                            .getSchemas()
+                            .containsKey(schema.getId())
+            );
+        }
+
+        @Test
+        @DisplayName("Database and catalog should contain the same schema count")
+        void catalog_ShouldHaveSameSchemaCountAsDatabase() {
+            database.addSchema(createSchema("public"));
+            database.addSchema(createSchema("sales"));
+
+            assertEquals(
+                    database.getSchemas().size(),
+                    database.getCatalog().getSchemas().size()
+            );
+        }
     }
 
-    @Test
-    @DisplayName("Should remove schema metadata")
-    void RemoveSchema_ShouldRemoveSchemaMetadata() {
-        Schema schema = createSchema();
+    // =========================================================
+    // Simple Concurrency Tests
+    // =========================================================
 
-        when(mockCatalog.schemaExists(SCHEMA_NAME))
-                .thenReturn(false);
+    @Nested
+    @DisplayName("Concurrency")
+    class ConcurrencyTests {
 
-        database.addSchema(schema);
+        @Test
+        @DisplayName("Concurrent open should maintain OPEN state")
+        void concurrentOpen_ShouldMaintainDatabaseState() throws Exception {
+            int threadCount = 10;
 
-        when(mockCatalog.getSchema(SCHEMA_NAME))
-                .thenReturn(schema);
+            ExecutorService executor =
+                    Executors.newFixedThreadPool(threadCount);
 
-        database.removeSchema(SCHEMA_NAME);
+            CountDownLatch startLatch = new CountDownLatch(1);
 
-        verify(mockCatalog, times(1))
-                .unregisterSchema(schema.getId());
-
-        assertFalse(database.getSchemas().contains(schema));
-    }
-
-    @Test
-    @DisplayName("Should throw when schema does not exist")
-    void RemoveSchema_ShouldThrowWhenSchemaNotFound() {
-        when(mockCatalog.getSchema("unknown"))
-                .thenReturn(null);
-
-        assertThrows(
-                SchemaNotFoundException.class,
-                () -> database.removeSchema("unknown")
-        );
-
-        verify(mockCatalog, never())
-                .unregisterSchema(org.mockito.ArgumentMatchers.any());
-    }
-
-    // ==================================================
-    // Access Control Tests
-    // ==================================================
-
-    @Test
-    @DisplayName("Should assign permission to valid user")
-    void GrantAccess_ShouldAssignPermission() {
-        UUID userId = UUID.randomUUID();
-        Permission permission = Permission.READ_DATABASE;
-
-        when(mockSecurityManager.userExists(userId))
-                .thenReturn(true);
-
-        database.grantAccess(userId, permission);
-
-        verify(mockSecurityManager, times(1))
-                .grantPermission(
-                        userId,
-                        database.getId(),
-                        permission
-                );
-    }
-
-    @Test
-    @DisplayName("Should throw when granting access to invalid user")
-    void GrantAccess_ShouldThrowWhenUserInvalid() {
-        UUID userId = UUID.randomUUID();
-        Permission permission = Permission.READ_DATABASE;
-
-        when(mockSecurityManager.userExists(userId))
-                .thenReturn(false);
-
-        assertThrows(
-                UserNotFoundException.class,
-                () -> database.grantAccess(userId, permission)
-        );
-
-        verify(mockSecurityManager, never())
-                .grantPermission(
-                        userId,
-                        database.getId(),
-                        permission
-                );
-    }
-
-    @Test
-    @DisplayName("Should revoke existing user permission")
-    void RevokeAccess_ShouldRemovePermission() {
-        UUID userId = UUID.randomUUID();
-        Permission permission = Permission.READ_DATABASE;
-
-        when(
-                mockSecurityManager.hasPermission(
-                        userId,
-                        database.getId(),
-                        permission
-                )
-        ).thenReturn(true);
-
-        database.revokeAccess(userId, permission);
-
-        verify(mockSecurityManager, times(1))
-                .revokePermission(
-                        userId,
-                        database.getId(),
-                        permission
-                );
-    }
-
-    @Test
-    @DisplayName("Should throw when revoking missing permission")
-    void RevokeAccess_ShouldThrowWhenPermissionMissing() {
-        UUID userId = UUID.randomUUID();
-        Permission permission = Permission.READ_DATABASE;
-
-        when(
-                mockSecurityManager.hasPermission(
-                        userId,
-                        database.getId(),
-                        permission
-                )
-        ).thenReturn(false);
-
-        assertThrows(
-                PermissionNotFoundException.class,
-                () -> database.revokeAccess(userId, permission)
-        );
-
-        verify(mockSecurityManager, never())
-                .revokePermission(
-                        userId,
-                        database.getId(),
-                        permission
-                );
-    }
-
-    // ==================================================
-    // Statistics and Size Tests
-    // ==================================================
-
-    @Test
-    @DisplayName("Should refresh database statistics")
-    void UpdateStatistics_ShouldRefreshDatabaseStatistics() {
-        DatabaseStatistics expectedStatistics =
-                mock(DatabaseStatistics.class);
-
-        when(
-                mockCatalog.calculateStatistics(database.getId())
-        ).thenReturn(expectedStatistics);
-
-        DatabaseStatistics actualStatistics =
-                database.updateStatistics();
-
-        assertSame(expectedStatistics, actualStatistics);
-
-        verify(mockCatalog, times(1))
-                .updateDatabaseStatistics(
-                        database.getId(),
-                        expectedStatistics
-                );
-    }
-
-    @Test
-    @DisplayName("Should calculate the correct database size")
-    void CalculateDatabaseSize_ShouldReturnCorrectSize() {
-        long expectedSize = 1024L;
-
-        when(
-                mockStorageEngine.calculateDatabaseSize(
-                        database.getId()
-                )
-        ).thenReturn(expectedSize);
-
-        long actualSize = database.calculateDatabaseSize();
-
-        assertEquals(expectedSize, actualSize);
-    }
-
-    // ==================================================
-    // Recovery Tests
-    // ==================================================
-
-    @Test
-    @DisplayName("Should update supported recovery model")
-    void ChangeRecoveryModel_ShouldUpdateConfiguration() {
-        when(mockRecoveryManager.supports(RecoveryModel.FULL))
-                .thenReturn(true);
-
-        database.changeRecoveryModel(RecoveryModel.FULL);
-
-        assertEquals(
-                RecoveryModel.FULL,
-                database.getRecoveryModel()
-        );
-
-        verify(mockRecoveryManager, times(1))
-                .updateModel(
-                        database.getId(),
-                        RecoveryModel.FULL
-                );
-    }
-
-    @Test
-    @DisplayName("Should accept supported recovery model")
-    void ValidateRecoveryModel_ShouldAcceptSupportedMode() {
-        when(mockRecoveryManager.supports(RecoveryModel.FULL))
-                .thenReturn(true);
-
-        boolean supported =
-                database.validateRecoveryModel(RecoveryModel.FULL);
-
-        assertTrue(supported);
-
-        verify(mockRecoveryManager, times(1))
-                .supports(RecoveryModel.FULL);
-    }
-
-    // ==================================================
-    // Metadata Validation Tests
-    // ==================================================
-
-    @Test
-    @DisplayName("Should report consistent database metadata")
-    void ValidateDatabaseMetadata_ShouldRemainConsistent() {
-        when(mockCatalog.validateMetadata(database.getId()))
-                .thenReturn(true);
-
-        boolean valid = database.validateMetadata();
-
-        assertTrue(valid);
-
-        verify(mockCatalog, times(1))
-                .validateMetadata(database.getId());
-    }
-
-    // ==================================================
-    // Exception Tests
-    // ==================================================
-
-    @Test
-    @DisplayName("Should throw when storage is unavailable")
-    void Open_ShouldThrowWhenStorageUnavailable() {
-        doThrow(new StorageException("Storage unavailable"))
-                .when(mockStorageEngine)
-                .openDatabase(database.getId());
-
-        assertThrows(
-                DatabaseOpenException.class,
-                database::open
-        );
-
-        assertEquals(DatabaseState.ERROR, database.getState());
-    } 
-
-    @Test
-    @DisplayName("Should throw when storage flush fails")
-    void Close_ShouldThrowWhenFlushFails() {
-        database.open();
-
-        doThrow(new FlushException("Flush failed"))
-                .when(mockStorageEngine)
-                .flush();
-
-        assertThrows(
-                DatabaseCloseException.class,
-                database::close
-        );
-
-        verify(mockStorageEngine, never())
-                .closeDatabase(database.getId());
-    }
-
-    // ==================================================
-    // Concurrency Tests
-    // ==================================================
-
-    @Test
-    @DisplayName("Should open storage only once under concurrent calls")
-    void ConcurrentOpen_ShouldMaintainDatabaseState()
-            throws InterruptedException {
-
-        int threadCount = 2;
-
-        ExecutorService executor =
-                Executors.newFixedThreadPool(threadCount);
-
-        CountDownLatch startLatch = new CountDownLatch(1);
-        CountDownLatch finishLatch =
-                new CountDownLatch(threadCount);
-
-        Runnable openTask = () -> {
             try {
-                startLatch.await();
-                database.open();
-            } catch (InterruptedException exception) {
-                Thread.currentThread().interrupt();
-            } finally {
-                finishLatch.countDown();
-            }
-        };
+                Future<?>[] futures = new Future<?>[threadCount];
 
-        executor.submit(openTask);
-        executor.submit(openTask);
-
-        startLatch.countDown();
-
-        assertTrue(finishLatch.await(5, TimeUnit.SECONDS));
-
-        executor.shutdown();
-
-        assertEquals(DatabaseState.OPEN, database.getState());
-
-        verify(mockStorageEngine, times(1))
-                .openDatabase(database.getId());
-    }
-
-    @Test
-    @DisplayName("Should prevent duplicate concurrent schema creation")
-    void ConcurrentSchemaCreation_ShouldPreventConflict()
-            throws InterruptedException {
-
-        Schema schema = createSchema();
-
-        when(mockCatalog.schemaExists(SCHEMA_NAME))
-                .thenReturn(false)
-                .thenReturn(true);
-
-        ExecutorService executor =
-                Executors.newFixedThreadPool(2);
-
-        CountDownLatch startLatch = new CountDownLatch(1);
-        CountDownLatch finishLatch = new CountDownLatch(2);
-
-        Runnable addSchemaTask = () -> {
-            try {
-                startLatch.await();
-
-                try {
-                    database.addSchema(schema);
-                } catch (DuplicateSchemaException ignored) {
-                    // One concurrent operation is expected to fail.
+                for (int index = 0; index < threadCount; index++) {
+                    futures[index] = executor.submit(() -> {
+                        startLatch.await();
+                        database.open();
+                        return null;
+                    });
                 }
-            } catch (InterruptedException exception) {
-                Thread.currentThread().interrupt();
+
+                startLatch.countDown();
+
+                for (Future<?> future : futures) {
+                    future.get();
+                }
+
+                assertEquals(
+                        DatabaseState.OPEN,
+                        database.getState()
+                );
             } finally {
-                finishLatch.countDown();
+                executor.shutdownNow();
             }
-        };
+        }
 
-        executor.submit(addSchemaTask);
-        executor.submit(addSchemaTask);
+        @Test
+        @DisplayName("Concurrent schema reads should return same schema")
+        void concurrentSchemaReads_ShouldReturnConsistentResult()
+                throws Exception {
 
-        startLatch.countDown();
+            Schema schema = createSchema("sales");
+            database.addSchema(schema);
 
-        assertTrue(finishLatch.await(5, TimeUnit.SECONDS));
+            ExecutorService executor =
+                    Executors.newFixedThreadPool(2);
 
-        executor.shutdown();
+            try {
+                Future<Schema> firstResult =
+                        executor.submit(() -> database.getSchema("sales"));
 
-        verify(mockCatalog, times(1))
-                .registerSchema(schema);
+                Future<Schema> secondResult =
+                        executor.submit(() -> database.getSchema("sales"));
+
+                assertSame(schema, firstResult.get());
+                assertSame(schema, secondResult.get());
+                assertSame(firstResult.get(), secondResult.get());
+            } finally {
+                executor.shutdownNow();
+            }
+        }
+
+        @Test
+        @DisplayName("Concurrent duplicate schema creation should create only one")
+        void concurrentSchemaCreation_ShouldPreventDuplicateSchema()
+                throws Exception {
+
+            ExecutorService executor =
+                    Executors.newFixedThreadPool(2);
+
+            CountDownLatch startLatch = new CountDownLatch(1);
+
+            Schema firstSchema = createSchema("sales");
+            Schema secondSchema = createSchema("sales");
+
+            try {
+                Future<Boolean> firstResult = executor.submit(() -> {
+                    startLatch.await();
+
+                    try {
+                        database.addSchema(firstSchema);
+                        return true;
+                    } catch (SchemaAlreadyExistsException exception) {
+                        return false;
+                    }
+                });
+
+                Future<Boolean> secondResult = executor.submit(() -> {
+                    startLatch.await();
+
+                    try {
+                        database.addSchema(secondSchema);
+                        return true;
+                    } catch (SchemaAlreadyExistsException exception) {
+                        return false;
+                    }
+                });
+
+                startLatch.countDown();
+
+                boolean firstSucceeded = firstResult.get();
+                boolean secondSucceeded = secondResult.get();
+
+                assertNotEquals(firstSucceeded, secondSucceeded);
+
+                assertEquals(1, database.getSchemas().size());
+                assertTrue(database.containsSchema("sales"));
+            } finally {
+                executor.shutdownNow();
+            }
+        }
     }
 
-    @Test
-    @DisplayName("Should safely process concurrent permission updates")
-    void ConcurrentPermissionUpdate_ShouldBeThreadSafe()
-            throws InterruptedException {
+    // =========================================================
+    // Simple Integration Tests
+    // =========================================================
 
-        UUID userId = UUID.randomUUID();
-        Permission permission = Permission.READ_DATABASE;
+    @Nested
+    @DisplayName("Integration")
+    class IntegrationTests {
 
-        when(mockSecurityManager.userExists(userId))
-                .thenReturn(true);
+        @Test
+        @DisplayName("Database and schema should maintain relationship")
+        void databaseSchemaIntegration_ShouldMaintainRelationship() {
+            Schema schema = createSchema("sales");
 
-        when(
-                mockSecurityManager.hasPermission(
-                        userId,
-                        database.getId(),
-                        permission
-                )
-        ).thenReturn(true);
+            database.addSchema(schema);
 
-        ExecutorService executor =
-                Executors.newFixedThreadPool(2);
+            Schema storedSchema = database.getSchema("sales");
 
-        CountDownLatch startLatch = new CountDownLatch(1);
-        CountDownLatch finishLatch = new CountDownLatch(2);
+            assertEquals(database.getId(), storedSchema.getDatabaseId());
+            assertSame(schema, storedSchema);
+        }
 
-        executor.submit(() -> {
-            try {
-                startLatch.await();
-                database.grantAccess(userId, permission);
-            } catch (InterruptedException exception) {
-                Thread.currentThread().interrupt();
-            } finally {
-                finishLatch.countDown();
-            }
-        });
+        @Test
+        @DisplayName("Database, schema and table should build metadata hierarchy")
+        void databaseSchemaTableIntegration_ShouldBuildMetadataHierarchy() {
+            Schema schema = createSchema("sales");
 
-        executor.submit(() -> {
-            try {
-                startLatch.await();
-                database.revokeAccess(userId, permission);
-            } catch (InterruptedException exception) {
-                Thread.currentThread().interrupt();
-            } finally {
-                finishLatch.countDown();
-            }
-        });
+            Table table = new Table(
+                    "orders",
+                    schema.getId()
+            );
 
-        startLatch.countDown();
+            ColumnMetadata idColumn = new ColumnMetadata(
+                    "id",
+                    DataType.INTEGER
+            );
 
-        assertTrue(finishLatch.await(5, TimeUnit.SECONDS));
+            idColumn.setNullable(false);
+            idColumn.setPosition(0);
 
-        executor.shutdown();
+            table.getColumns().add(idColumn);
+            schema.getTables().add(table);
 
-        verify(mockSecurityManager, times(1))
-                .grantPermission(
-                        userId,
-                        database.getId(),
-                        permission
-                );
+            database.addSchema(schema);
 
-        verify(mockSecurityManager, times(1))
-                .revokePermission(
-                        userId,
-                        database.getId(),
-                        permission
-                );
-    }
+            Schema storedSchema = database.getSchema("sales");
+            Table storedTable = storedSchema.getTables().getFirst();
+            ColumnMetadata storedColumn = storedTable.getColumns().getFirst();
 
-    // ==================================================
-    // Test Data Helpers
-    // ==================================================
-
-    private Schema createSchema() {
-        Schema schema = mock(Schema.class);
-
-        when(schema.getId()).thenReturn(UUID.randomUUID());
-        when(schema.getName()).thenReturn(SCHEMA_NAME);
-
-        return schema;
+            assertEquals("sales", storedSchema.getName());
+            assertEquals("orders", storedTable.getName());
+            assertEquals("id", storedColumn.getName());
+            assertEquals(DataType.INTEGER, storedColumn.getType());
+            assertFalse(storedColumn.isNullable());
+        }
     }
 }

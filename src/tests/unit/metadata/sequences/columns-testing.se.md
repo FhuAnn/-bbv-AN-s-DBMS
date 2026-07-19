@@ -1,372 +1,280 @@
-# Column Testing - Main Functional Sequences
+# Column Testing — Important Unit Test Sequence Diagrams
 
----
-
-## 1. Create Column
+## 1. Constructor_ShouldCreateColumn
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Column
+    autonumber
+    actor Test as ColumnTests
+    participant Column as ColumnMetadata
+    participant UUID as UUID
 
-Test->>Column: new Column("Age", INT)
-
-Column-->>Test: Column
+    Test->>Column: new ColumnMetadata("name", VARCHAR)
+    Column->>Column: validateName("name")
+    Column->>Column: validateDataType(VARCHAR)
+    Column->>UUID: randomUUID()
+    UUID-->>Column: columnId
+    Column->>Column: nullable = true
+    Column->>Column: position = 0
+    Column-->>Test: column
 ```
 
----
-
-## 2. Validate Nullable
+## 2. Constructor_ShouldGenerateColumnId
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Column
+    autonumber
+    actor Test as ColumnTests
+    participant Column as ColumnMetadata
+    participant UUID as UUID
 
-Test->>Column: validate(NULL)
+    Test->>Column: new ColumnMetadata("id", INTEGER)
+    Column->>UUID: randomUUID()
+    UUID-->>Column: columnId
+    Column-->>Test: column
 
-alt Nullable = true
-    Column-->>Test: valid
-else Nullable = false
-    Column-->>Test: NotNullConstraintException
-end
+    Test->>Column: getId()
+    Column-->>Test: columnId
 ```
 
----
-
-## 3. Validate Data Type
+## 3. Rename_ShouldChangeColumnName
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Column
-participant DataTypeValidator
+    autonumber
+    actor Test as ColumnTests
+    participant Column as ColumnMetadata
 
-Test->>Column: validateValue("100")
-
-Column->>DataTypeValidator: validate(INT,"100")
-
-DataTypeValidator-->>Column: valid
-
-Column-->>Test: success
+    Test->>Column: rename("full_name")
+    Column->>Column: validateName("full_name")
+    Column->>Column: name = "full_name"
+    Column-->>Test: void
 ```
 
----
-
-## 4. Validate Length
+## 4. Rename_ShouldRejectInvalidName
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Column
-participant Validator
+    autonumber
+    actor Test as ColumnTests
+    participant Column as ColumnMetadata
 
-Test->>Column: validate("VeryLongString")
+    Test->>Column: rename(" ")
+    Column->>Column: validateName(" ")
 
-Column->>Validator: validateLength()
-
-Validator-->>Column: exceedsLimit
-
-Column-->>Test: InvalidLengthException
+    alt Name is blank
+        Column-->>Test: throw IllegalArgumentException
+    end
 ```
 
----
-
-## 5. Validate Precision
+## 5. SetDataType_ShouldChangeDataType
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Column
-participant Validator
+    autonumber
+    actor Test as ColumnTests
+    participant Column as ColumnMetadata
 
-Test->>Column: validate(123.4567)
-
-Column->>Validator: validatePrecision()
-
-Validator-->>Column: invalid
-
-Column-->>Test: PrecisionExceededException
+    Test->>Column: setDataType(INTEGER)
+    Column->>Column: validateDataType(INTEGER)
+    Column->>Column: dataType = INTEGER
+    Column-->>Test: void
 ```
 
----
-
-## 6. Apply Default Value
+## 6. ValidateValue_ShouldAcceptMatchingType
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Column
+    autonumber
+    actor Test as ColumnTests
+    participant Column as ColumnMetadata
+    participant Type as DataType
 
-Test->>Column: getValue(NULL)
-
-Column->>Column: applyDefaultValue()
-
-Column-->>Test: defaultValue
+    Test->>Column: validateValue(100)
+    Column->>Type: supports(100)
+    Type-->>Column: true
+    Column-->>Test: true
 ```
 
----
-
-## 7. Generate Identity
+## 7. ValidateValue_ShouldRejectWrongType
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Column
-participant Sequence
+    autonumber
+    actor Test as ColumnTests
+    participant Column as ColumnMetadata
+    participant Type as DataType
 
-Test->>Column: generateIdentity()
-
-Column->>Sequence: nextValue()
-
-Sequence-->>Column: 101
-
-Column-->>Test: 101
+    Test->>Column: validateValue("abc")
+    Column->>Type: supports("abc")
+    Type-->>Column: false
+    Column-->>Test: false
 ```
 
----
-
-## 8. Evaluate Computed Column
+## 8. ValidateValue_ShouldRejectNullWhenNotNullable
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Column
-participant ExpressionEngine
+    autonumber
+    actor Test as ColumnTests
+    participant Column as ColumnMetadata
 
-Test->>Column: compute(row)
+    Test->>Column: setNullable(false)
+    Test->>Column: validateValue(null)
 
-Column->>ExpressionEngine: evaluate()
-
-ExpressionEngine-->>Column: result
-
-Column-->>Test: computedValue
+    alt Nullable is false
+        Column-->>Test: false
+    end
 ```
 
----
-
-## 9. Apply Masking
+## 9. ApplyDefaultValue_ShouldReturnDefault
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Column
-participant MaskingPolicy
+    autonumber
+    actor Test as ColumnTests
+    participant Column as ColumnMetadata
 
-Test->>Column: readValue()
+    Test->>Column: setDefaultValue("unknown")
+    Column->>Column: defaultValue = "unknown"
 
-Column->>MaskingPolicy: applyMask()
-
-MaskingPolicy-->>Column: ******
-
-Column-->>Test: maskedValue
+    Test->>Column: applyDefaultValue(null)
+    Column-->>Test: "unknown"
 ```
 
----
-
-## 10. Encrypt Column
+## 10. ApplyDefaultValue_ShouldPreserveProvidedValue
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Column
-participant EncryptionService
+    autonumber
+    actor Test as ColumnTests
+    participant Column as ColumnMetadata
 
-Test->>Column: encrypt(value)
-
-Column->>EncryptionService: encrypt()
-
-EncryptionService-->>Column: cipherText
-
-Column-->>Test: encrypted
+    Test->>Column: applyDefaultValue("An")
+    Column->>Column: check value is not null
+    Column-->>Test: "An"
 ```
 
----
-
-## 11. Change Data Type
+## 11. SetPosition_ShouldUpdatePosition
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Column
-participant Validator
+    autonumber
+    actor Test as ColumnTests
+    participant Column as ColumnMetadata
 
-Test->>Column: changeType(BIGINT)
-
-Column->>Validator: validateConversion()
-
-Validator-->>Column: valid
-
-Column->>Column: updateType()
-
-Column-->>Test: success
+    Test->>Column: setPosition(2)
+    Column->>Column: validate position >= 0
+    Column->>Column: position = 2
+    Column-->>Test: void
 ```
 
----
-
-## 12. Rename Column
+## 12. SetLength_ShouldRejectInvalidLength
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Column
+    autonumber
+    actor Test as ColumnTests
+    participant Column as ColumnMetadata
 
-Test->>Column: rename("FullName")
+    Test->>Column: setLength(0)
+    Column->>Column: validate length
 
-Column->>Column: updateName()
-
-Column-->>Test: success
+    alt Length <= 0
+        Column-->>Test: throw IllegalArgumentException
+    end
 ```
 
----
-
-## 13. Validate Default Value
+## 13. ValidateLength_ShouldAcceptValueWithinLimit
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Column
-participant Validator
+    autonumber
+    actor Test as ColumnTests
+    participant Column as ColumnMetadata
 
-Test->>Column: setDefault("ABC")
-
-Column->>Validator: validateDefault()
-
-Validator-->>Column: incompatible
-
-Column-->>Test: InvalidDefaultValueException
+    Test->>Column: validateLength("hello")
+    Column->>Column: calculate value length
+    Column->>Column: compare with configured length
+    Column-->>Test: true
 ```
 
----
-
-## 14. Validate Computed Expression
+## 14. ValidateLength_ShouldRejectValueExceedingLimit
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Column
-participant ExpressionParser
+    autonumber
+    actor Test as ColumnTests
+    participant Column as ColumnMetadata
 
-Test->>Column: setComputed("Price * Qty")
-
-Column->>ExpressionParser: parse()
-
-ExpressionParser-->>Column: valid
-
-Column-->>Test: success
+    Test->>Column: validateLength("hello")
+    Column->>Column: calculate value length
+    Column->>Column: compare with configured length
+    Column-->>Test: false
 ```
 
----
-
-## 15. Validate Range
+## 15. SetPrecisionAndScale_ShouldUpdateMetadata
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Column
-participant Validator
+    autonumber
+    actor Test as ColumnTests
+    participant Column as ColumnMetadata
 
-Test->>Column: validateRange(value)
-Column->>Validator: checkRange()
-Validator-->>Column: valid
-Column-->>Test: success
+    Test->>Column: setPrecision(10)
+    Column->>Column: precision = 10
+    Test->>Column: setScale(2)
+    Column->>Column: validate scale <= precision
+    Column->>Column: scale = 2
 ```
 
----
-
-## 16. Normalize Value
+## 16. SetScale_ShouldRejectScaleGreaterThanPrecision
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Column
-participant DataTypeValidator
+    autonumber
+    actor Test as ColumnTests
+    participant Column as ColumnMetadata
 
-Test->>Column: normalize(value)
-Column->>DataTypeValidator: normalizeValue()
-DataTypeValidator-->>Column: normalized
-Column-->>Test: normalized
+    Test->>Column: setPrecision(5)
+    Test->>Column: setScale(6)
+
+    alt Scale > precision
+        Column-->>Test: throw IllegalArgumentException
+    end
 ```
 
----
-
-## 17. Bind Collation
+## 17. GenerateIdentityValue_ShouldReturnSequentialValues
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Column
-participant Validator
+    autonumber
+    actor Test as ColumnTests
+    participant Column as ColumnMetadata
 
-Test->>Column: bindCollation(collation)
-Column->>Validator: validateCollation()
-Validator-->>Column: valid
-Column-->>Test: success
+    Test->>Column: setIdentity(true)
+    Column->>Column: identity = true
+
+    Test->>Column: generateIdentityValue()
+    Column->>Column: return current nextIdentityValue
+    Column->>Column: increment nextIdentityValue
+    Column-->>Test: 1
+
+    Test->>Column: generateIdentityValue()
+    Column-->>Test: 2
 ```
 
----
-
-## 18. Compare Metadata
+## 18. GenerateIdentityValue_ShouldRejectDisabledIdentity
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Column
+    autonumber
+    actor Test as ColumnTests
+    participant Column as ColumnMetadata
 
-Test->>Column: compareMetadata(other)
-Column->>Column: compareDefinition()
-Column-->>Test: same
-```
+    Test->>Column: generateIdentityValue()
 
----
-
-## 19. Export Definition
-
-```mermaid
-sequenceDiagram
-actor Test
-participant Column
-
-Test->>Column: exportDefinition()
-Column->>Column: buildDDL()
-Column-->>Test: DDL
-```
-
----
-
-## 20. Refresh Statistics
-
-```mermaid
-sequenceDiagram
-actor Test
-participant Column
-participant ColumnStats
-
-Test->>Column: refreshStatistics()
-Column->>ColumnStats: recalculate()
-ColumnStats-->>Column: refreshed
-Column-->>Test: success
-```
-
----
-
-## 15. Concurrent Alter Column
-
-```mermaid
-sequenceDiagram
-actor Thread1
-actor Thread2
-
-participant Column
-participant LockManager
-
-Thread1->>Column: alterType()
-
-Thread2->>Column: rename()
-
-Column->>LockManager: acquireSchemaLock()
-
-LockManager-->>Thread1: granted
-
-LockManager-->>Thread2: wait
+    alt Identity is disabled
+        Column-->>Test: throw IllegalStateException
+    end
 ```

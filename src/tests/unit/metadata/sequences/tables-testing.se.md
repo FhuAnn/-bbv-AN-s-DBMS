@@ -1,417 +1,381 @@
-# Table Testing - Main Functional Sequences
+# Table Testing — Important Unit Test Sequence Diagrams
 
----
-
-## 1. Create Table
+## 1. Constructor_ShouldCreateTable
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Table
-participant CatalogManager
+    autonumber
+    actor Test as TableTests
+    participant Table as Table
+    participant UUID as UUID
+    participant Columns as Column Collection
+    participant Rows as Row Collection
+    participant Constraints as Constraint Collection
+    participant Indexes as Index Collection
 
-Test->>Table: new Table("Student")
-
-Table->>CatalogManager: registerTable()
-
-CatalogManager-->>Table: success
-
-Table-->>Test: Table
+    Test->>Table: new Table("users", schemaId)
+    Table->>Table: validateName("users")
+    Table->>UUID: randomUUID()
+    UUID-->>Table: tableId
+    Table->>Columns: initialize empty collection
+    Table->>Rows: initialize empty collection
+    Table->>Constraints: initialize empty collection
+    Table->>Indexes: initialize empty collection
+    Table-->>Test: table
 ```
 
----
-
-## 2. Insert Row
+## 2. Constructor_ShouldGenerateTableId
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Table
-participant Row
-participant StorageEngine
+    autonumber
+    actor Test as TableTests
+    participant Table as Table
+    participant UUID as UUID
 
-Test->>Table: insert(row)
+    Test->>Table: new Table("users", schemaId)
+    Table->>UUID: randomUUID()
+    UUID-->>Table: tableId
+    Table-->>Test: table
 
-Table->>Row: validate()
-
-Row-->>Table: valid
-
-Table->>StorageEngine: insertRecord(row)
-
-StorageEngine-->>Table: RecordId
-
-Table-->>Test: success
+    Test->>Table: getId()
+    Table-->>Test: tableId
+    Test->>Test: assertNotNull(tableId)
 ```
 
----
-
-## 3. Update Row
+## 3. AddColumn_ShouldAppendColumn
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Table
-participant StorageEngine
+    autonumber
+    actor Test as TableTests
+    participant Table as Table
+    participant Column as ColumnMetadata
+    participant Columns as Column Collection
 
-Test->>Table: update(id,newRow)
-
-Table->>StorageEngine: findRecord(id)
-
-StorageEngine-->>Table: Row
-
-Table->>StorageEngine: updateRecord(id,newRow)
-
-StorageEngine-->>Table: updated
-
-Table-->>Test: success
+    Test->>Table: addColumn(Column)
+    Table->>Table: validateColumn(Column)
+    Table->>Column: getName()
+    Column-->>Table: "email"
+    Table->>Table: containsColumn("email")
+    Table-->>Table: false
+    Table->>Columns: add(Column)
+    Columns-->>Table: true
+    Table-->>Test: void
 ```
 
----
-
-## 4. Delete Row
+## 4. AddColumn_ShouldRejectDuplicateColumnName
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Table
-participant StorageEngine
+    autonumber
+    actor Test as TableTests
+    participant Table as Table
 
-Test->>Table: delete(id)
+    Test->>Table: addColumn(firstEmailColumn)
+    Test->>Table: addColumn(secondEmailColumn)
+    Table->>Table: containsColumn("email")
+    Table-->>Table: true
 
-Table->>StorageEngine: deleteRecord(id)
-
-StorageEngine-->>Table: deleted
-
-Table-->>Test: success
+    alt Duplicate column name
+        Table-->>Test: throw ColumnAlreadyExistsException
+        Test->>Test: assertThrows(...)
+    end
 ```
 
----
-
-## 5. Truncate Table
+## 5. GetColumn_ShouldReturnExistingColumn
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Table
-participant StorageEngine
+    autonumber
+    actor Test as TableTests
+    participant Table as Table
+    participant Columns as Column Collection
 
-Test->>Table: truncate()
-
-Table->>StorageEngine: removeAllRecords()
-
-StorageEngine-->>Table: completed
-
-Table-->>Test: success
+    Test->>Table: getColumn("email")
+    Table->>Columns: search by name
+    Columns-->>Table: emailColumn
+    Table-->>Test: emailColumn
 ```
 
----
-
-## 6. Add Column
+## 6. RemoveColumn_ShouldRemoveExistingColumn
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Table
-participant Column
-participant CatalogManager
+    autonumber
+    actor Test as TableTests
+    participant Table as Table
+    participant Columns as Column Collection
 
-Test->>Table: addColumn()
-
-Table->>Column: create()
-
-Column-->>Table: Column
-
-Table->>CatalogManager: updateMetadata()
-
-CatalogManager-->>Table: success
-
-Table-->>Test: Column
+    Test->>Table: removeColumn("email")
+    Table->>Columns: find by name
+    Columns-->>Table: emailColumn
+    Table->>Columns: remove(emailColumn)
+    Columns-->>Table: true
+    Table-->>Test: emailColumn
 ```
 
----
-
-## 7. Remove Column
+## 7. RenameColumn_ShouldRenameExistingColumn
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Table
-participant CatalogManager
+    autonumber
+    actor Test as TableTests
+    participant Table as Table
+    participant Column as ColumnMetadata
 
-Test->>Table: removeColumn("Age")
-
-Table->>CatalogManager: updateMetadata()
-
-CatalogManager-->>Table: updated
-
-Table-->>Test: success
+    Test->>Table: renameColumn("email", "contact_email")
+    Table->>Table: getColumn("email")
+    Table-->>Table: emailColumn
+    Table->>Table: containsColumn("contact_email")
+    Table-->>Table: false
+    Table->>Column: setName("contact_email")
+    Column-->>Table: void
+    Table-->>Test: void
 ```
 
----
-
-## 8. Rename Column
+## 8. InsertRow_ShouldInsertSuccessfully
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Table
-participant CatalogManager
+    autonumber
+    actor Test as TableTests
+    participant Table as Table
+    participant Row as Row
+    participant Columns as Column Collection
+    participant Constraints as Constraint Collection
+    participant Rows as Row Collection
 
-Test->>Table: renameColumn(old,new)
-
-Table->>CatalogManager: renameColumn()
-
-CatalogManager-->>Table: updated
-
-Table-->>Test: success
+    Test->>Table: insertRow(Row)
+    Table->>Table: validateRow(Row)
+    Table->>Columns: validate row values
+    Columns-->>Table: valid
+    Table->>Constraints: validate row
+    Constraints-->>Table: valid
+    Table->>Rows: add(Row)
+    Rows-->>Table: true
+    Table-->>Test: Row
 ```
 
----
-
-## 9. Add Constraint
+## 9. InsertRow_ShouldRejectInvalidColumnValue
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Table
-participant Constraint
-participant CatalogManager
+    autonumber
+    actor Test as TableTests
+    participant Table as Table
+    participant Column as ColumnMetadata
 
-Test->>Table: addConstraint()
+    Test->>Table: insertRow(Row)
+    Table->>Column: validateValue(rowValue)
 
-Table->>Constraint: validate()
-
-Constraint-->>Table: valid
-
-Table->>CatalogManager: registerConstraint()
-
-CatalogManager-->>Table: success
-
-Table-->>Test: Constraint
+    alt Value has wrong type
+        Column-->>Table: throw DataTypeMismatchException
+        Table-->>Test: propagate exception
+    end
 ```
 
----
-
-## 10. Drop Constraint
+## 10. InsertRow_ShouldRejectConstraintViolation
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Table
-participant CatalogManager
+    autonumber
+    actor Test as TableTests
+    participant Table as Table
+    participant Constraint as Constraint
 
-Test->>Table: dropConstraint()
+    Test->>Table: insertRow(Row)
+    Table->>Constraint: validate(Row)
 
-Table->>CatalogManager: removeConstraint()
-
-CatalogManager-->>Table: removed
-
-Table-->>Test: success
+    alt Constraint is violated
+        Constraint-->>Table: throw ConstraintViolationException
+        Table-->>Test: propagate exception
+    end
 ```
 
----
-
-## 11. Create Index
+## 11. GetRow_ShouldReturnExistingRow
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Table
-participant Index
-participant CatalogManager
+    autonumber
+    actor Test as TableTests
+    participant Table as Table
+    participant Rows as Row Collection
 
-Test->>Table: createIndex()
-
-Table->>Index: build()
-
-Index-->>Table: ready
-
-Table->>CatalogManager: registerIndex()
-
-CatalogManager-->>Table: success
-
-Table-->>Test: Index
+    Test->>Table: getRow(rowId)
+    Table->>Rows: search by ID
+    Rows-->>Table: row
+    Table-->>Test: row
 ```
 
----
-
-## 12. Drop Index
+## 12. UpdateRow_ShouldUpdateExistingRow
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Table
-participant CatalogManager
+    autonumber
+    actor Test as TableTests
+    participant Table as Table
+    participant Rows as Row Collection
+    participant Existing as Existing Row
 
-Test->>Table: dropIndex()
-
-Table->>CatalogManager: removeIndex()
-
-CatalogManager-->>Table: success
-
-Table-->>Test: success
+    Test->>Table: updateRow(rowId, newRow)
+    Table->>Rows: find by ID
+    Rows-->>Table: Existing
+    Table->>Table: validateRow(newRow)
+    Table->>Existing: replace values
+    Existing-->>Table: void
+    Table-->>Test: updated row
 ```
 
----
-
-## 13. Analyze Table
+## 13. DeleteRow_ShouldDeleteExistingRow
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Table
-participant StatisticsManager
+    autonumber
+    actor Test as TableTests
+    participant Table as Table
+    participant Rows as Row Collection
 
-Test->>Table: analyze()
-
-Table->>StatisticsManager: collectStatistics()
-
-StatisticsManager-->>Table: TableStats
-
-Table-->>Test: completed
+    Test->>Table: deleteRow(rowId)
+    Table->>Rows: find by ID
+    Rows-->>Table: row
+    Table->>Rows: remove(row)
+    Rows-->>Table: true
+    Table-->>Test: row
 ```
 
----
-
-## 14. Vacuum Table
+## 14. Truncate_ShouldRemoveAllRows
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Table
-participant StorageEngine
+    autonumber
+    actor Test as TableTests
+    participant Table as Table
+    participant Rows as Row Collection
 
-Test->>Table: vacuum()
+    Test->>Table: truncate()
+    Table->>Rows: clear()
+    Rows-->>Table: void
+    Table-->>Test: void
 
-Table->>StorageEngine: reclaimSpace()
-
-StorageEngine-->>Table: completed
-
-Table-->>Test: success
+    Test->>Table: getRowCount()
+    Table-->>Test: 0
 ```
 
----
-
-## 15. Compress Table
+## 15. AddConstraint_ShouldRegisterConstraint
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Table
-participant StorageEngine
+    autonumber
+    actor Test as TableTests
+    participant Table as Table
+    participant Constraint as Constraint
+    participant Constraints as Constraint Collection
 
-Test->>Table: compress()
-
-Table->>StorageEngine: compressPages()
-
-StorageEngine-->>Table: compressed
-
-Table-->>Test: success
+    Test->>Table: addConstraint(Constraint)
+    Table->>Table: validateConstraint(Constraint)
+    Table->>Constraint: getName()
+    Constraint-->>Table: "pk_users"
+    Table->>Table: containsConstraint("pk_users")
+    Table-->>Table: false
+    Table->>Constraints: add(Constraint)
+    Constraints-->>Table: true
+    Table-->>Test: void
 ```
 
----
-
-## 16. Encrypt Table
+## 16. AddConstraint_ShouldRejectDuplicateName
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Table
-participant StorageEngine
+    autonumber
+    actor Test as TableTests
+    participant Table as Table
 
-Test->>Table: encrypt(key)
+    Test->>Table: addConstraint(firstConstraint)
+    Test->>Table: addConstraint(secondConstraint)
+    Table->>Table: containsConstraint("pk_users")
+    Table-->>Table: true
 
-Table->>StorageEngine: encryptData()
-
-StorageEngine-->>Table: encrypted
-
-Table-->>Test: success
+    alt Duplicate constraint name
+        Table-->>Test: throw ConstraintAlreadyExistsException
+        Test->>Test: assertThrows(...)
+    end
 ```
 
----
-
-## 17. Primary Key Validation
+## 17. AddIndex_ShouldRegisterIndex
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Table
-participant Constraint
+    autonumber
+    actor Test as TableTests
+    participant Table as Table
+    participant Index as Index
+    participant Indexes as Index Collection
 
-Test->>Table: insert(row)
-
-Table->>Constraint: validatePrimaryKey()
-
-Constraint-->>Table: duplicate
-
-Table-->>Test: PrimaryKeyViolationException
+    Test->>Table: addIndex(Index)
+    Table->>Table: validateIndex(Index)
+    Table->>Index: getName()
+    Index-->>Table: "idx_email"
+    Table->>Table: containsIndex("idx_email")
+    Table-->>Table: false
+    Table->>Indexes: add(Index)
+    Indexes-->>Table: true
+    Table-->>Test: void
 ```
 
----
-
-## 18. Foreign Key Validation
+## 18. AddIndex_ShouldRejectDuplicateName
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Table
-participant Constraint
+    autonumber
+    actor Test as TableTests
+    participant Table as Table
 
-Test->>Table: insert(row)
+    Test->>Table: addIndex(firstIndex)
+    Test->>Table: addIndex(secondIndex)
+    Table->>Table: containsIndex("idx_email")
+    Table-->>Table: true
 
-Table->>Constraint: validateForeignKey()
-
-Constraint-->>Table: invalid
-
-Table-->>Test: ForeignKeyViolationException
+    alt Duplicate index name
+        Table-->>Test: throw IndexAlreadyExistsException
+        Test->>Test: assertThrows(...)
+    end
 ```
 
----
-
-## 19. Concurrent Insert
+## 19. GetCollections_ShouldReturnUnmodifiableCollections
 
 ```mermaid
 sequenceDiagram
-actor Thread1
-actor Thread2
+    autonumber
+    actor Test as TableTests
+    participant Table as Table
+    participant Returned as Returned Collection
 
-participant Table
-participant StorageEngine
+    Test->>Table: getRows()
+    Table-->>Test: unmodifiable rows
+    Test->>Returned: clear()
 
-Thread1->>Table: insert()
-
-Thread2->>Table: insert()
-
-Table->>StorageEngine: synchronizedInsert()
-
-StorageEngine-->>Thread1: success
-StorageEngine-->>Thread2: success
+    alt Collection is unmodifiable
+        Returned-->>Test: throw UnsupportedOperationException
+        Test->>Test: assertThrows(...)
+    end
 ```
 
----
-
-## 20. Concurrent Update
+## 20. IsEmpty_ShouldReturnCorrectState
 
 ```mermaid
 sequenceDiagram
-actor Thread1
-actor Thread2
+    autonumber
+    actor Test as TableTests
+    participant Table as Table
 
-participant Table
-participant LockManager
-participant StorageEngine
+    Test->>Table: isEmpty()
+    Table->>Table: check rows.isEmpty()
+    Table-->>Test: true
 
-Thread1->>Table: update()
+    Test->>Table: insertRow(row)
+    Table-->>Test: row
 
-Thread2->>Table: update()
-
-Table->>LockManager: acquireRowLock()
-
-LockManager-->>Table: granted
-
-Table->>StorageEngine: update()
-
-StorageEngine-->>Thread1: success
-
-LockManager-->>Thread2: wait
+    Test->>Table: isEmpty()
+    Table-->>Test: false
 ```

@@ -1,47 +1,58 @@
 package classes.database;
 
+import java.util.List;
 import java.util.UUID;
 
 import classes.metadata.Catalog;
+import classes.metadata.Schema;
 import classes.queryprocessor.QueryResult;
 import classes.storageengine.StorageEngine;
 import classes.tx.TransactionManager;
+import enums.DatabaseState;
 
 public class Database {
+    private UUID id;
+    private String name;
+    private boolean readOnly;
+    private Catalog catalog;
+    private List<Schema> schemas;
+	private DatabaseState state;
 
-	private final String name;
-	private final UUID id;
-	private final Catalog catalog;
-	private final StorageEngine storage;
-	private final TransactionManager txManager;
-	private final SecurityManager security;
+    public Database(String name)
+	{
 
-	public Database(String name) {
-		this.name = name;
-		this.id = UUID.randomUUID();
-		this.catalog = new Catalog();
-		this.storage = new StorageEngine();
-		this.txManager = new TransactionManager();
-		this.security = new SecurityManager();
-	}
+	};
 
-	public QueryResult executeSQL(String sql) {
-		throw new UnsupportedOperationException("SQL execution is not implemented yet.");
-	}
+    public void open() {};
+    public void close() {};
 
-	public String getName() {
-		return name;
-	}
+    public void addSchema(Schema schema) {};
+    public void removeSchema(String schemaName) {};
+    public Schema getSchema(String schemaName) { return null; };
+    public boolean containsSchema(String schemaName) {
+		return false;
+	};
+    public List<Schema> getSchemas() {
+        return schemas;
+    }
 
-	public UUID getId() {
-		return id;
-	}
+    public void rename(String newName) {};
+    public void setReadOnly(boolean readOnly) {};
 
-	public Catalog getCatalog() {
-		return catalog;
-	}
+    public UUID getId() {
+        return id;
+    }
+    public String getName() {
+        return name;
+    }
 
-	public StorageEngine getStorage() {
-		return storage;
+    public boolean isReadOnly() {
+        return readOnly;
+    }
+    public Catalog getCatalog() {
+        return catalog;
+    }
+	public DatabaseState getState() {
+		return state;
 	}
 }

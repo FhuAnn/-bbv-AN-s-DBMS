@@ -1,373 +1,269 @@
-# Index Testing - Main Functional Sequences
+# Index Testing — Important Unit Test Sequence Diagrams
 
----
-
-## 1. Create Index
+## 1. Constructor_ShouldCreateIndex
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Index
-participant BTree
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant UUID as UUID
+    participant Entries as Entry Map
 
-Test->>Index: create()
-
-Index->>BTree: initialize()
-
-BTree-->>Index: rootPage
-
-Index-->>Test: success
+    Test->>Index: new Index(name, HASH, tableId, columns, false)
+    Index->>Index: validate metadata
+    Index->>UUID: randomUUID()
+    UUID-->>Index: indexId
+    Index->>Entries: create empty map
+    Entries-->>Index: empty entries
+    Index->>Index: enabled = true
+    Index-->>Test: index
 ```
 
----
-
-## 2. Search Key
+## 2. Constructor_ShouldGenerateIndexId
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Index
-participant BTree
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant UUID as UUID
 
-Test->>Index: search(key)
+    Test->>Index: new Index(...)
+    Index->>UUID: randomUUID()
+    UUID-->>Index: indexId
+    Index-->>Test: index
 
-Index->>BTree: find(key)
-
-BTree-->>Index: RecordId
-
-Index-->>Test: RecordId
+    Test->>Index: getId()
+    Index-->>Test: indexId
 ```
 
----
-
-## 3. Insert Key
+## 3. Rename_ShouldChangeIndexName
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Index
-participant BTree
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
 
-Test->>Index: insert(key,rid)
-
-Index->>BTree: insert()
-
-alt Node Full
-    BTree->>BTree: splitNode()
-end
-
-BTree-->>Index: success
-
-Index-->>Test: inserted
+    Test->>Index: rename("idx_users_contact")
+    Index->>Index: validateName()
+    Index->>Index: name = newName
+    Index-->>Test: void
 ```
 
----
-
-## 4. Delete Key
+## 4. Disable_ShouldDisableIndex
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Index
-participant BTree
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
 
-Test->>Index: delete(key)
-
-Index->>BTree: remove()
-
-alt Node Underflow
-    BTree->>BTree: mergeNode()
-end
-
-BTree-->>Index: success
-
-Index-->>Test: deleted
+    Test->>Index: disable()
+    Index->>Index: enabled = false
+    Index-->>Test: void
 ```
 
----
-
-## 5. Split Node
+## 5. Insert_ShouldStoreKeyAndRowId
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant BTree
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant Entries as Entry Map
+    participant RowIds as Row ID List
 
-Test->>BTree: splitNode()
-
-BTree->>BTree: allocateSibling()
-
-BTree->>BTree: moveHalfKeys()
-
-BTree->>BTree: updateParent()
-
-BTree-->>Test: success
+    Test->>Index: insert(key, rowId)
+    Index->>Index: validate key and rowId
+    Index->>Entries: get(key)
+    Entries-->>Index: null
+    Index->>RowIds: create new list
+    Index->>RowIds: add(rowId)
+    Index->>Entries: put(key, RowIds)
+    Index-->>Test: void
 ```
 
----
-
-## 6. Merge Node
+## 6. Insert_ShouldAllowMultipleRowsForNonUniqueIndex
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant BTree
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant Entries as Entry Map
+    participant RowIds as Row ID List
 
-Test->>BTree: mergeNode()
+    Test->>Index: insert("HCMC", row1)
+    Index->>Entries: create key entry
 
-BTree->>BTree: moveKeys()
-
-BTree->>BTree: releasePage()
-
-BTree-->>Test: success
+    Test->>Index: insert("HCMC", row2)
+    Index->>Entries: get("HCMC")
+    Entries-->>Index: RowIds
+    Index->>RowIds: add(row2)
+    RowIds-->>Index: true
+    Index-->>Test: void
 ```
 
----
-
-## 7. Rebuild Index
+## 7. UniqueIndex_ShouldRejectDuplicateKey
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Index
+    autonumber
+    actor Test as IndexTests
+    participant Index as Unique Index
+    participant Entries as Entry Map
 
-Test->>Index: rebuild()
+    Test->>Index: insert(key, row1)
+    Index->>Entries: put key and row1
 
-Index->>Index: scanTable()
+    Test->>Index: insert(key, row2)
+    Index->>Entries: containsKey(key)
+    Entries-->>Index: true
 
-Index->>Index: recreateTree()
-
-Index-->>Test: completed
+    alt Index is unique
+        Index-->>Test: throw IllegalArgumentException
+    end
 ```
 
----
-
-## 8. Reorganize Index
+## 8. Search_ShouldReturnMatchingRows
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Index
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant Entries as Entry Map
 
-Test->>Index: reorganize()
-
-Index->>Index: compactPages()
-
-Index-->>Test: completed
+    Test->>Index: search(key)
+    Index->>Entries: get(key)
+    Entries-->>Index: row IDs
+    Index-->>Test: unmodifiable row IDs
 ```
 
----
-
-## 9. Estimate Selectivity
+## 9. Search_ShouldReturnEmptyForMissingKey
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Index
-participant Statistics
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant Entries as Entry Map
 
-Test->>Index: estimateSelectivity()
-
-Index->>Statistics: estimate()
-
-Statistics-->>Index: 0.03
-
-Index-->>Test: 3%
+    Test->>Index: search(missingKey)
+    Index->>Entries: get(missingKey)
+    Entries-->>Index: null
+    Index-->>Test: empty list
 ```
 
----
-
-## 10. Update Statistics
+## 10. Delete_ShouldRemoveSpecificRowId
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Index
-participant Statistics
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant Entries as Entry Map
+    participant RowIds as Row ID List
 
-Test->>Index: updateStatistics()
-
-Index->>Statistics: collect()
-
-Statistics-->>Index: updated
-
-Index-->>Test: success
+    Test->>Index: delete(key, rowId)
+    Index->>Entries: get(key)
+    Entries-->>Index: RowIds
+    Index->>RowIds: remove(rowId)
+    RowIds-->>Index: true
+    Index-->>Test: true
 ```
 
----
-
-## 11. Duplicate Key Validation
+## 11. Delete_ShouldRemoveEmptyKey
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Index
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant Entries as Entry Map
+    participant RowIds as Row ID List
 
-Test->>Index: insert(existingKey)
-
-Index->>Index: exists()
-
-Index-->>Test: DuplicateKeyException
+    Test->>Index: delete(key, lastRowId)
+    Index->>RowIds: remove(lastRowId)
+    RowIds-->>Index: true
+    Index->>RowIds: isEmpty()
+    RowIds-->>Index: true
+    Index->>Entries: remove(key)
+    Index-->>Test: true
 ```
 
----
-
-## 12. Corrupted Index Recovery
+## 12. DeleteKey_ShouldRemoveEntireKey
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Index
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant Entries as Entry Map
 
-Test->>Index: validate()
-
-Index->>Index: checkIntegrity()
-
-Index-->>Test: CorruptedIndexException
+    Test->>Index: deleteKey(key)
+    Index->>Entries: remove(key)
+    Entries-->>Index: removed row IDs
+    Index-->>Test: true
 ```
 
----
-
-## 13. Concurrent Insert
+## 13. Clear_ShouldRemoveAllEntries
 
 ```mermaid
 sequenceDiagram
-actor Tx1
-actor Tx2
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant Entries as Entry Map
 
-participant Index
-
-Tx1->>Index: insert()
-
-Tx2->>Index: insert()
-
-Index->>Index: latch()
-
-Index-->>Tx1: success
-
-Index-->>Tx2: success
+    Test->>Index: clear()
+    Index->>Entries: clear()
+    Entries-->>Index: void
+    Index-->>Test: void
 ```
 
----
-
-## 14. Concurrent Search
+## 14. GetEntries_ShouldReturnUnmodifiableMap
 
 ```mermaid
 sequenceDiagram
-actor Tx1
-actor Tx2
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant Entries as Returned Map
 
-participant Index
+    Test->>Index: getEntries()
+    Index-->>Test: unmodifiable map
 
-Tx1->>Index: search()
-
-Tx2->>Index: search()
-
-Index->>Index: latch()
-
-Index-->>Tx1: pointer
-
-Index-->>Tx2: pointer
+    Test->>Entries: clear()
+    alt Map is unmodifiable
+        Entries-->>Test: throw UnsupportedOperationException
+    end
 ```
 
----
-
-## 15. Rebuild From Table
+## 15. IsValidDefinition_ShouldValidateMetadata
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Index
-participant Table
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
 
-Test->>Index: rebuildFromTable(table)
-Index->>Table: scanRows()
-Table-->>Index: keys
-Index-->>Test: rebuilt
+    Test->>Index: isValidDefinition()
+    Index->>Index: validate name
+    Index->>Index: validate type
+    Index->>Index: validate tableId
+    Index->>Index: validate column names
+    Index-->>Test: true or false
 ```
 
----
+## Recommended order
 
-## 16. Reorganize Pages
-
-```mermaid
-sequenceDiagram
-actor Test
-participant Index
-
-Test->>Index: reorganizePages()
-Index->>Index: compactPages()
-Index-->>Test: success
-```
-
----
-
-## 17. Scan Prefix
-
-```mermaid
-sequenceDiagram
-actor Test
-participant Index
-participant BTree
-
-Test->>Index: scanPrefix(prefix)
-Index->>BTree: findPrefixRange()
-BTree-->>Index: range
-Index-->>Test: result
-```
-
----
-
-## 18. Verify Tree Integrity
-
-```mermaid
-sequenceDiagram
-actor Test
-participant Index
-
-Test->>Index: verifyIntegrity()
-Index->>Index: checkNodeLinks()
-Index-->>Test: valid
-```
-
----
-
-## 19. Export Index Stats
-
-```mermaid
-sequenceDiagram
-actor Test
-participant Index
-participant Statistics
-
-Test->>Index: exportStats()
-Index->>Statistics: collectIndexStats()
-Statistics-->>Index: stats
-Index-->>Test: stats
-```
-
----
-
-## 20. Freeze Index
-
-```mermaid
-sequenceDiagram
-actor Test
-participant Index
-
-Test->>Index: freeze()
-Index->>Index: markReadOnly()
-Index-->>Test: frozen
-```
-
-Tx1->>Index: search()
-
-Tx2->>Index: search()
-
-Index-->>Tx1: RecordId
-
-Index-->>Tx2: RecordId
-
-```
-
-```
+1. Constructor and metadata
+2. Enable and disable
+3. Insert
+4. Search
+5. Delete
+6. Clear and counts
+7. Definition validation

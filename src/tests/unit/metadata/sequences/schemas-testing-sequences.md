@@ -1,418 +1,285 @@
-# Schema Testing - Main Functional Sequences
+# Schema Testing — Important Unit Test Sequence Diagrams
 
----
-
-## 1. Create Schema
+## 1. Constructor_ShouldCreateSchema
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Schema
-participant CatalogManager
+    autonumber
+    actor Test as SchemaTests
+    participant Schema as Schema
+    participant UUID as UUID
+    participant Tables as Table Collection
+    participant Views as View Collection
 
-Test->>Schema: new Schema("Sales")
+    Test->>Schema: new Schema("sales", databaseId, ownerId)
+    Schema->>Schema: validateName("sales")
+    Schema->>UUID: randomUUID()
+    UUID-->>Schema: schemaId
+    Schema->>Tables: new ArrayList()
+    Tables-->>Schema: empty tables
+    Schema->>Views: new ArrayList()
+    Views-->>Schema: empty views
+    Schema-->>Test: schema
 
-Schema->>CatalogManager: registerSchema()
-
-CatalogManager-->>Schema: success
-
-Schema-->>Test: Schema
+    Test->>Test: assertNotNull(schema)
 ```
 
----
-
-## 2. Create Table
+## 2. Constructor_ShouldGenerateSchemaId
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Schema
-participant Table
-participant CatalogManager
+    autonumber
+    actor Test as SchemaTests
+    participant Schema as Schema
+    participant UUID as UUID
 
-Test->>Schema: createTable("Student")
+    Test->>Schema: new Schema("sales", databaseId, ownerId)
+    Schema->>UUID: randomUUID()
+    UUID-->>Schema: schemaId
+    Schema-->>Test: schema
 
-Schema->>Table: new Table()
-
-Table-->>Schema: Table
-
-Schema->>CatalogManager: registerTable()
-
-CatalogManager-->>Schema: success
-
-Schema-->>Test: Table
+    Test->>Schema: getId()
+    Schema-->>Test: schemaId
+    Test->>Test: assertNotNull(schemaId)
 ```
 
----
-
-## 3. Drop Table
+## 3. Constructor_ShouldInitializeEmptyCollections
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Schema
-participant CatalogManager
+    autonumber
+    actor Test as SchemaTests
+    participant Schema as Schema
 
-Test->>Schema: dropTable("Student")
+    Test->>Schema: new Schema("sales", databaseId, ownerId)
+    Test->>Schema: getTables()
+    Schema-->>Test: empty table collection
+    Test->>Schema: getViews()
+    Schema-->>Test: empty view collection
 
-Schema->>CatalogManager: removeTable()
-
-CatalogManager-->>Schema: removed
-
-Schema-->>Test: success
+    Test->>Test: assertTrue(tables.isEmpty())
+    Test->>Test: assertTrue(views.isEmpty())
 ```
 
----
-
-## 4. Rename Schema
+## 4. Rename_ShouldChangeSchemaName
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Schema
-participant CatalogManager
+    autonumber
+    actor Test as SchemaTests
+    participant Schema as Schema
 
-Test->>Schema: rename("Archive")
+    Test->>Schema: rename("reporting")
+    Schema->>Schema: validateName("reporting")
+    Schema->>Schema: name = "reporting"
+    Schema-->>Test: void
 
-Schema->>CatalogManager: updateSchema()
-
-CatalogManager-->>Schema: updated
-
-Schema-->>Test: success
+    Test->>Schema: getName()
+    Schema-->>Test: "reporting"
 ```
 
----
-
-## 5. Move Table
+## 5. Rename_ShouldRejectInvalidName
 
 ```mermaid
 sequenceDiagram
-actor Test
+    autonumber
+    actor Test as SchemaTests
+    participant Schema as Schema
 
-participant SourceSchema
+    Test->>Schema: rename(" ")
+    Schema->>Schema: validateName(" ")
 
-participant TargetSchema
-
-participant CatalogManager
-
-Test->>SourceSchema: moveTable(Student,target)
-
-SourceSchema->>CatalogManager: unregister(Student)
-
-CatalogManager-->>SourceSchema: removed
-
-TargetSchema->>CatalogManager: register(Student)
-
-CatalogManager-->>TargetSchema: registered
-
-TargetSchema-->>Test: success
+    alt Name is blank
+        Schema-->>Test: throw IllegalArgumentException
+        Test->>Test: assertThrows(...)
+    end
 ```
 
----
-
-## 6. Create View
+## 6. AddTable_ShouldRegisterTable
 
 ```mermaid
 sequenceDiagram
-actor Test
+    autonumber
+    actor Test as SchemaTests
+    participant Schema as Schema
+    participant Table as TableMetadata
+    participant Tables as Table Collection
 
-participant Schema
-
-participant View
-
-participant CatalogManager
-
-Test->>Schema: createView()
-
-Schema->>View: new View()
-
-View-->>Schema: View
-
-Schema->>CatalogManager: registerView()
-
-CatalogManager-->>Schema: success
-
-Schema-->>Test: View
+    Test->>Schema: addTable(Table)
+    Schema->>Schema: validateTable(Table)
+    Schema->>Table: getName()
+    Table-->>Schema: "users"
+    Schema->>Schema: containsTable("users")
+    Schema-->>Schema: false
+    Schema->>Tables: add(Table)
+    Tables-->>Schema: true
+    Schema-->>Test: void
 ```
 
----
-
-## 7. Create Stored Procedure
+## 7. AddTable_ShouldRejectDuplicateTableName
 
 ```mermaid
 sequenceDiagram
-actor Test
+    autonumber
+    actor Test as SchemaTests
+    participant Schema as Schema
 
-participant Schema
+    Test->>Schema: addTable(firstUsersTable)
+    Schema-->>Test: void
 
-participant StoredProcedure
+    Test->>Schema: addTable(secondUsersTable)
+    Schema->>Schema: containsTable("users")
+    Schema-->>Schema: true
 
-participant CatalogManager
-
-Test->>Schema: createProcedure()
-
-Schema->>StoredProcedure: compile()
-
-StoredProcedure-->>Schema: Procedure
-
-Schema->>CatalogManager: registerProcedure()
-
-CatalogManager-->>Schema: success
-
-Schema-->>Test: Procedure
+    alt Duplicate table name
+        Schema-->>Test: throw TableAlreadyExistsException
+        Test->>Test: assertThrows(...)
+    end
 ```
 
----
-
-## 8. Create Function
+## 8. GetTable_ShouldReturnExistingTable
 
 ```mermaid
 sequenceDiagram
-actor Test
+    autonumber
+    actor Test as SchemaTests
+    participant Schema as Schema
+    participant Tables as Table Collection
 
-participant Schema
-
-participant Function
-
-participant CatalogManager
-
-Test->>Schema: createFunction()
-
-Schema->>Function: compile()
-
-Function-->>Schema: Function
-
-Schema->>CatalogManager: registerFunction()
-
-CatalogManager-->>Schema: success
-
-Schema-->>Test: Function
+    Test->>Schema: getTable("users")
+    Schema->>Tables: search by name
+    Tables-->>Schema: usersTable
+    Schema-->>Test: usersTable
 ```
 
----
-
-## 9. Create Sequence
+## 9. RemoveTable_ShouldRemoveExistingTable
 
 ```mermaid
 sequenceDiagram
-actor Test
+    autonumber
+    actor Test as SchemaTests
+    participant Schema as Schema
+    participant Tables as Table Collection
 
-participant Schema
+    Test->>Schema: removeTable("users")
+    Schema->>Tables: find table by name
+    Tables-->>Schema: usersTable
+    Schema->>Tables: remove(usersTable)
+    Tables-->>Schema: true
+    Schema-->>Test: usersTable
 
-participant Sequence
-
-participant CatalogManager
-
-Test->>Schema: createSequence()
-
-Schema->>Sequence: initialize()
-
-Sequence-->>Schema: Sequence
-
-Schema->>CatalogManager: registerSequence()
-
-CatalogManager-->>Schema: success
-
-Schema-->>Test: Sequence
+    Test->>Schema: containsTable("users")
+    Schema-->>Test: false
 ```
 
----
-
-## 10. Get Table
+## 10. GetTables_ShouldReturnUnmodifiableCollection
 
 ```mermaid
 sequenceDiagram
-actor Test
+    autonumber
+    actor Test as SchemaTests
+    participant Schema as Schema
+    participant Tables as Returned Collection
 
-participant Schema
+    Test->>Schema: getTables()
+    Schema-->>Test: unmodifiable tables
 
-participant CatalogManager
-
-Test->>Schema: getTable("Student")
-
-Schema->>CatalogManager: lookupTable()
-
-CatalogManager-->>Schema: TableMetadata
-
-Schema-->>Test: Table
+    Test->>Tables: clear()
+    alt Collection is unmodifiable
+        Tables-->>Test: throw UnsupportedOperationException
+        Test->>Test: assertThrows(...)
+    end
 ```
 
----
-
-## 11. List Tables
+## 11. AddView_ShouldRegisterView
 
 ```mermaid
 sequenceDiagram
-actor Test
+    autonumber
+    actor Test as SchemaTests
+    participant Schema as Schema
+    participant View as View
+    participant Views as View Collection
 
-participant Schema
-
-participant CatalogManager
-
-Test->>Schema: getTables()
-
-Schema->>CatalogManager: listTables()
-
-CatalogManager-->>Schema: List<Table>
-
-Schema-->>Test: List<Table>
+    Test->>Schema: addView(View)
+    Schema->>Schema: validateView(View)
+    Schema->>View: getName()
+    View-->>Schema: "active_users"
+    Schema->>Schema: containsView("active_users")
+    Schema-->>Schema: false
+    Schema->>Views: add(View)
+    Views-->>Schema: true
+    Schema-->>Test: void
 ```
 
----
-
-## 12. Check Object Exists
+## 12. AddView_ShouldRejectDuplicateViewName
 
 ```mermaid
 sequenceDiagram
-actor Test
+    autonumber
+    actor Test as SchemaTests
+    participant Schema as Schema
 
-participant Schema
+    Test->>Schema: addView(firstView)
+    Test->>Schema: addView(secondView)
+    Schema->>Schema: containsView("active_users")
+    Schema-->>Schema: true
 
-participant CatalogManager
-
-Test->>Schema: contains("Student")
-
-Schema->>CatalogManager: exists()
-
-CatalogManager-->>Schema: true
-
-Schema-->>Test: true
+    alt Duplicate view name
+        Schema-->>Test: throw ViewAlreadyExistsException
+        Test->>Test: assertThrows(...)
+    end
 ```
 
----
-
-## 13. Duplicate Object
+## 13. RemoveView_ShouldRemoveExistingView
 
 ```mermaid
 sequenceDiagram
-actor Test
+    autonumber
+    actor Test as SchemaTests
+    participant Schema as Schema
+    participant Views as View Collection
 
-participant Schema
-
-participant CatalogManager
-
-Test->>Schema: createTable(Student)
-
-Schema->>CatalogManager: exists(Student)
-
-CatalogManager-->>Schema: true
-
-Schema-->>Test: DuplicateObjectException
+    Test->>Schema: removeView("active_users")
+    Schema->>Views: find view by name
+    Views-->>Schema: activeUsersView
+    Schema->>Views: remove(activeUsersView)
+    Views-->>Schema: true
+    Schema-->>Test: activeUsersView
 ```
 
----
-
-## 14. Invalid Name
+## 14. IsEmpty_ShouldReturnCorrectState
 
 ```mermaid
 sequenceDiagram
-actor Test
+    autonumber
+    actor Test as SchemaTests
+    participant Schema as Schema
 
-participant Schema
+    Test->>Schema: isEmpty()
+    Schema->>Schema: check tables.isEmpty()
+    Schema->>Schema: check views.isEmpty()
+    Schema-->>Test: true
 
-participant Validator
+    Test->>Schema: addTable(usersTable)
+    Schema-->>Test: void
 
-Test->>Schema: createTable("")
-
-Schema->>Validator: validateName()
-
-Validator-->>Schema: invalid
-
-Schema-->>Test: InvalidNameException
+    Test->>Schema: isEmpty()
+    Schema-->>Test: false
 ```
 
----
-
-## 15. Rename Table
+## 15. SetOwnerId_ShouldUpdateOwner
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant Schema
-participant CatalogManager
+    autonumber
+    actor Test as SchemaTests
+    participant Schema as Schema
 
-Test->>Schema: renameTable(oldName,newName)
-Schema->>CatalogManager: renameTable()
-CatalogManager-->>Schema: renamed
-Schema-->>Test: success
-```
+    Test->>Schema: setOwnerId(newOwnerId)
+    Schema->>Schema: ownerId = newOwnerId
+    Schema-->>Test: void
 
----
-
-## 16. Drop View
-
-```mermaid
-sequenceDiagram
-actor Test
-participant Schema
-participant CatalogManager
-
-Test->>Schema: dropView("StudentView")
-Schema->>CatalogManager: removeView()
-CatalogManager-->>Schema: removed
-Schema-->>Test: success
-```
-
----
-
-## 17. Drop Stored Procedure
-
-```mermaid
-sequenceDiagram
-actor Test
-participant Schema
-participant CatalogManager
-
-Test->>Schema: dropProcedure("StudentProc")
-Schema->>CatalogManager: removeProcedure()
-CatalogManager-->>Schema: removed
-Schema-->>Test: success
-```
-
----
-
-## 18. Drop Function
-
-```mermaid
-sequenceDiagram
-actor Test
-participant Schema
-participant CatalogManager
-
-Test->>Schema: dropFunction("StudentFn")
-Schema->>CatalogManager: removeFunction()
-CatalogManager-->>Schema: removed
-Schema-->>Test: success
-```
-
----
-
-## 19. Drop Sequence
-
-```mermaid
-sequenceDiagram
-actor Test
-participant Schema
-participant CatalogManager
-
-Test->>Schema: dropSequence("StudentSeq")
-Schema->>CatalogManager: removeSequence()
-CatalogManager-->>Schema: removed
-Schema-->>Test: success
-```
-
----
-
-## 20. Clone Schema
-
-```mermaid
-sequenceDiagram
-actor Test
-participant Schema
-participant CatalogManager
-
-Test->>Schema: cloneSchema("Archive")
-Schema->>CatalogManager: copyMetadata()
-CatalogManager-->>Schema: copied
-Schema-->>Test: success
+    Test->>Schema: getOwnerId()
+    Schema-->>Test: newOwnerId
 ```

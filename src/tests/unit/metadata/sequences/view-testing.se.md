@@ -1,307 +1,375 @@
-# View Testing - Main Functional Sequences
+# View Testing — Important Unit Test Sequence Diagrams
 
----
-
-## 1. Create View
+## 1. Constructor_ShouldCreateView
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant View
-participant Schema
+    autonumber
+    actor Test as ViewTests
+    participant View as View
+    participant UUID as UUID
+    participant Dependencies as Dependency Set
 
-Test->>View: createView(definition)
-View->>Schema: registerView()
-Schema-->>View: registered
-View-->>Test: View
+    Test->>View: new View("active_users", schemaId, definition)
+    View->>View: validateName("active_users")
+    View->>View: validateDefinition(definition)
+    View->>UUID: randomUUID()
+    UUID-->>View: viewId
+    View->>Dependencies: new LinkedHashSet()
+    Dependencies-->>View: empty dependencies
+    View->>View: materialized = false
+    View->>View: valid = true
+    View-->>Test: view
 ```
 
----
-
-## 2. Refresh Materialized View
+## 2. Constructor_ShouldGenerateViewId
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant View
-participant QueryExecutor
+    autonumber
+    actor Test as ViewTests
+    participant View as View
+    participant UUID as UUID
 
-Test->>View: refreshMaterializedView()
-View->>QueryExecutor: executeDefinition()
-QueryExecutor-->>View: rows
-View-->>Test: refreshed
+    Test->>View: new View("active_users", schemaId, definition)
+    View->>UUID: randomUUID()
+    UUID-->>View: viewId
+    View-->>Test: view
+
+    Test->>View: getId()
+    View-->>Test: viewId
+    Test->>Test: assertNotNull(viewId)
 ```
 
----
-
-## 3. Resolve Dependencies
+## 3. Constructor_ShouldInitializeEmptyDependencies
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant View
-participant CatalogManager
+    autonumber
+    actor Test as ViewTests
+    participant View as View
 
-Test->>View: resolveDependencies()
-View->>CatalogManager: lookupDependencies()
-CatalogManager-->>View: dependencyList
-View-->>Test: resolved
+    Test->>View: new View("active_users", schemaId, definition)
+    Test->>View: getDependencyIds()
+    View-->>Test: empty dependency set
+
+    Test->>Test: assertTrue(dependencies.isEmpty())
 ```
 
----
-
-## 4. Validate Definition
+## 4. Rename_ShouldChangeViewName
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant View
-participant SQLParser
+    autonumber
+    actor Test as ViewTests
+    participant View as View
 
-Test->>View: validateDefinition()
-View->>SQLParser: parse(definition)
-SQLParser-->>View: AST
-View-->>Test: valid
+    Test->>View: rename("enabled_users")
+    View->>View: validateName("enabled_users")
+    View->>View: name = "enabled_users"
+    View-->>Test: void
+
+    Test->>View: getName()
+    View-->>Test: "enabled_users"
 ```
 
----
-
-## 5. Drop View
+## 5. Rename_ShouldRejectInvalidName
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant View
-participant CatalogManager
+    autonumber
+    actor Test as ViewTests
+    participant View as View
 
-Test->>View: dropView()
-View->>CatalogManager: removeView()
-CatalogManager-->>View: removed
-View-->>Test: success
+    Test->>View: rename(" ")
+    View->>View: validateName(" ")
+
+    alt Name is blank
+        View-->>Test: throw IllegalArgumentException
+        Test->>Test: assertThrows(...)
+    end
 ```
 
----
-
-## 6. Rename View
+## 6. UpdateDefinition_ShouldChangeDefinition
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant View
-participant CatalogManager
+    autonumber
+    actor Test as ViewTests
+    participant View as View
 
-Test->>View: renameView(newName)
-View->>CatalogManager: renameView()
-CatalogManager-->>View: renamed
-View-->>Test: success
+    Test->>View: updateDefinition(newDefinition)
+    View->>View: validateDefinition(newDefinition)
+    View->>View: definition = newDefinition
+    View->>View: valid = true
+    View-->>Test: void
+
+    Test->>View: getDefinition()
+    View-->>Test: newDefinition
 ```
 
----
-
-## 7. Bind Query Text
+## 7. UpdateDefinition_ShouldRejectInvalidDefinition
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant View
+    autonumber
+    actor Test as ViewTests
+    participant View as View
 
-Test->>View: bindQuery(sql)
-View->>View: storeDefinition()
-View-->>Test: bound
+    Test->>View: updateDefinition(" ")
+    View->>View: validateDefinition(" ")
+
+    alt Definition is blank
+        View-->>Test: throw InvalidViewDefinitionException
+        Test->>Test: assertThrows(...)
+    end
 ```
 
----
-
-## 8. Unbind Query Text
+## 8. ValidateDefinition_ShouldAcceptSelectDefinition
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant View
+    autonumber
+    actor Test as ViewTests
+    participant View as View
 
-Test->>View: unbindQuery()
-View->>View: clearDefinition()
-View-->>Test: unbound
+    Test->>View: validateDefinition()
+    View->>View: normalize definition
+    View->>View: check definition starts with SELECT
+    View-->>Test: true
+
+    Test->>Test: assertTrue(result)
 ```
 
----
-
-## 9. Check Materialized State
+## 9. ValidateDefinition_ShouldRejectNonSelectDefinition
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant View
+    autonumber
+    actor Test as ViewTests
+    participant View as View
 
-Test->>View: isMaterialized()
-View->>View: inspectStorageMode()
-View-->>Test: true
+    Test->>View: validateDefinition()
+    View->>View: normalize definition
+    View->>View: check definition starts with SELECT
+    View-->>Test: false
+
+    Test->>Test: assertFalse(result)
 ```
 
----
-
-## 10. Check Up To Date
+## 10. AddDependency_ShouldRegisterDependency
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant View
-participant CatalogManager
+    autonumber
+    actor Test as ViewTests
+    participant View as View
+    participant Dependencies as Dependency Set
 
-Test->>View: isUpToDate()
-View->>CatalogManager: verifyDependencies()
-CatalogManager-->>View: valid
-View-->>Test: true
+    Test->>View: addDependency(usersTableId)
+    View->>View: validateDependencyId(usersTableId)
+    View->>Dependencies: add(usersTableId)
+    Dependencies-->>View: true
+    View-->>Test: void
+
+    Test->>View: containsDependency(usersTableId)
+    View-->>Test: true
 ```
 
----
-
-## 11. Resolve Schema
+## 11. AddDependency_ShouldIgnoreDuplicateDependency
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant View
-participant Schema
+    autonumber
+    actor Test as ViewTests
+    participant View as View
+    participant Dependencies as Dependency Set
 
-Test->>View: resolveSchema()
-View->>Schema: getTables()
-Schema-->>View: tables
-View-->>Test: schema
+    Test->>View: addDependency(usersTableId)
+    View->>Dependencies: add(usersTableId)
+    Dependencies-->>View: true
+
+    Test->>View: addDependency(usersTableId)
+    View->>Dependencies: add(usersTableId)
+    Dependencies-->>View: false
+
+    Test->>View: getDependencyCount()
+    View-->>Test: 1
 ```
 
----
-
-## 12. Resolve Columns
+## 12. RemoveDependency_ShouldRemoveExistingDependency
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant View
-participant Schema
+    autonumber
+    actor Test as ViewTests
+    participant View as View
+    participant Dependencies as Dependency Set
 
-Test->>View: resolveColumns()
-View->>Schema: getTables()
-Schema-->>View: columns
-View-->>Test: columns
+    Test->>View: removeDependency(usersTableId)
+    View->>Dependencies: remove(usersTableId)
+    Dependencies-->>View: true
+    View-->>Test: true
+
+    Test->>View: containsDependency(usersTableId)
+    View-->>Test: false
 ```
 
----
-
-## 13. Export View Definition
+## 13. GetDependencyIds_ShouldReturnUnmodifiableSet
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant View
+    autonumber
+    actor Test as ViewTests
+    participant View as View
+    participant Dependencies as Returned Set
 
-Test->>View: exportDefinition()
-View->>View: buildDDL()
-View-->>Test: DDL
+    Test->>View: getDependencyIds()
+    View-->>Test: unmodifiable dependency set
+
+    Test->>Dependencies: add(rolesTableId)
+    alt Set is unmodifiable
+        Dependencies-->>Test: throw UnsupportedOperationException
+        Test->>Test: assertThrows(...)
+    end
 ```
 
----
-
-## 14. Refresh Cache
+## 14. ValidateDependencies_ShouldAcceptExistingObjects
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant View
-participant CatalogManager
+    autonumber
+    actor Test as ViewTests
+    participant View as View
+    participant Available as Available Object IDs
 
-Test->>View: refreshCache()
-View->>CatalogManager: refreshMetadata()
-CatalogManager-->>View: refreshed
-View-->>Test: success
+    Test->>View: validateDependencies(Available)
+    loop Every dependency ID
+        View->>Available: contains(dependencyId)
+        Available-->>View: true
+    end
+    View-->>Test: true
+
+    Test->>Test: assertTrue(result)
 ```
 
----
-
-## 15. Compare Dependencies
+## 15. ValidateDependencies_ShouldRejectMissingObject
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant View
-participant CatalogManager
+    autonumber
+    actor Test as ViewTests
+    participant View as View
+    participant Available as Available Object IDs
 
-Test->>View: compareDependencies(other)
-View->>CatalogManager: compareGraphs()
-CatalogManager-->>View: equal
-View-->>Test: true
+    Test->>View: validateDependencies(Available)
+    View->>Available: contains(missingDependencyId)
+    Available-->>View: false
+    View-->>Test: false
+
+    Test->>Test: assertFalse(result)
 ```
 
----
-
-## 16. Validate Refresh SQL
+## 16. HasCircularDependency_ShouldDetectCycle
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant View
-participant SQLParser
+    autonumber
+    actor Test as ViewTests
+    participant View as View
+    participant Path as Traversal Path
 
-Test->>View: validateRefreshSql()
-View->>SQLParser: parse(refreshSql)
-SQLParser-->>View: AST
-View-->>Test: valid
+    Test->>View: hasCircularDependency(Path)
+    View->>Path: contains(viewId)
+    Path-->>View: true
+    View-->>Test: true
+
+    Test->>Test: assertTrue(result)
 ```
 
----
-
-## 17. Capture Snapshot
+## 17. SetMaterialized_ShouldEnableMaterializedMode
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant View
+    autonumber
+    actor Test as ViewTests
+    participant View as View
 
-Test->>View: captureSnapshot()
-View->>View: snapshotState()
-View-->>Test: snapshot
+    Test->>View: setMaterialized(true)
+    View->>View: materialized = true
+    View-->>Test: void
+
+    Test->>View: isMaterialized()
+    View-->>Test: true
 ```
 
----
-
-## 18. Restore Snapshot
+## 18. Refresh_ShouldRefreshMaterializedView
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant View
+    autonumber
+    actor Test as ViewTests
+    participant View as View
 
-Test->>View: restoreSnapshot(snapshot)
-View->>View: loadState()
-View-->>Test: restored
+    Test->>View: setMaterialized(true)
+    View->>View: materialized = true
+
+    Test->>View: refresh()
+    View->>View: verify materialized state
+    View->>View: verify valid definition
+    View->>View: mark refresh completed
+    View-->>Test: void
 ```
 
----
-
-## 19. Export Dependency Graph
+## 19. Refresh_ShouldRejectNormalView
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant View
-participant CatalogManager
+    autonumber
+    actor Test as ViewTests
+    participant View as View
 
-Test->>View: exportDependencyGraph()
-View->>CatalogManager: dumpDependencies()
-CatalogManager-->>View: graph
-View-->>Test: graph
+    Test->>View: refresh()
+    View->>View: check materialized state
+
+    alt View is not materialized
+        View-->>Test: throw UnsupportedOperationException
+        Test->>Test: assertThrows(...)
+    end
 ```
 
----
-
-## 20. Reset View State
+## 20. Invalidate_ShouldChangeValidityState
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant View
+    autonumber
+    actor Test as ViewTests
+    participant View as View
 
-Test->>View: resetState()
-View->>View: clearCache()
-View-->>Test: reset
+    Test->>View: invalidate()
+    View->>View: valid = false
+    View-->>Test: void
+
+    Test->>View: isValid()
+    View-->>Test: false
+```
+
+## 21. Validate_ShouldRestoreValidityState
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ViewTests
+    participant View as View
+
+    Test->>View: invalidate()
+    View->>View: valid = false
+
+    Test->>View: validate()
+    View->>View: validateDefinition()
+    View->>View: valid = true
+    View-->>Test: void
+
+    Test->>View: isValid()
+    View-->>Test: true
 ```
