@@ -50,16 +50,12 @@ public class ColumnMetadata {
         return id;
     }
 
-    public void setId(UUID id) {
-        // TODO: Implement
-    }
-
     public String getName() {
         return name;
     }
 
     public void rename(String newName) {
-        // TODO: Implement
+        this.name = newName;
     }
 
     public DataType getDataType() {
@@ -71,11 +67,12 @@ public class ColumnMetadata {
     }
 
     public boolean isNullable() {
-        return nullable;
+        return this.nullable;
     }
 
     public void setNullable(boolean nullable) {
         // TODO: Implement
+        this.nullable = nullable;
     }
 
     public Object getDefaultValue() {
@@ -92,6 +89,7 @@ public class ColumnMetadata {
 
     public void setPosition(int position) {
         // TODO: Implement
+        this.position = position;
     }
 
     public Integer getLength() {
@@ -148,5 +146,9 @@ public class ColumnMetadata {
 
     public Object applyDefaultValue(Object value) {
         return null;
+    }
+
+    public DataType getType() {
+        return this.dataType;
     }
 }

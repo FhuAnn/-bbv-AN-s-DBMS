@@ -53,7 +53,6 @@ class DatabaseTests {
     @Nested
     @DisplayName("Constructor")
     class ConstructorTests {
-
         @Test
         @DisplayName("Should create database successfully")
         void constructor_ShouldCreateDatabase() {
@@ -103,7 +102,6 @@ class DatabaseTests {
         @DisplayName("Should initialize schema collection")
         void constructor_ShouldInitializeSchemaCollection() {
             List<Schema> schemas = database.getSchemas();
-
             assertNotNull(schemas);
             assertTrue(schemas.isEmpty());
         }
@@ -151,7 +149,6 @@ class DatabaseTests {
         @DisplayName("Should reject database name longer than 128 characters")
         void constructor_ShouldRejectTooLongName() {
             String invalidName = "a".repeat(129);
-
             assertThrows(
                     IllegalArgumentException.class,
                     () -> new Database(invalidName)
@@ -398,23 +395,28 @@ class DatabaseTests {
         @Test
         @DisplayName("Remove schema should reject schema containing tables")
         void removeSchema_ShouldRejectNonEmptySchema() {
+            // Arrange
             Schema schema = createSchema("sales");
 
-            schema.getTables().add(
-                    new Table(
-                            "orders",
-                            schema.getId()
-                    )
+            Table table = new Table(
+                    "orders",
+                    schema.getId()
             );
 
+            schema.addTable(table);
             database.addSchema(schema);
 
-            assertThrows(
+            // Act
+            SchemaNotEmptyException exception = assertThrows(
                     SchemaNotEmptyException.class,
                     () -> database.removeSchema("sales")
             );
 
+            // Assert
+            assertNotNull(exception);
             assertTrue(database.containsSchema("sales"));
+            assertEquals(1, database.getSchemas().size());
+            assertEquals(1, schema.getTables().size());
         }
     }
 
@@ -806,8 +808,8 @@ class DatabaseTests {
             idColumn.setNullable(false);
             idColumn.setPosition(0);
 
-            table.getColumns().add(idColumn);
-            schema.getTables().add(table);
+            table.addColumn(idColumn);
+            schema.addTable(table);
 
             database.addSchema(schema);
 

@@ -65,7 +65,7 @@ public class Schema {
     }
 
     public List<Table> getTables() {
-        return Collections.emptyList();
+          return Collections.unmodifiableList(tables);
     }
 
     public void setTables(List<Table> tables) {
@@ -81,7 +81,11 @@ public class Schema {
     }
 
     public void addTable(Table table) {
-        // TODO: Implement
+         if (table == null) {
+        throw new IllegalArgumentException("Table must not be null");
+    }
+
+    tables.add(table);
     }
 
     public Table getTable(String tableName) {
@@ -127,4 +131,5 @@ public class Schema {
     public boolean isEmpty() {
         return true;
     }
+
 }

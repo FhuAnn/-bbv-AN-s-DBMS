@@ -1,5 +1,6 @@
 
 package classes.metadata;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -18,20 +19,20 @@ public class Table {
         this.id = UUID.randomUUID();
         this.name = "";
         this.schemaId = null;
-        this.columns = Collections.emptyList();
-        this.rows = Collections.emptyList();
-        this.constraints = Collections.emptyList();
-        this.indexes = Collections.emptyList();
+        this.columns = new ArrayList<>();
+        this.rows = new ArrayList<>();
+        this.constraints = new ArrayList<>();
+        this.indexes = new ArrayList<>();
     }
 
     public Table(String name, UUID schemaId) {
         this.id = UUID.randomUUID();
         this.name = name;
         this.schemaId = schemaId;
-        this.columns = Collections.emptyList();
-        this.rows = Collections.emptyList();
-        this.constraints = Collections.emptyList();
-        this.indexes = Collections.emptyList();
+        this.columns = new ArrayList<>();
+        this.rows = new ArrayList<>();
+        this.constraints = new ArrayList<>();
+        this.indexes = new ArrayList<>();
     }
 
     public UUID getId() {
@@ -59,7 +60,7 @@ public class Table {
     }
 
     public List<ColumnMetadata> getColumns() {
-        return Collections.emptyList();
+         return Collections.unmodifiableList(columns);
     }
 
     public void setColumns(List<ColumnMetadata> columns) {
@@ -67,7 +68,7 @@ public class Table {
     }
 
     public List<Row> getRows() {
-        return Collections.emptyList();
+        return this.rows;
     }
 
     public void setRows(List<Row> rows) {
@@ -75,7 +76,7 @@ public class Table {
     }
 
     public List<Constraint> getConstraints() {
-        return Collections.emptyList();
+        return this.constraints;
     }
 
     public void setConstraints(List<Constraint> constraints) {
@@ -83,7 +84,7 @@ public class Table {
     }
 
     public List<Index> getIndexes() {
-        return Collections.emptyList();
+        return this.indexes;
     }
 
     public void setIndexes(List<Index> indexes) {
@@ -95,7 +96,11 @@ public class Table {
     }
 
     public void addColumn(ColumnMetadata column) {
-        // TODO: Implement
+         if (column == null) {
+        throw new IllegalArgumentException("Column must not be null");
+         }
+
+        columns.add(column);
     }
 
     public ColumnMetadata getColumn(String columnName) {
