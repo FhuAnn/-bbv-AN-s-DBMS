@@ -1,10 +1,13 @@
 package classes.metadata;
 
-
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import org.junit.jupiter.api.DisplayName;
 
 public class Index {
 
@@ -38,8 +41,22 @@ public class Index {
             IndexType type,
             UUID tableId,
             List<String> columnNames,
-            boolean unique
-    ) {
+            boolean unique) {
+
+        validateName(name);
+
+        if (tableId == null) {
+            throw new IllegalArgumentException(
+                    "Table ID must not be null.");
+        }
+
+        validateColumnNames(columnNames);
+
+        if (type == null) {
+            throw new IllegalArgumentException(
+                    "Index type must not be null.");
+        }
+
         this.id = UUID.randomUUID();
         this.name = name;
         this.type = type;
@@ -63,7 +80,8 @@ public class Index {
     }
 
     public void rename(String newName) {
-        // TODO: Implement
+        validateName(newName);
+        this.name = newName;
     }
 
     public IndexType getType() {
@@ -103,54 +121,177 @@ public class Index {
     }
 
     public void enable() {
-        // TODO: Implement
+        enabled = true;
     }
 
     public void disable() {
-        // TODO: Implement
+        enabled = false;
     }
 
     public void insert(Object key, UUID rowId) {
-        // TODO: Implement
+        ensureEnabled();
+
+        if (key == null) {
+            throw new IllegalArgumentException(
+                    "Index key must not be null.");
+        }
+
+        if (rowId == null) {
+            throw new IllegalArgumentException(
+                    "Row ID must not be null.");
+        }
+
+        List<UUID> rowIds = entries.get(key);
+
+        if (rowIds == null) {
+            rowIds = new ArrayList<>();
+            entries.put(key, rowIds);
+        }
+
+        if (unique && !rowIds.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Duplicate key is not allowed for a unique index: " + key);
+        }
+
+        if (!rowIds.contains(rowId)) {
+            rowIds.add(rowId);
+        }
     }
 
     public List<UUID> search(Object key) {
-        return Collections.emptyList();
+        if (key == null) {
+            throw new IllegalArgumentException(
+                    "Index key must not be null.");
+        }
+
+        List<UUID> rowIds = entries.get(key);
+
+        if (rowIds == null) {
+            return Collections.emptyList();
+        }
+
+        return Collections.unmodifiableList(rowIds);
     }
 
     public boolean containsKey(Object key) {
-        return false;
+        if (key == null) {
+            throw new IllegalArgumentException(
+                    "Index key must not be null.");
+        }
+
+        return entries.containsKey(key);
     }
 
     public boolean delete(Object key, UUID rowId) {
-        return false;
+        ensureEnabled();
+
+        if (key == null) {
+            throw new IllegalArgumentException(
+                    "Index key must not be null.");
+        }
+
+        if (rowId == null) {
+            throw new IllegalArgumentException(
+                    "Row ID must not be null.");
+        }
+
+        List<UUID> rowIds = entries.get(key);
+
+        if (rowIds == null) {
+            return false;
+        }
+
+        boolean removed = rowIds.remove(rowId);
+
+        if (rowIds.isEmpty()) {
+            entries.remove(key);
+        }
+
+        return removed;
     }
 
     public boolean deleteKey(Object key) {
-        return false;
+        ensureEnabled();
+
+        if (key == null) {
+            throw new IllegalArgumentException(
+                    "Index key must not be null.");
+        }
+
+        return entries.remove(key) != null;
     }
 
     public int getKeyCount() {
-        return 0;
+        return entries.size();
     }
 
     public int getEntryCount() {
-        return 0;
+        int total = 0;
+
+        for (List<UUID> rowIds : entries.values()) {
+            total += rowIds.size();
+        }
+
+        return total;
     }
 
     public boolean isEmpty() {
-        return true;
+        return entries.isEmpty();
     }
 
     public void clear() {
-        // TODO: Implement
+        ensureEnabled();
+        entries.clear();
     }
 
     public Map<Object, List<UUID>> getEntries() {
-        return Collections.emptyMap();
+        Map<Object, List<UUID>> snapshot = new LinkedHashMap<>();
+
+        for (Map.Entry<Object, List<UUID>> entry : entries.entrySet()) {
+            snapshot.put(
+                    entry.getKey(),
+                    Collections.unmodifiableList(
+                            new ArrayList<>(entry.getValue())));
+        }
+
+        return Collections.unmodifiableMap(snapshot);
     }
 
     public boolean isValidDefinition() {
-        return false;
+        return id != null
+                && name != null
+                && !name.trim().isEmpty()
+                && tableId != null
+                && type != null
+                && !columnNames.isEmpty();
+    }
+
+    private void ensureEnabled() {
+        if (!enabled) {
+            throw new IllegalStateException(
+                    "Index is disabled.");
+        }
+    }
+
+    private static void validateName(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Index name must not be null or blank.");
+        }
+    }
+
+    private static void validateColumnNames(
+            List<String> columnNames) {
+        if (columnNames == null || columnNames.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Index must contain at least one column.");
+        }
+
+        for (String columnName : columnNames) {
+            if (columnName == null || columnName.trim().isEmpty()) {
+                throw new IllegalArgumentException(
+                        "Column name must not be null or blank.");
+            }
+        }
     }
 }

@@ -1,6 +1,24 @@
-# Index Testing — Important Unit Test Sequence Diagrams
+# Index Testing Sequence Diagrams
 
-## 1. Constructor_ShouldCreateIndex
+One Mermaid sequence diagram is provided for every implemented `IndexTests` method.
+
+# Other Tests
+
+## 1. setUp
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+
+    Test->>Index: execute metadata behavior
+    Index-->>Test: result
+```
+
+# Constructor Tests
+
+## 2. constructor_ShouldCreateIndex
 
 ```mermaid
 sequenceDiagram
@@ -10,17 +28,15 @@ sequenceDiagram
     participant UUID as UUID
     participant Entries as Entry Map
 
-    Test->>Index: new Index(name, HASH, tableId, columns, false)
-    Index->>Index: validate metadata
+    Test->>Index: new Index(name, tableId, columns, type, unique)
+    Index->>Index: validate constructor arguments
     Index->>UUID: randomUUID()
     UUID-->>Index: indexId
-    Index->>Entries: create empty map
-    Entries-->>Index: empty entries
-    Index->>Index: enabled = true
-    Index-->>Test: index
+    Index->>Entries: initialize empty map
+    Index-->>Test: index or exception
 ```
 
-## 2. Constructor_ShouldGenerateIndexId
+## 3. constructor_ShouldGenerateIndexId
 
 ```mermaid
 sequenceDiagram
@@ -28,17 +44,163 @@ sequenceDiagram
     actor Test as IndexTests
     participant Index as Index
     participant UUID as UUID
+    participant Entries as Entry Map
 
-    Test->>Index: new Index(...)
+    Test->>Index: new Index(name, tableId, columns, type, unique)
+    Index->>Index: validate constructor arguments
     Index->>UUID: randomUUID()
     UUID-->>Index: indexId
-    Index-->>Test: index
-
-    Test->>Index: getId()
-    Index-->>Test: indexId
+    Index->>Entries: initialize empty map
+    Index-->>Test: index or exception
 ```
 
-## 3. Rename_ShouldChangeIndexName
+## 4. constructor_ShouldGenerateUniqueIndexIds
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant UUID as UUID
+    participant Entries as Entry Map
+
+    Test->>Index: new Index(name, tableId, columns, type, unique)
+    Index->>Index: validate constructor arguments
+    Index->>UUID: randomUUID()
+    UUID-->>Index: indexId
+    Index->>Entries: initialize empty map
+    Index-->>Test: index or exception
+```
+
+## 5. constructor_ShouldInitializeMetadata
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant UUID as UUID
+    participant Entries as Entry Map
+
+    Test->>Index: new Index(name, tableId, columns, type, unique)
+    Index->>Index: validate constructor arguments
+    Index->>UUID: randomUUID()
+    UUID-->>Index: indexId
+    Index->>Entries: initialize empty map
+    Index-->>Test: index or exception
+```
+
+## 6. constructor_ShouldEnableIndexByDefault
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant UUID as UUID
+    participant Entries as Entry Map
+
+    Test->>Index: new Index(name, tableId, columns, type, unique)
+    Index->>Index: validate constructor arguments
+    Index->>UUID: randomUUID()
+    UUID-->>Index: indexId
+    Index->>Entries: initialize empty map
+    Index-->>Test: index or exception
+```
+
+## 7. constructor_ShouldInitializeEmptyEntries
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant UUID as UUID
+    participant Entries as Entry Map
+
+    Test->>Index: new Index(name, tableId, columns, type, unique)
+    Index->>Index: validate constructor arguments
+    Index->>UUID: randomUUID()
+    UUID-->>Index: indexId
+    Index->>Entries: initialize empty map
+    Index-->>Test: index or exception
+```
+
+## 8. constructor_ShouldRejectNullName
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant UUID as UUID
+    participant Entries as Entry Map
+
+    Test->>Index: new Index(name, tableId, columns, type, unique)
+    Index->>Index: validate constructor arguments
+    Index->>UUID: randomUUID()
+    UUID-->>Index: indexId
+    Index->>Entries: initialize empty map
+    Index-->>Test: index or exception
+```
+
+## 9. constructor_ShouldRejectNullTableId
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant UUID as UUID
+    participant Entries as Entry Map
+
+    Test->>Index: new Index(name, tableId, columns, type, unique)
+    Index->>Index: validate constructor arguments
+    Index->>UUID: randomUUID()
+    UUID-->>Index: indexId
+    Index->>Entries: initialize empty map
+    Index-->>Test: index or exception
+```
+
+## 10. constructor_ShouldRejectEmptyColumns
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant UUID as UUID
+    participant Entries as Entry Map
+
+    Test->>Index: new Index(name, tableId, columns, type, unique)
+    Index->>Index: validate constructor arguments
+    Index->>UUID: randomUUID()
+    UUID-->>Index: indexId
+    Index->>Entries: initialize empty map
+    Index-->>Test: index or exception
+```
+
+## 11. constructor_ShouldRejectNullType
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant UUID as UUID
+    participant Entries as Entry Map
+
+    Test->>Index: new Index(name, tableId, columns, type, unique)
+    Index->>Index: validate constructor arguments
+    Index->>UUID: randomUUID()
+    UUID-->>Index: indexId
+    Index->>Entries: initialize empty map
+    Index-->>Test: index or exception
+```
+
+# Metadata Tests
+
+## 12. rename_ShouldChangeIndexName
 
 ```mermaid
 sequenceDiagram
@@ -46,13 +208,79 @@ sequenceDiagram
     actor Test as IndexTests
     participant Index as Index
 
-    Test->>Index: rename("idx_users_contact")
-    Index->>Index: validateName()
+    Test->>Index: rename(newName)
+    Index->>Index: validateName(newName)
+    alt Name is valid
     Index->>Index: name = newName
     Index-->>Test: void
+    else Name is invalid
+    Index-->>Test: throw IllegalArgumentException
+    end
 ```
 
-## 4. Disable_ShouldDisableIndex
+## 13. rename_ShouldRejectNullName
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+
+    Test->>Index: rename(newName)
+    Index->>Index: validateName(newName)
+    alt Name is valid
+    Index->>Index: name = newName
+    Index-->>Test: void
+    else Name is invalid
+    Index-->>Test: throw IllegalArgumentException
+    end
+```
+
+## 14. rename_ShouldRejectBlankName
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+
+    Test->>Index: rename(newName)
+    Index->>Index: validateName(newName)
+    alt Name is valid
+    Index->>Index: name = newName
+    Index-->>Test: void
+    else Name is invalid
+    Index-->>Test: throw IllegalArgumentException
+    end
+```
+
+## 15. getColumnNames_ShouldReturnUnmodifiableList
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+
+    Test->>Index: execute metadata behavior
+    Index-->>Test: result
+```
+
+## 16. isValidDefinition_ShouldReturnTrueForValidIndex
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+
+    Test->>Index: execute metadata behavior
+    Index-->>Test: result
+```
+
+# State Tests
+
+## 17. disable_ShouldDisableIndex
 
 ```mermaid
 sequenceDiagram
@@ -65,7 +293,48 @@ sequenceDiagram
     Index-->>Test: void
 ```
 
-## 5. Insert_ShouldStoreKeyAndRowId
+## 18. enable_ShouldEnableIndex
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+
+    Test->>Index: enable()
+    Index->>Index: enabled = true
+    Index-->>Test: void
+```
+
+## 19. disable_ShouldBeIdempotent
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+
+    Test->>Index: disable()
+    Index->>Index: enabled = false
+    Index-->>Test: void
+```
+
+## 20. enable_ShouldBeIdempotent
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+
+    Test->>Index: enable()
+    Index->>Index: enabled = true
+    Index-->>Test: void
+```
+
+# Insert Tests
+
+## 21. insert_ShouldRejectWhenDisabled
 
 ```mermaid
 sequenceDiagram
@@ -76,88 +345,21 @@ sequenceDiagram
     participant RowIds as Row ID List
 
     Test->>Index: insert(key, rowId)
+    Index->>Index: ensureEnabled()
     Index->>Index: validate key and rowId
     Index->>Entries: get(key)
-    Entries-->>Index: null
-    Index->>RowIds: create new list
-    Index->>RowIds: add(rowId)
-    Index->>Entries: put(key, RowIds)
+    Entries-->>Index: row ID list or null
+    alt Unique duplicate exists
+    Index-->>Test: throw IllegalArgumentException
+    else Insert is valid
+    Index->>RowIds: add(rowId when absent)
     Index-->>Test: void
-```
-
-## 6. Insert_ShouldAllowMultipleRowsForNonUniqueIndex
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Test as IndexTests
-    participant Index as Index
-    participant Entries as Entry Map
-    participant RowIds as Row ID List
-
-    Test->>Index: insert("HCMC", row1)
-    Index->>Entries: create key entry
-
-    Test->>Index: insert("HCMC", row2)
-    Index->>Entries: get("HCMC")
-    Entries-->>Index: RowIds
-    Index->>RowIds: add(row2)
-    RowIds-->>Index: true
-    Index-->>Test: void
-```
-
-## 7. UniqueIndex_ShouldRejectDuplicateKey
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Test as IndexTests
-    participant Index as Unique Index
-    participant Entries as Entry Map
-
-    Test->>Index: insert(key, row1)
-    Index->>Entries: put key and row1
-
-    Test->>Index: insert(key, row2)
-    Index->>Entries: containsKey(key)
-    Entries-->>Index: true
-
-    alt Index is unique
-        Index-->>Test: throw IllegalArgumentException
     end
 ```
 
-## 8. Search_ShouldReturnMatchingRows
+# Delete Tests
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Test as IndexTests
-    participant Index as Index
-    participant Entries as Entry Map
-
-    Test->>Index: search(key)
-    Index->>Entries: get(key)
-    Entries-->>Index: row IDs
-    Index-->>Test: unmodifiable row IDs
-```
-
-## 9. Search_ShouldReturnEmptyForMissingKey
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Test as IndexTests
-    participant Index as Index
-    participant Entries as Entry Map
-
-    Test->>Index: search(missingKey)
-    Index->>Entries: get(missingKey)
-    Entries-->>Index: null
-    Index-->>Test: empty list
-```
-
-## 10. Delete_ShouldRemoveSpecificRowId
+## 22. delete_ShouldRejectWhenDisabled
 
 ```mermaid
 sequenceDiagram
@@ -167,103 +369,575 @@ sequenceDiagram
     participant Entries as Entry Map
     participant RowIds as Row ID List
 
-    Test->>Index: delete(key, rowId)
-    Index->>Entries: get(key)
-    Entries-->>Index: RowIds
-    Index->>RowIds: remove(rowId)
-    RowIds-->>Index: true
+    Test->>Index: delete(key, rowId) or deleteKey(key)
+    Index->>Index: ensureEnabled()
+    Index->>Entries: locate key
+    Entries-->>Index: row IDs or missing
+    alt Matching entry exists
+    Index->>RowIds: remove row ID or all rows
+    Index->>Entries: remove empty key
     Index-->>Test: true
-```
-
-## 11. Delete_ShouldRemoveEmptyKey
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Test as IndexTests
-    participant Index as Index
-    participant Entries as Entry Map
-    participant RowIds as Row ID List
-
-    Test->>Index: delete(key, lastRowId)
-    Index->>RowIds: remove(lastRowId)
-    RowIds-->>Index: true
-    Index->>RowIds: isEmpty()
-    RowIds-->>Index: true
-    Index->>Entries: remove(key)
-    Index-->>Test: true
-```
-
-## 12. DeleteKey_ShouldRemoveEntireKey
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Test as IndexTests
-    participant Index as Index
-    participant Entries as Entry Map
-
-    Test->>Index: deleteKey(key)
-    Index->>Entries: remove(key)
-    Entries-->>Index: removed row IDs
-    Index-->>Test: true
-```
-
-## 13. Clear_ShouldRemoveAllEntries
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Test as IndexTests
-    participant Index as Index
-    participant Entries as Entry Map
-
-    Test->>Index: clear()
-    Index->>Entries: clear()
-    Entries-->>Index: void
-    Index-->>Test: void
-```
-
-## 14. GetEntries_ShouldReturnUnmodifiableMap
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Test as IndexTests
-    participant Index as Index
-    participant Entries as Returned Map
-
-    Test->>Index: getEntries()
-    Index-->>Test: unmodifiable map
-
-    Test->>Entries: clear()
-    alt Map is unmodifiable
-        Entries-->>Test: throw UnsupportedOperationException
+    else Entry is missing
+    Index-->>Test: false
     end
 ```
 
-## 15. IsValidDefinition_ShouldValidateMetadata
+# Search Tests
+
+## 23. search_ShouldStillWorkWhenDisabled
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as IndexTests
     participant Index as Index
+    participant Entries as Entry Map
 
-    Test->>Index: isValidDefinition()
-    Index->>Index: validate name
-    Index->>Index: validate type
-    Index->>Index: validate tableId
-    Index->>Index: validate column names
-    Index-->>Test: true or false
+    Test->>Index: search(key) or containsKey(key)
+    Index->>Index: validate key
+    Index->>Entries: read key
+    Entries-->>Index: row IDs or missing result
+    Index-->>Test: result
 ```
 
-## Recommended order
+# Insert Tests
 
-1. Constructor and metadata
-2. Enable and disable
-3. Insert
-4. Search
-5. Delete
-6. Clear and counts
-7. Definition validation
+## 24. insert_ShouldStoreKeyAndRowId
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant Entries as Entry Map
+    participant RowIds as Row ID List
+
+    Test->>Index: insert(key, rowId)
+    Index->>Index: ensureEnabled()
+    Index->>Index: validate key and rowId
+    Index->>Entries: get(key)
+    Entries-->>Index: row ID list or null
+    alt Unique duplicate exists
+    Index-->>Test: throw IllegalArgumentException
+    else Insert is valid
+    Index->>RowIds: add(rowId when absent)
+    Index-->>Test: void
+    end
+```
+
+## 25. insert_ShouldIncreaseKeyCount
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant Entries as Entry Map
+    participant RowIds as Row ID List
+
+    Test->>Index: insert(key, rowId)
+    Index->>Index: ensureEnabled()
+    Index->>Index: validate key and rowId
+    Index->>Entries: get(key)
+    Entries-->>Index: row ID list or null
+    alt Unique duplicate exists
+    Index-->>Test: throw IllegalArgumentException
+    else Insert is valid
+    Index->>RowIds: add(rowId when absent)
+    Index-->>Test: void
+    end
+```
+
+## 26. insert_ShouldIncreaseEntryCount
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant Entries as Entry Map
+    participant RowIds as Row ID List
+
+    Test->>Index: insert(key, rowId)
+    Index->>Index: ensureEnabled()
+    Index->>Index: validate key and rowId
+    Index->>Entries: get(key)
+    Entries-->>Index: row ID list or null
+    alt Unique duplicate exists
+    Index-->>Test: throw IllegalArgumentException
+    else Insert is valid
+    Index->>RowIds: add(rowId when absent)
+    Index-->>Test: void
+    end
+```
+
+## 27. insert_ShouldRejectNullKey
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant Entries as Entry Map
+    participant RowIds as Row ID List
+
+    Test->>Index: insert(key, rowId)
+    Index->>Index: ensureEnabled()
+    Index->>Index: validate key and rowId
+    Index->>Entries: get(key)
+    Entries-->>Index: row ID list or null
+    alt Unique duplicate exists
+    Index-->>Test: throw IllegalArgumentException
+    else Insert is valid
+    Index->>RowIds: add(rowId when absent)
+    Index-->>Test: void
+    end
+```
+
+## 28. insert_ShouldRejectNullRowId
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant Entries as Entry Map
+    participant RowIds as Row ID List
+
+    Test->>Index: insert(key, rowId)
+    Index->>Index: ensureEnabled()
+    Index->>Index: validate key and rowId
+    Index->>Entries: get(key)
+    Entries-->>Index: row ID list or null
+    alt Unique duplicate exists
+    Index-->>Test: throw IllegalArgumentException
+    else Insert is valid
+    Index->>RowIds: add(rowId when absent)
+    Index-->>Test: void
+    end
+```
+
+## 29. insert_ShouldAvoidDuplicateRowIdForSameKey
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant Entries as Entry Map
+    participant RowIds as Row ID List
+
+    Test->>Index: insert(key, rowId)
+    Index->>Index: ensureEnabled()
+    Index->>Index: validate key and rowId
+    Index->>Entries: get(key)
+    Entries-->>Index: row ID list or null
+    alt Unique duplicate exists
+    Index-->>Test: throw IllegalArgumentException
+    else Insert is valid
+    Index->>RowIds: add(rowId when absent)
+    Index-->>Test: void
+    end
+```
+
+## 30. insert_ShouldAllowMultipleRowsForNonUniqueIndex
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant Entries as Entry Map
+    participant RowIds as Row ID List
+
+    Test->>Index: insert(key, rowId)
+    Index->>Index: ensureEnabled()
+    Index->>Index: validate key and rowId
+    Index->>Entries: get(key)
+    Entries-->>Index: row ID list or null
+    alt Unique duplicate exists
+    Index-->>Test: throw IllegalArgumentException
+    else Insert is valid
+    Index->>RowIds: add(rowId when absent)
+    Index-->>Test: void
+    end
+```
+
+## 31. insert_ShouldRejectDuplicateKeyForUniqueIndex
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant Entries as Entry Map
+    participant RowIds as Row ID List
+
+    Test->>Index: insert(key, rowId)
+    Index->>Index: ensureEnabled()
+    Index->>Index: validate key and rowId
+    Index->>Entries: get(key)
+    Entries-->>Index: row ID list or null
+    alt Unique duplicate exists
+    Index-->>Test: throw IllegalArgumentException
+    else Insert is valid
+    Index->>RowIds: add(rowId when absent)
+    Index-->>Test: void
+    end
+```
+
+# Search Tests
+
+## 32. search_ShouldReturnMatchingRowIds
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant Entries as Entry Map
+
+    Test->>Index: search(key) or containsKey(key)
+    Index->>Index: validate key
+    Index->>Entries: read key
+    Entries-->>Index: row IDs or missing result
+    Index-->>Test: result
+```
+
+## 33. search_ShouldReturnEmptyListForMissingKey
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant Entries as Entry Map
+
+    Test->>Index: search(key) or containsKey(key)
+    Index->>Index: validate key
+    Index->>Entries: read key
+    Entries-->>Index: row IDs or missing result
+    Index-->>Test: result
+```
+
+## 34. search_ShouldRejectNullKey
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant Entries as Entry Map
+
+    Test->>Index: search(key) or containsKey(key)
+    Index->>Index: validate key
+    Index->>Entries: read key
+    Entries-->>Index: row IDs or missing result
+    Index-->>Test: result
+```
+
+## 35. search_ShouldReturnUnmodifiableList
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant Entries as Entry Map
+
+    Test->>Index: search(key) or containsKey(key)
+    Index->>Index: validate key
+    Index->>Entries: read key
+    Entries-->>Index: row IDs or missing result
+    Index-->>Test: result
+```
+
+## 36. containsKey_ShouldReturnTrueForExistingKey
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant Entries as Entry Map
+
+    Test->>Index: search(key) or containsKey(key)
+    Index->>Index: validate key
+    Index->>Entries: read key
+    Entries-->>Index: row IDs or missing result
+    Index-->>Test: result
+```
+
+## 37. containsKey_ShouldReturnFalseForMissingKey
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant Entries as Entry Map
+
+    Test->>Index: search(key) or containsKey(key)
+    Index->>Index: validate key
+    Index->>Entries: read key
+    Entries-->>Index: row IDs or missing result
+    Index-->>Test: result
+```
+
+# Delete Tests
+
+## 38. delete_ShouldRemoveSpecificRowId
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant Entries as Entry Map
+    participant RowIds as Row ID List
+
+    Test->>Index: delete(key, rowId) or deleteKey(key)
+    Index->>Index: ensureEnabled()
+    Index->>Entries: locate key
+    Entries-->>Index: row IDs or missing
+    alt Matching entry exists
+    Index->>RowIds: remove row ID or all rows
+    Index->>Entries: remove empty key
+    Index-->>Test: true
+    else Entry is missing
+    Index-->>Test: false
+    end
+```
+
+## 39. delete_ShouldReturnFalseForMissingRowId
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant Entries as Entry Map
+    participant RowIds as Row ID List
+
+    Test->>Index: delete(key, rowId) or deleteKey(key)
+    Index->>Index: ensureEnabled()
+    Index->>Entries: locate key
+    Entries-->>Index: row IDs or missing
+    alt Matching entry exists
+    Index->>RowIds: remove row ID or all rows
+    Index->>Entries: remove empty key
+    Index-->>Test: true
+    else Entry is missing
+    Index-->>Test: false
+    end
+```
+
+## 40. delete_ShouldReturnFalseForMissingKey
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant Entries as Entry Map
+    participant RowIds as Row ID List
+
+    Test->>Index: delete(key, rowId) or deleteKey(key)
+    Index->>Index: ensureEnabled()
+    Index->>Entries: locate key
+    Entries-->>Index: row IDs or missing
+    alt Matching entry exists
+    Index->>RowIds: remove row ID or all rows
+    Index->>Entries: remove empty key
+    Index-->>Test: true
+    else Entry is missing
+    Index-->>Test: false
+    end
+```
+
+## 41. delete_ShouldRemoveKeyWhenLastRowIdIsDeleted
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant Entries as Entry Map
+    participant RowIds as Row ID List
+
+    Test->>Index: delete(key, rowId) or deleteKey(key)
+    Index->>Index: ensureEnabled()
+    Index->>Entries: locate key
+    Entries-->>Index: row IDs or missing
+    alt Matching entry exists
+    Index->>RowIds: remove row ID or all rows
+    Index->>Entries: remove empty key
+    Index-->>Test: true
+    else Entry is missing
+    Index-->>Test: false
+    end
+```
+
+## 42. deleteKey_ShouldRemoveEntireKey
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant Entries as Entry Map
+    participant RowIds as Row ID List
+
+    Test->>Index: delete(key, rowId) or deleteKey(key)
+    Index->>Index: ensureEnabled()
+    Index->>Entries: locate key
+    Entries-->>Index: row IDs or missing
+    alt Matching entry exists
+    Index->>RowIds: remove row ID or all rows
+    Index->>Entries: remove empty key
+    Index-->>Test: true
+    else Entry is missing
+    Index-->>Test: false
+    end
+```
+
+## 43. deleteKey_ShouldReturnFalseForMissingKey
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant Entries as Entry Map
+    participant RowIds as Row ID List
+
+    Test->>Index: delete(key, rowId) or deleteKey(key)
+    Index->>Index: ensureEnabled()
+    Index->>Entries: locate key
+    Entries-->>Index: row IDs or missing
+    alt Matching entry exists
+    Index->>RowIds: remove row ID or all rows
+    Index->>Entries: remove empty key
+    Index-->>Test: true
+    else Entry is missing
+    Index-->>Test: false
+    end
+```
+
+# Collection Tests
+
+## 44. clear_ShouldRemoveAllEntries
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant Entries as Entry Map
+
+    Test->>Index: execute collection operation
+    Index->>Entries: read, count, copy, or clear entries
+    Entries-->>Index: operation result
+    Index-->>Test: immutable view or count/state
+```
+
+## 45. getEntries_ShouldReturnUnmodifiableMap
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant Entries as Entry Map
+
+    Test->>Index: execute collection operation
+    Index->>Entries: read, count, copy, or clear entries
+    Entries-->>Index: operation result
+    Index-->>Test: immutable view or count/state
+```
+
+## 46. getEntries_ShouldProtectNestedLists
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant Entries as Entry Map
+
+    Test->>Index: execute collection operation
+    Index->>Entries: read, count, copy, or clear entries
+    Entries-->>Index: operation result
+    Index-->>Test: immutable view or count/state
+```
+
+## 47. isEmpty_ShouldReturnTrueForNewIndex
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant Entries as Entry Map
+
+    Test->>Index: execute collection operation
+    Index->>Entries: read, count, copy, or clear entries
+    Entries-->>Index: operation result
+    Index-->>Test: immutable view or count/state
+```
+
+## 48. isEmpty_ShouldReturnFalseAfterInsert
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant Entries as Entry Map
+
+    Test->>Index: execute collection operation
+    Index->>Entries: read, count, copy, or clear entries
+    Entries-->>Index: operation result
+    Index-->>Test: immutable view or count/state
+```
+
+## 49. getKeyCount_ShouldReturnCorrectCount
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant Entries as Entry Map
+
+    Test->>Index: execute collection operation
+    Index->>Entries: read, count, copy, or clear entries
+    Entries-->>Index: operation result
+    Index-->>Test: immutable view or count/state
+```
+
+## 50. getEntryCount_ShouldReturnCorrectCount
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as IndexTests
+    participant Index as Index
+    participant Entries as Entry Map
+
+    Test->>Index: execute collection operation
+    Index->>Entries: read, count, copy, or clear entries
+    Entries-->>Index: operation result
+    Index-->>Test: immutable view or count/state
+```
+
+# Behavior decisions
+
+- The index stores keys in memory using a map.
+- A non-unique key may point to multiple row IDs.
+- A unique index rejects a second row ID for an existing key.
+- Duplicate insertion of the same row ID is ignored.
+- Mutating operations are rejected while the index is disabled.
+- Search remains available while disabled.
+- Returned lists and maps are unmodifiable.
+- Missing searches return an empty list; missing deletions return `false`.

@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Predicate;
 
 public class Constraint {
 
@@ -24,6 +25,7 @@ public class Constraint {
     private UUID referencedTableId;
     private List<String> referencedColumnNames;
     private String checkExpression;
+    private Predicate<Row> checkPredicate;
 
     public Constraint() {
         this.id = UUID.randomUUID();
@@ -39,8 +41,16 @@ public class Constraint {
     public Constraint(
             String name,
             ConstraintType type,
-            List<String> columnNames
-    ) {
+            List<String> columnNames) {
+
+        validateName(name);
+
+        if (type == null) {
+            throw new IllegalArgumentException(
+                    "Constraint type must not be null.");
+        }
+
+        validateColumnNames(columnNames);
         this.id = UUID.randomUUID();
         this.name = name;
         this.type = type;
@@ -64,7 +74,8 @@ public class Constraint {
     }
 
     public void rename(String newName) {
-        // TODO: Implement
+        validateName(newName);
+        this.name = newName;
     }
 
     public ConstraintType getType() {
@@ -100,7 +111,12 @@ public class Constraint {
     }
 
     public void setReferencedTableId(UUID referencedTableId) {
-        // TODO: Implement
+        if (referencedTableId == null) {
+            throw new IllegalArgumentException(
+                    "Referenced table ID must not be null.");
+        }
+
+        this.referencedTableId = referencedTableId;
     }
 
     public List<String> getReferencedColumnNames() {
@@ -108,7 +124,10 @@ public class Constraint {
     }
 
     public void setReferencedColumnNames(List<String> referencedColumnNames) {
-        // TODO: Implement
+        validateColumnNames(referencedColumnNames);
+
+        this.referencedColumnNames.clear();
+        this.referencedColumnNames.addAll(referencedColumnNames);
     }
 
     public String getCheckExpression() {
@@ -116,24 +135,53 @@ public class Constraint {
     }
 
     public void setCheckExpression(String checkExpression) {
-        // TODO: Implement
+        if (checkExpression == null || checkExpression.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Check expression must not be null or blank.");
+        }
+
+        this.checkExpression = checkExpression;
+
+    }
+
+    public void setCheckPredicate(Predicate<Row> checkPredicate) {
+        if (checkPredicate == null) {
+            throw new IllegalArgumentException(
+                    "Check predicate must not be null.");
+        }
+
+        this.checkPredicate = checkPredicate;
     }
 
     public boolean validate(Row row) {
-        return false;
+        if (row == null) {
+            throw new IllegalArgumentException(
+                    "Row must not be null.");
+        }
+
+        if (!enabled) {
+            return true;
+        }
+
+        return switch (type) {
+            case NOT_NULL -> validateNotNull(row);
+            case CHECK -> validateCheck(row);
+            case PRIMARY_KEY, UNIQUE, FOREIGN_KEY ->
+                throw new IllegalStateException(
+                        "Existing or referenced values are required "
+                                + "for constraint type: " + type);
+        };
     }
 
     public boolean validatePrimaryKey(
             Row row,
-            Set<List<Object>> existingKeys
-    ) {
+            Set<List<Object>> existingKeys) {
         return false;
     }
 
     public boolean validateUnique(
             Row row,
-            Set<List<Object>> existingValues
-    ) {
+            Set<List<Object>> existingValues) {
         return false;
     }
 
@@ -143,8 +191,7 @@ public class Constraint {
 
     public boolean validateForeignKey(
             Row row,
-            Set<List<Object>> referencedValues
-    ) {
+            Set<List<Object>> referencedValues) {
         return false;
     }
 

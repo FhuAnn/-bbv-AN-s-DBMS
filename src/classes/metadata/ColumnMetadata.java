@@ -1,5 +1,6 @@
 package classes.metadata;
 
+import java.util.Objects;
 import java.util.UUID;
 
 import enums.DataType;
@@ -33,6 +34,11 @@ public class ColumnMetadata {
     }
 
     public ColumnMetadata(String name, DataType dataType) {
+        validateName(name);
+        if (dataType == null) {
+            throw new IllegalArgumentException(
+                    "Data type must not be null.");
+        }
         this.id = UUID.randomUUID();
         this.name = name;
         this.dataType = dataType;
@@ -55,6 +61,7 @@ public class ColumnMetadata {
     }
 
     public void rename(String newName) {
+        validateName(newName);
         this.name = newName;
     }
 
@@ -63,7 +70,12 @@ public class ColumnMetadata {
     }
 
     public void setDataType(DataType dataType) {
-        // TODO: Implement
+        if (dataType == null) {
+            throw new IllegalArgumentException(
+                    "Data type must not be null.");
+        }
+
+        this.dataType = dataType;
     }
 
     public boolean isNullable() {
@@ -80,7 +92,12 @@ public class ColumnMetadata {
     }
 
     public void setDefaultValue(Object defaultValue) {
-        // TODO: Implement
+        if (defaultValue != null && !isValueCompatible(defaultValue)) {
+            throw new IllegalArgumentException(
+                    "Default value is not compatible with the column data type.");
+        }
+
+        this.defaultValue = defaultValue;
     }
 
     public int getPosition() {
@@ -88,7 +105,11 @@ public class ColumnMetadata {
     }
 
     public void setPosition(int position) {
-        // TODO: Implement
+        if (position < 0) {
+            throw new IllegalArgumentException(
+                    "Column position must not be negative.");
+        }
+
         this.position = position;
     }
 
@@ -97,7 +118,12 @@ public class ColumnMetadata {
     }
 
     public void setLength(Integer length) {
-        // TODO: Implement
+        if (length != null && length <= 0) {
+            throw new IllegalArgumentException(
+                    "Length must be greater than zero.");
+        }
+
+        this.length = length;
     }
 
     public Integer getPrecision() {
@@ -105,7 +131,17 @@ public class ColumnMetadata {
     }
 
     public void setPrecision(Integer precision) {
-        // TODO: Implement
+        if (precision != null && precision <= 0) {
+            throw new IllegalArgumentException(
+                    "Precision must be greater than zero.");
+        }
+
+        if (precision != null && scale != null && scale > precision) {
+            throw new IllegalArgumentException(
+                    "Scale must not be greater than precision.");
+        }
+
+        this.precision = precision;
     }
 
     public Integer getScale() {
@@ -113,7 +149,17 @@ public class ColumnMetadata {
     }
 
     public void setScale(Integer scale) {
-        // TODO: Implement
+        if (scale != null && scale < 0) {
+            throw new IllegalArgumentException(
+                    "Scale must not be negative.");
+        }
+
+        if (scale != null && precision != null && scale > precision) {
+            throw new IllegalArgumentException(
+                    "Scale must not be greater than precision.");
+        }
+
+        this.scale = scale;
     }
 
     public boolean isIdentity() {
@@ -121,23 +167,112 @@ public class ColumnMetadata {
     }
 
     public void setIdentity(boolean identity) {
-        // TODO: Implement
+        this.identity = identity;
+
+        if (identity && nextIdentityValue < 1L) {
+            nextIdentityValue = 1L;
+        }
     }
 
     public long getNextIdentityValue() {
         return nextIdentityValue;
     }
 
-    public long generateIdentityValue() {
-        return 0L;
+    public void setNextIdentityValue(long nextIdentityValue) {
+        if (nextIdentityValue < 1L) {
+            throw new IllegalArgumentException(
+                    "Next identity value must be at least 1.");
+        }
+
+        this.nextIdentityValue = nextIdentityValue;
+    }
+
+    public long generateNextIdentityValue() {
+        if (!identity) {
+            throw new IllegalStateException(
+                    "Column is not configured as an identity column.");
+        }
+
+        long generatedValue = nextIdentityValue;
+        nextIdentityValue++;
+        return generatedValue;
+    }
+
+    public Object resolveValue(Object suppliedValue) {
+        if (suppliedValue != null) {
+            validateValue(suppliedValue);
+            return suppliedValue;
+        }
+
+        if (identity) {
+            return generateNextIdentityValue();
+        }
+
+        if (defaultValue != null) {
+            return defaultValue;
+        }
+
+        if (nullable) {
+            return null;
+        }
+
+        throw new IllegalArgumentException(
+                "A value is required for non-nullable column: " + name);
     }
 
     public boolean validateValue(Object value) {
-        return false;
+        if (value == null) {
+            if (!nullable) {
+                throw new IllegalArgumentException(
+                        "Null is not allowed for column: " + name);
+            }
+
+            return true;
+        }
+
+        if (!isValueCompatible(value)) {
+            throw new IllegalArgumentException(
+                    "Value is not compatible with data type " + dataType);
+        }
+
+        if (value instanceof String text
+                && length != null
+                && text.length() > length) {
+            throw new IllegalArgumentException(
+                    "String value exceeds maximum length " + length);
+        }
+
+        return true;
     }
 
     public boolean validateLength(Object value) {
         return false;
+    }
+
+    public boolean isValidDefinition() {
+        if (id == null
+                || name == null
+                || name.trim().isEmpty()
+                || dataType == null
+                || position < 0) {
+            return false;
+        }
+
+        if (length != null && length <= 0) {
+            return false;
+        }
+
+        if (precision != null && precision <= 0) {
+            return false;
+        }
+
+        if (scale != null && scale < 0) {
+            return false;
+        }
+
+        return precision == null
+                || scale == null
+                || scale <= precision;
     }
 
     public boolean validatePrecision(Object value) {
@@ -151,4 +286,86 @@ public class ColumnMetadata {
     public DataType getType() {
         return this.dataType;
     }
+
+    private boolean isValueCompatible(Object value) {
+        if (dataType == null || value == null) {
+            return value == null;
+        }
+
+        String typeName = dataType.name().toUpperCase();
+
+        return switch (typeName) {
+            case "INT", "INTEGER", "SMALLINT", "TINYINT" ->
+                value instanceof Byte
+                        || value instanceof Short
+                        || value instanceof Integer;
+            case "BIGINT", "LONG" ->
+                value instanceof Byte
+                        || value instanceof Short
+                        || value instanceof Integer
+                        || value instanceof Long;
+            case "FLOAT", "REAL" ->
+                value instanceof Float
+                        || value instanceof Integer
+                        || value instanceof Long;
+            case "DOUBLE" ->
+                value instanceof Number;
+            case "DECIMAL", "NUMERIC" ->
+                value instanceof Number;
+            case "BOOLEAN", "BOOL" ->
+                value instanceof Boolean;
+            case "CHAR", "VARCHAR", "TEXT", "STRING" ->
+                value instanceof String;
+            case "UUID" ->
+                value instanceof UUID;
+            case "DATE" ->
+                value instanceof java.time.LocalDate;
+            case "TIME" ->
+                value instanceof java.time.LocalTime;
+            case "DATETIME", "TIMESTAMP" ->
+                value instanceof java.time.LocalDateTime
+                        || value instanceof java.time.Instant;
+            case "BINARY", "VARBINARY", "BLOB", "BYTE_ARRAY" ->
+                value instanceof byte[];
+            default -> true;
+        };
+    }
+
+    private static void validateName(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Column name must not be null or blank.");
+        }
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) {
+            return true;
+        }
+
+        if (!(object instanceof ColumnMetadata other)) {
+            return false;
+        }
+
+        return Objects.equals(id, other.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        return "ColumnMetadata{"
+                + "id=" + id
+                + ", name='" + name + '\''
+                + ", dataType=" + dataType
+                + ", nullable=" + nullable
+                + ", position=" + position
+                + ", identity=" + identity
+                + '}';
+    }
+
 }

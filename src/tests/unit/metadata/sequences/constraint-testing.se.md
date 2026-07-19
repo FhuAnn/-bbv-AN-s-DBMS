@@ -1,6 +1,19 @@
-# Constraint Testing — Important Unit Test Sequence Diagrams
 
-## 1. Constructor_ShouldCreateConstraint
+## 1. setUp
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+
+    Test->>Constraint: configure fixture
+    Constraint-->>Test: void
+```
+
+# Constructor Tests
+
+## 2. constructor_ShouldCreateConstraint
 
 ```mermaid
 sequenceDiagram
@@ -9,17 +22,136 @@ sequenceDiagram
     participant Constraint as Constraint
     participant UUID as UUID
 
-    Test->>Constraint: new Constraint("pk_users", PRIMARY_KEY, ["id"])
-    Constraint->>Constraint: validateName()
-    Constraint->>Constraint: validateType()
-    Constraint->>Constraint: validateColumns()
+    Test->>Constraint: new Constraint(name, type, columns)
+    Constraint->>Constraint: validate constructor arguments
     Constraint->>UUID: randomUUID()
     UUID-->>Constraint: constraintId
     Constraint->>Constraint: enabled = true
-    Constraint-->>Test: constraint
+    Constraint-->>Test: constraint or exception
 ```
 
-## 2. Rename_ShouldChangeConstraintName
+## 3. constructor_ShouldGenerateConstraintId
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+    participant UUID as UUID
+
+    Test->>Constraint: new Constraint(name, type, columns)
+    Constraint->>Constraint: validate constructor arguments
+    Constraint->>UUID: randomUUID()
+    UUID-->>Constraint: constraintId
+    Constraint->>Constraint: enabled = true
+    Constraint-->>Test: constraint or exception
+```
+
+## 4. constructor_ShouldGenerateUniqueConstraintIds
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+    participant UUID as UUID
+
+    Test->>Constraint: new Constraint(name, type, columns)
+    Constraint->>Constraint: validate constructor arguments
+    Constraint->>UUID: randomUUID()
+    UUID-->>Constraint: constraintId
+    Constraint->>Constraint: enabled = true
+    Constraint-->>Test: constraint or exception
+```
+
+## 5. constructor_ShouldInitializeMetadata
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+    participant UUID as UUID
+
+    Test->>Constraint: new Constraint(name, type, columns)
+    Constraint->>Constraint: validate constructor arguments
+    Constraint->>UUID: randomUUID()
+    UUID-->>Constraint: constraintId
+    Constraint->>Constraint: enabled = true
+    Constraint-->>Test: constraint or exception
+```
+
+## 6. constructor_ShouldEnableConstraintByDefault
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+    participant UUID as UUID
+
+    Test->>Constraint: new Constraint(name, type, columns)
+    Constraint->>Constraint: validate constructor arguments
+    Constraint->>UUID: randomUUID()
+    UUID-->>Constraint: constraintId
+    Constraint->>Constraint: enabled = true
+    Constraint-->>Test: constraint or exception
+```
+
+## 7. constructor_ShouldRejectInvalidName
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+    participant UUID as UUID
+
+    Test->>Constraint: new Constraint(name, type, columns)
+    Constraint->>Constraint: validate constructor arguments
+    Constraint->>UUID: randomUUID()
+    UUID-->>Constraint: constraintId
+    Constraint->>Constraint: enabled = true
+    Constraint-->>Test: constraint or exception
+```
+
+## 8. constructor_ShouldRejectNullType
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+    participant UUID as UUID
+
+    Test->>Constraint: new Constraint(name, type, columns)
+    Constraint->>Constraint: validate constructor arguments
+    Constraint->>UUID: randomUUID()
+    UUID-->>Constraint: constraintId
+    Constraint->>Constraint: enabled = true
+    Constraint-->>Test: constraint or exception
+```
+
+## 9. constructor_ShouldRejectEmptyColumns
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+    participant UUID as UUID
+
+    Test->>Constraint: new Constraint(name, type, columns)
+    Constraint->>Constraint: validate constructor arguments
+    Constraint->>UUID: randomUUID()
+    UUID-->>Constraint: constraintId
+    Constraint->>Constraint: enabled = true
+    Constraint-->>Test: constraint or exception
+```
+
+# Metadata Tests
+
+## 10. rename_ShouldChangeConstraintName
 
 ```mermaid
 sequenceDiagram
@@ -27,13 +159,13 @@ sequenceDiagram
     actor Test as ConstraintTests
     participant Constraint as Constraint
 
-    Test->>Constraint: rename("pk_customer")
-    Constraint->>Constraint: validateName("pk_customer")
-    Constraint->>Constraint: name = "pk_customer"
-    Constraint-->>Test: void
+    Test->>Constraint: execute metadata operation
+    Constraint->>Constraint: validate supplied metadata
+    Constraint->>Constraint: store or return metadata
+    Constraint-->>Test: result or exception
 ```
 
-## 3. Disable_ShouldDisableConstraint
+## 11. rename_ShouldRejectInvalidName
 
 ```mermaid
 sequenceDiagram
@@ -41,247 +173,751 @@ sequenceDiagram
     actor Test as ConstraintTests
     participant Constraint as Constraint
 
-    Test->>Constraint: disable()
-    Constraint->>Constraint: enabled = false
-    Constraint-->>Test: void
-
-    Test->>Constraint: isEnabled()
-    Constraint-->>Test: false
+    Test->>Constraint: execute metadata operation
+    Constraint->>Constraint: validate supplied metadata
+    Constraint->>Constraint: store or return metadata
+    Constraint-->>Test: result or exception
 ```
 
-## 4. Validate_ShouldSkipDisabledConstraint
+## 12. getColumnNames_ShouldReturnUnmodifiableList
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
     participant Constraint as Constraint
-    participant Row as Row
 
-    Test->>Constraint: disable()
-    Test->>Constraint: validate(Row)
-    Constraint->>Constraint: check enabled
-
-    alt Constraint is disabled
-        Constraint-->>Test: true
-    end
+    Test->>Constraint: execute metadata operation
+    Constraint->>Constraint: validate supplied metadata
+    Constraint->>Constraint: store or return metadata
+    Constraint-->>Test: result or exception
 ```
 
-## 5. PrimaryKey_ShouldAcceptUniqueNonNullValue
+## 13. setReferencedTableId_ShouldStoreId
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant PK as PrimaryKeyConstraint
-    participant Row as Row
-    participant Existing as Existing Keys
+    participant Constraint as Constraint
 
-    Test->>PK: validatePrimaryKey(Row, Existing)
-    PK->>Row: getValue("id")
-    Row-->>PK: 1
-    PK->>PK: verify value is not null
-    PK->>Existing: contains([1])
-    Existing-->>PK: false
-    PK-->>Test: true
+    Test->>Constraint: execute metadata operation
+    Constraint->>Constraint: validate supplied metadata
+    Constraint->>Constraint: store or return metadata
+    Constraint-->>Test: result or exception
 ```
 
-## 6. PrimaryKey_ShouldRejectNullValue
+## 14. setReferencedTableId_ShouldRejectNull
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant PK as PrimaryKeyConstraint
-    participant Row as Row
+    participant Constraint as Constraint
 
-    Test->>PK: validatePrimaryKey(Row, Existing)
-    PK->>Row: getValue("id")
-    Row-->>PK: null
-
-    alt Primary key value is null
-        PK-->>Test: false
-    end
+    Test->>Constraint: execute metadata operation
+    Constraint->>Constraint: validate supplied metadata
+    Constraint->>Constraint: store or return metadata
+    Constraint-->>Test: result or exception
 ```
 
-## 7. PrimaryKey_ShouldRejectDuplicateValue
+## 15. setReferencedColumnNames_ShouldStoreColumns
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant PK as PrimaryKeyConstraint
-    participant Row as Row
-    participant Existing as Existing Keys
+    participant Constraint as Constraint
 
-    Test->>PK: validatePrimaryKey(Row, Existing)
-    PK->>Row: getValue("id")
-    Row-->>PK: 1
-    PK->>Existing: contains([1])
-    Existing-->>PK: true
-    PK-->>Test: false
+    Test->>Constraint: execute metadata operation
+    Constraint->>Constraint: validate supplied metadata
+    Constraint->>Constraint: store or return metadata
+    Constraint-->>Test: result or exception
 ```
 
-## 8. Unique_ShouldAcceptUniqueValue
+## 16. getReferencedColumnNames_ShouldBeUnmodifiable
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Unique as UniqueConstraint
+    participant Constraint as Constraint
+
+    Test->>Constraint: execute metadata operation
+    Constraint->>Constraint: validate supplied metadata
+    Constraint->>Constraint: store or return metadata
+    Constraint-->>Test: result or exception
+```
+
+## 17. setCheckExpression_ShouldStoreExpression
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+
+    Test->>Constraint: execute metadata operation
+    Constraint->>Constraint: validate supplied metadata
+    Constraint->>Constraint: store or return metadata
+    Constraint-->>Test: result or exception
+```
+
+## 18. setCheckExpression_ShouldRejectBlankExpression
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+
+    Test->>Constraint: execute metadata operation
+    Constraint->>Constraint: validate supplied metadata
+    Constraint->>Constraint: store or return metadata
+    Constraint-->>Test: result or exception
+```
+
+## 19. setCheckPredicate_ShouldRejectNull
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+
+    Test->>Constraint: execute metadata operation
+    Constraint->>Constraint: validate supplied metadata
+    Constraint->>Constraint: store or return metadata
+    Constraint-->>Test: result or exception
+```
+
+# State Tests
+
+## 20. disable_ShouldDisableConstraint
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+
+    Test->>Constraint: change or inspect enabled state
+    Constraint->>Constraint: enabled = requested state
+    Constraint-->>Test: state or validation result
+```
+
+## 21. enable_ShouldEnableConstraint
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+
+    Test->>Constraint: change or inspect enabled state
+    Constraint->>Constraint: enabled = requested state
+    Constraint-->>Test: state or validation result
+```
+
+## 22. disable_ShouldBeIdempotent
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+
+    Test->>Constraint: change or inspect enabled state
+    Constraint->>Constraint: enabled = requested state
+    Constraint-->>Test: state or validation result
+```
+
+## 23. enable_ShouldBeIdempotent
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+
+    Test->>Constraint: change or inspect enabled state
+    Constraint->>Constraint: enabled = requested state
+    Constraint-->>Test: state or validation result
+```
+
+## 24. disabledConstraint_ShouldAlwaysPassValidation
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+
+    Test->>Constraint: change or inspect enabled state
+    Constraint->>Constraint: enabled = requested state
+    Constraint-->>Test: state or validation result
+```
+
+# Primary Key Tests
+
+## 25. validatePrimaryKey_ShouldAcceptUniqueNonNullValue
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
     participant Row as Row
     participant Existing as Existing Values
 
-    Test->>Unique: validateUnique(Row, Existing)
-    Unique->>Row: getValue("email")
-    Row-->>Unique: "an@example.com"
-    Unique->>Existing: contains(["an@example.com"])
-    Existing-->>Unique: false
-    Unique-->>Test: true
+    Test->>Constraint: validatePrimaryKey(row, existingKeys)
+    Constraint->>Row: getValue for each key column
+    Row-->>Constraint: key values
+    Constraint->>Constraint: reject null components
+    Constraint->>Existing: contains(compositeKey)
+    Existing-->>Constraint: true or false
+    Constraint-->>Test: validation result
 ```
 
-## 9. Unique_ShouldRejectDuplicateValue
+## 26. validatePrimaryKey_ShouldRejectNullValue
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Unique as UniqueConstraint
+    participant Constraint as Constraint
     participant Row as Row
     participant Existing as Existing Values
 
-    Test->>Unique: validateUnique(Row, Existing)
-    Unique->>Row: getValue("email")
-    Row-->>Unique: "an@example.com"
-    Unique->>Existing: contains(["an@example.com"])
-    Existing-->>Unique: true
-    Unique-->>Test: false
+    Test->>Constraint: validatePrimaryKey(row, existingKeys)
+    Constraint->>Row: getValue for each key column
+    Row-->>Constraint: key values
+    Constraint->>Constraint: reject null components
+    Constraint->>Existing: contains(compositeKey)
+    Existing-->>Constraint: true or false
+    Constraint-->>Test: validation result
 ```
 
-## 10. NotNull_ShouldAcceptNonNullValue
+## 27. validatePrimaryKey_ShouldRejectDuplicateValue
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant NotNull as NotNullConstraint
+    participant Constraint as Constraint
     participant Row as Row
+    participant Existing as Existing Values
 
-    Test->>NotNull: validateNotNull(Row)
-    NotNull->>Row: getValue("name")
-    Row-->>NotNull: "An"
-    NotNull-->>Test: true
+    Test->>Constraint: validatePrimaryKey(row, existingKeys)
+    Constraint->>Row: getValue for each key column
+    Row-->>Constraint: key values
+    Constraint->>Constraint: reject null components
+    Constraint->>Existing: contains(compositeKey)
+    Existing-->>Constraint: true or false
+    Constraint-->>Test: validation result
 ```
 
-## 11. NotNull_ShouldRejectNullValue
+## 28. validatePrimaryKey_ShouldSupportCompositeKey
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant NotNull as NotNullConstraint
+    participant Constraint as Constraint
     participant Row as Row
+    participant Existing as Existing Values
 
-    Test->>NotNull: validateNotNull(Row)
-    NotNull->>Row: getValue("name")
-    Row-->>NotNull: null
-    NotNull-->>Test: false
+    Test->>Constraint: validatePrimaryKey(row, existingKeys)
+    Constraint->>Row: getValue for each key column
+    Row-->>Constraint: key values
+    Constraint->>Constraint: reject null components
+    Constraint->>Existing: contains(compositeKey)
+    Existing-->>Constraint: true or false
+    Constraint-->>Test: validation result
 ```
 
-## 12. ForeignKey_ShouldAcceptExistingReference
+## 29. validatePrimaryKey_ShouldRejectNullExistingKeys
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant FK as ForeignKeyConstraint
+    participant Constraint as Constraint
     participant Row as Row
-    participant References as Referenced Values
+    participant Existing as Existing Values
 
-    Test->>FK: validateForeignKey(Row, References)
-    FK->>Row: getValue("user_id")
-    Row-->>FK: 10
-    FK->>References: contains([10])
-    References-->>FK: true
-    FK-->>Test: true
+    Test->>Constraint: validatePrimaryKey(row, existingKeys)
+    Constraint->>Row: getValue for each key column
+    Row-->>Constraint: key values
+    Constraint->>Constraint: reject null components
+    Constraint->>Existing: contains(compositeKey)
+    Existing-->>Constraint: true or false
+    Constraint-->>Test: validation result
 ```
 
-## 13. ForeignKey_ShouldRejectMissingReference
+# Unique Tests
+
+## 30. validateUnique_ShouldAcceptUniqueValue
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant FK as ForeignKeyConstraint
+    participant Constraint as Constraint
     participant Row as Row
-    participant References as Referenced Values
+    participant Existing as Existing Values
 
-    Test->>FK: validateForeignKey(Row, References)
-    FK->>Row: getValue("user_id")
-    Row-->>FK: 99
-    FK->>References: contains([99])
-    References-->>FK: false
-    FK-->>Test: false
-```
-
-## 14. Check_ShouldAcceptMatchingExpression
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Test as ConstraintTests
-    participant Check as CheckConstraint
-    participant Row as Row
-
-    Test->>Check: validateCheck(Row)
-    Check->>Row: getValue("age")
-    Row-->>Check: 22
-    Check->>Check: evaluate age >= 18
-    Check-->>Test: true
-```
-
-## 15. Check_ShouldRejectNonMatchingExpression
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Test as ConstraintTests
-    participant Check as CheckConstraint
-    participant Row as Row
-
-    Test->>Check: validateCheck(Row)
-    Check->>Row: getValue("age")
-    Row-->>Check: 16
-    Check->>Check: evaluate age >= 18
-    Check-->>Test: false
-```
-
-## 16. ForeignKeyDefinition_ShouldRequireReference
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Test as ConstraintTests
-    participant FK as ForeignKeyConstraint
-
-    Test->>FK: isValidDefinition()
-    FK->>FK: check referencedTableId
-    FK->>FK: check referencedColumnNames
-
-    alt Reference metadata is missing
-        FK-->>Test: false
-    else Reference metadata exists
-        FK-->>Test: true
+    Test->>Constraint: validateUnique(row, existingValues)
+    Constraint->>Row: getValue for each unique column
+    Row-->>Constraint: values
+    alt Any value is null
+    Constraint-->>Test: true
+    else All values are non-null
+    Constraint->>Existing: contains(values)
+    Existing-->>Constraint: true or false
+    Constraint-->>Test: inverse result
     end
 ```
 
-## Recommended order
+## 31. validateUnique_ShouldRejectDuplicateValue
 
-1. Constructor and metadata
-2. Enable and disable state
-3. Primary key
-4. Unique
-5. Not-null
-6. Foreign key
-7. Check constraint
-8. Definition validation
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+    participant Row as Row
+    participant Existing as Existing Values
+
+    Test->>Constraint: validateUnique(row, existingValues)
+    Constraint->>Row: getValue for each unique column
+    Row-->>Constraint: values
+    alt Any value is null
+    Constraint-->>Test: true
+    else All values are non-null
+    Constraint->>Existing: contains(values)
+    Existing-->>Constraint: true or false
+    Constraint-->>Test: inverse result
+    end
+```
+
+## 32. validateUnique_ShouldAllowNullValue
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+    participant Row as Row
+    participant Existing as Existing Values
+
+    Test->>Constraint: validateUnique(row, existingValues)
+    Constraint->>Row: getValue for each unique column
+    Row-->>Constraint: values
+    alt Any value is null
+    Constraint-->>Test: true
+    else All values are non-null
+    Constraint->>Existing: contains(values)
+    Existing-->>Constraint: true or false
+    Constraint-->>Test: inverse result
+    end
+```
+
+## 33. validateUnique_ShouldSupportCompositeValue
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+    participant Row as Row
+    participant Existing as Existing Values
+
+    Test->>Constraint: validateUnique(row, existingValues)
+    Constraint->>Row: getValue for each unique column
+    Row-->>Constraint: values
+    alt Any value is null
+    Constraint-->>Test: true
+    else All values are non-null
+    Constraint->>Existing: contains(values)
+    Existing-->>Constraint: true or false
+    Constraint-->>Test: inverse result
+    end
+```
+
+# Not Null Tests
+
+## 34. validateNotNull_ShouldAcceptNonNullValue
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+    participant Row as Row
+
+    Test->>Constraint: validateNotNull(row)
+    loop Every configured column
+    Constraint->>Row: getValue(columnName)
+    Row-->>Constraint: value
+    end
+    Constraint-->>Test: true when all values are non-null
+```
+
+## 35. validateNotNull_ShouldRejectNullValue
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+    participant Row as Row
+
+    Test->>Constraint: validateNotNull(row)
+    loop Every configured column
+    Constraint->>Row: getValue(columnName)
+    Row-->>Constraint: value
+    end
+    Constraint-->>Test: true when all values are non-null
+```
+
+## 36. validateNotNull_ShouldCheckAllColumns
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+    participant Row as Row
+
+    Test->>Constraint: validateNotNull(row)
+    loop Every configured column
+    Constraint->>Row: getValue(columnName)
+    Row-->>Constraint: value
+    end
+    Constraint-->>Test: true when all values are non-null
+```
+
+# Dispatch Tests
+
+## 37. validate_ShouldDispatchToNotNullValidation
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+    participant Row as Row
+
+    Test->>Constraint: validate(row)
+    Constraint->>Constraint: inspect constraint type
+    Constraint->>Constraint: dispatch to supported validator
+    Constraint-->>Test: validation result or exception
+```
+
+# Fixture Setup
+
+## 38. configureForeignKey
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+
+    Test->>Constraint: configure fixture
+    Constraint-->>Test: void
+```
+
+# Foreign Key Tests
+
+## 39. validateForeignKey_ShouldAcceptExistingReference
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+    participant Row as Row
+    participant Referenced as Referenced Values
+
+    Test->>Constraint: validateForeignKey(row, referencedValues)
+    Constraint->>Row: getValue for each local column
+    Row-->>Constraint: foreign key values
+    alt Any local value is null
+    Constraint-->>Test: true
+    else All local values exist
+    Constraint->>Referenced: contains(values)
+    Referenced-->>Constraint: true or false
+    Constraint-->>Test: validation result
+    end
+```
+
+## 40. validateForeignKey_ShouldRejectMissingReference
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+    participant Row as Row
+    participant Referenced as Referenced Values
+
+    Test->>Constraint: validateForeignKey(row, referencedValues)
+    Constraint->>Row: getValue for each local column
+    Row-->>Constraint: foreign key values
+    alt Any local value is null
+    Constraint-->>Test: true
+    else All local values exist
+    Constraint->>Referenced: contains(values)
+    Referenced-->>Constraint: true or false
+    Constraint-->>Test: validation result
+    end
+```
+
+## 41. validateForeignKey_ShouldAllowNullValue
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+    participant Row as Row
+    participant Referenced as Referenced Values
+
+    Test->>Constraint: validateForeignKey(row, referencedValues)
+    Constraint->>Row: getValue for each local column
+    Row-->>Constraint: foreign key values
+    alt Any local value is null
+    Constraint-->>Test: true
+    else All local values exist
+    Constraint->>Referenced: contains(values)
+    Referenced-->>Constraint: true or false
+    Constraint-->>Test: validation result
+    end
+```
+
+## 42. validateForeignKey_ShouldSupportCompositeReference
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+    participant Row as Row
+    participant Referenced as Referenced Values
+
+    Test->>Constraint: validateForeignKey(row, referencedValues)
+    Constraint->>Row: getValue for each local column
+    Row-->>Constraint: foreign key values
+    alt Any local value is null
+    Constraint-->>Test: true
+    else All local values exist
+    Constraint->>Referenced: contains(values)
+    Referenced-->>Constraint: true or false
+    Constraint-->>Test: validation result
+    end
+```
+
+# Fixture Setup
+
+## 43. configureCheck
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+
+    Test->>Constraint: configure fixture
+    Constraint-->>Test: void
+```
+
+# Check Tests
+
+## 44. validateCheck_ShouldAcceptMatchingRow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+    participant Predicate as Check Predicate
+    participant Row as Row
+
+    Test->>Constraint: validateCheck(row)
+    Constraint->>Constraint: ensure predicate exists
+    Constraint->>Predicate: test(row)
+    Predicate->>Row: read required values
+    Row-->>Predicate: values
+    Predicate-->>Constraint: true or false
+    Constraint-->>Test: validation result
+```
+
+## 45. validateCheck_ShouldRejectNonMatchingRow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+    participant Predicate as Check Predicate
+    participant Row as Row
+
+    Test->>Constraint: validateCheck(row)
+    Constraint->>Constraint: ensure predicate exists
+    Constraint->>Predicate: test(row)
+    Predicate->>Row: read required values
+    Row-->>Predicate: values
+    Predicate-->>Constraint: true or false
+    Constraint-->>Test: validation result
+```
+
+## 46. validateCheck_ShouldRejectMissingPredicate
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+    participant Predicate as Check Predicate
+    participant Row as Row
+
+    Test->>Constraint: validateCheck(row)
+    Constraint->>Constraint: ensure predicate exists
+    Constraint->>Predicate: test(row)
+    Predicate->>Row: read required values
+    Row-->>Predicate: values
+    Predicate-->>Constraint: true or false
+    Constraint-->>Test: validation result
+```
+
+# Dispatch Tests
+
+## 47. validate_ShouldDispatchToCheckValidation
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+    participant Row as Row
+
+    Test->>Constraint: validate(row)
+    Constraint->>Constraint: inspect constraint type
+    Constraint->>Constraint: dispatch to supported validator
+    Constraint-->>Test: validation result or exception
+```
+
+# Definition Tests
+
+## 48. isValidDefinition_ShouldAcceptPrimaryKey
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+
+    Test->>Constraint: isValidDefinition()
+    Constraint->>Constraint: validate common metadata
+    Constraint->>Constraint: validate type-specific metadata
+    Constraint-->>Test: true or false
+```
+
+## 49. isValidDefinition_ShouldAcceptUniqueConstraint
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+
+    Test->>Constraint: isValidDefinition()
+    Constraint->>Constraint: validate common metadata
+    Constraint->>Constraint: validate type-specific metadata
+    Constraint-->>Test: true or false
+```
+
+## 50. isValidDefinition_ShouldAcceptNotNullConstraint
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+
+    Test->>Constraint: isValidDefinition()
+    Constraint->>Constraint: validate common metadata
+    Constraint->>Constraint: validate type-specific metadata
+    Constraint-->>Test: true or false
+```
+
+## 51. isValidDefinition_ShouldAcceptConfiguredForeignKey
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+
+    Test->>Constraint: isValidDefinition()
+    Constraint->>Constraint: validate common metadata
+    Constraint->>Constraint: validate type-specific metadata
+    Constraint-->>Test: true or false
+```
+
+## 52. isValidDefinition_ShouldRejectIncompleteForeignKey
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+
+    Test->>Constraint: isValidDefinition()
+    Constraint->>Constraint: validate common metadata
+    Constraint->>Constraint: validate type-specific metadata
+    Constraint-->>Test: true or false
+```
+
+## 53. isValidDefinition_ShouldAcceptConfiguredCheck
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+
+    Test->>Constraint: isValidDefinition()
+    Constraint->>Constraint: validate common metadata
+    Constraint->>Constraint: validate type-specific metadata
+    Constraint-->>Test: true or false
+```
+
+## 54. isValidDefinition_ShouldRejectIncompleteCheck
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Constraint as Constraint
+
+    Test->>Constraint: isValidDefinition()
+    Constraint->>Constraint: validate common metadata
+    Constraint->>Constraint: validate type-specific metadata
+    Constraint-->>Test: true or false
+```
+
+# Behavior decisions
+
+- Constraints are enabled by default.
+- Disabled constraints always pass validation.
+- Primary-key values must be non-null and unique.
+- Unique constraints allow null values.
+- Foreign keys allow null local values.
+- Check constraints use a `Predicate<Row>` rather than implementing a SQL parser.
+- `checkExpression` is retained as metadata only.
+- Composite constraints are represented by ordered lists of column values.
+- `validate(Row)` directly supports `NOT_NULL` and `CHECK`; other types require external value sets.
+- Returned column lists are unmodifiable.
