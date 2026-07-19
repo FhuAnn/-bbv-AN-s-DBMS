@@ -897,7 +897,7 @@ sequenceDiagram
     actor Test as RowTests
     participant Row as Row
 
-    Test->>Row: setValue("id", 1)
+    Test->>Row: setValue("name", An)
 
     Test->>Row: calculateSize()
     Row-->>Test: initialSize

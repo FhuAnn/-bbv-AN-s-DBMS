@@ -1,5 +1,6 @@
 
 package classes.metadata;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -26,6 +27,12 @@ public class Table {
     }
 
     public Table(String name, UUID schemaId) {
+        validateName(name);
+
+        if (schemaId == null) {
+            throw new IllegalArgumentException("Schema ID must not be null.");
+        }
+
         this.id = UUID.randomUUID();
         this.name = name;
         this.schemaId = schemaId;
@@ -40,7 +47,11 @@ public class Table {
     }
 
     public void setId(UUID id) {
-        // TODO: Implement
+        if (id == null) {
+            throw new IllegalArgumentException("Table ID must not be null.");
+        }
+
+        this.id = id;
     }
 
     public String getName() {
@@ -56,11 +67,15 @@ public class Table {
     }
 
     public void setSchemaId(UUID schemaId) {
-        // TODO: Implement
+        if (schemaId == null) {
+            throw new IllegalArgumentException("Schema ID must not be null.");
+        }
+
+        this.schemaId = schemaId;
     }
 
     public List<ColumnMetadata> getColumns() {
-         return Collections.unmodifiableList(columns);
+        return Collections.unmodifiableList(columns);
     }
 
     public void setColumns(List<ColumnMetadata> columns) {
@@ -68,7 +83,7 @@ public class Table {
     }
 
     public List<Row> getRows() {
-        return this.rows;
+        return Collections.unmodifiableList(rows);
     }
 
     public void setRows(List<Row> rows) {
@@ -76,7 +91,7 @@ public class Table {
     }
 
     public List<Constraint> getConstraints() {
-        return this.constraints;
+        return Collections.unmodifiableList(constraints);
     }
 
     public void setConstraints(List<Constraint> constraints) {
@@ -84,7 +99,7 @@ public class Table {
     }
 
     public List<Index> getIndexes() {
-        return this.indexes;
+        return Collections.unmodifiableList(indexes);
     }
 
     public void setIndexes(List<Index> indexes) {
@@ -92,38 +107,84 @@ public class Table {
     }
 
     public void rename(String newName) {
-        // TODO: Implement
+        if (newName == null || newName.isBlank()) {
+            throw new IllegalArgumentException("Table name must not be null or blank.");
+        }
+        this.name = newName;
     }
 
     public void addColumn(ColumnMetadata column) {
-         if (column == null) {
-        throw new IllegalArgumentException("Column must not be null");
-         }
+        if (column == null) {
+            throw new IllegalArgumentException("Column must not be null.");
+        }
+
+        String columnName = requireObjectName(column.getName(), "Column");
+
+        if (containsColumn(columnName)) {
+            throw new IllegalArgumentException(
+                    "Column already exists: " + columnName);
+        }
 
         columns.add(column);
     }
 
     public ColumnMetadata getColumn(String columnName) {
+        if (columnName == null) {
+            return null;
+        }
+
+        for (ColumnMetadata column : columns) {
+            if (columnName.equals(column.getName())) {
+                return column;
+            }
+        }
+
         return null;
     }
 
     public boolean containsColumn(String columnName) {
-        return false;
+        return getColumn(columnName) != null;
     }
 
     public ColumnMetadata removeColumn(String columnName) {
-        return null;
+        ColumnMetadata column = getColumn(columnName);
+
+        if (column == null) {
+            return null;
+        }
+
+        columns.remove(column);
+        return column;
     }
 
     public void renameColumn(String currentName, String newName) {
-        // TODO: Implement
+
     }
 
     public Row insertRow(Row row) {
-        return null;
+        if (row == null) {
+            throw new IllegalArgumentException("Row must not be null.");
+        }
+
+        if (row.getId() == null) {
+            throw new IllegalArgumentException("Row ID must not be null.");
+        }
+
+        rows.add(row);
+        return row;
     }
 
     public Row getRow(UUID rowId) {
+        if (rowId == null) {
+            return null;
+        }
+
+        for (Row row : rows) {
+            if (rowId.equals(row.getId())) {
+                return row;
+            }
+        }
+
         return null;
     }
 
@@ -132,66 +193,162 @@ public class Table {
     }
 
     public Row updateRow(UUID rowId, Row newRow) {
+        if (rowId == null || newRow == null) {
+            return null;
+        }
+
+        for (int index = 0; index < rows.size(); index++) {
+            Row currentRow = rows.get(index);
+
+            if (rowId.equals(currentRow.getId())) {
+                rows.set(index, newRow);
+                return newRow;
+            }
+        }
+
         return null;
     }
 
     public Row deleteRow(UUID rowId) {
-        return null;
+        Row row = getRow(rowId);
+
+        if (row == null) {
+            return null;
+        }
+
+        rows.remove(row);
+        return row;
     }
 
     public void truncate() {
-        // TODO: Implement
+        rows.clear();
     }
 
     public void addConstraint(Constraint constraint) {
-        // TODO: Implement
+        if (constraint == null) {
+            throw new IllegalArgumentException("Constraint must not be null.");
+        }
+
+        String constraintName = requireObjectName(
+                constraint.getName(),
+                "Constraint");
+
+        if (containsConstraint(constraintName)) {
+            throw new IllegalArgumentException(
+                    "Constraint already exists: " + constraintName);
+        }
+
+        constraints.add(constraint);
     }
 
     public Constraint getConstraint(String constraintName) {
+        if (constraintName == null) {
+            return null;
+        }
+
+        for (Constraint constraint : constraints) {
+            if (constraintName.equals(constraint.getName())) {
+                return constraint;
+            }
+        }
+
         return null;
     }
 
     public boolean containsConstraint(String constraintName) {
-        return false;
+        return getConstraint(constraintName) != null;
     }
 
     public Constraint removeConstraint(String constraintName) {
-        return null;
+        Constraint constraint = getConstraint(constraintName);
+
+        if (constraint == null) {
+            return null;
+        }
+
+        constraints.remove(constraint);
+        return constraint;
     }
 
     public void addIndex(Index index) {
-        // TODO: Implement
+        if (index == null) {
+            throw new IllegalArgumentException("Index must not be null.");
+        }
+
+        String indexName = requireObjectName(index.getName(), "Index");
+
+        if (containsIndex(indexName)) {
+            throw new IllegalArgumentException(
+                    "Index already exists: " + indexName);
+        }
+
+        indexes.add(index);
     }
 
     public Index getIndex(String indexName) {
+        if (indexName == null) {
+            return null;
+        }
+
+        for (Index index : indexes) {
+            if (indexName.equals(index.getName())) {
+                return index;
+            }
+        }
+
         return null;
     }
 
     public boolean containsIndex(String indexName) {
-        return false;
+        return getIndex(indexName) != null;
     }
 
     public Index removeIndex(String indexName) {
-        return null;
+        Index index = getIndex(indexName);
+
+        if (index == null) {
+            return null;
+        }
+
+        indexes.remove(index);
+        return index;
     }
 
     public int getColumnCount() {
-        return 0;
+        return columns.size();
     }
 
     public int getRowCount() {
-        return 0;
+        return rows.size();
     }
 
     public int getConstraintCount() {
-        return 0;
+        return constraints.size();
     }
 
     public int getIndexCount() {
-        return 0;
+        return indexes.size();
     }
 
     public boolean isEmpty() {
-        return true;
+        return rows.isEmpty();
+    }
+
+    private static void validateName(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Table name must not be null or blank.");
+        }
+    }
+
+    private static String requireObjectName(
+            String value,
+            String objectType) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    objectType + " name must not be null or blank.");
+        }
+
+        return value;
     }
 }

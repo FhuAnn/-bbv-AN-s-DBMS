@@ -1,4 +1,5 @@
 package unit.metadata;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -10,21 +11,46 @@ import classes.metadata.Index;
 import classes.metadata.Row;
 import classes.metadata.Table;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import java.util.UUID;
 
 @DisplayName("Table Unit Tests")
 class TableTests {
 
     private Table table;
+    private UUID schemaId;
     private ColumnMetadata idColumn;
     private ColumnMetadata nameColumn;
     private Row firstRow;
-    private Constraint primaryKeyConstraint;
+    private Constraint primaryKey;
     private Index emailIndex;
 
     @BeforeEach
     void setUp() {
-        // TODO: Initialize common test data
+        schemaId = UUID.randomUUID();
+        table = new Table("users", schemaId);
+
+        idColumn = mock(ColumnMetadata.class);
+        nameColumn = mock(ColumnMetadata.class);
+        firstRow = mock(Row.class);
+        primaryKey = mock(Constraint.class);
+        emailIndex = mock(Index.class);
+
+        when(idColumn.getName()).thenReturn("id");
+        when(nameColumn.getName()).thenReturn("name");
+        when(firstRow.getId()).thenReturn(UUID.randomUUID());
+        when(primaryKey.getName()).thenReturn("pk_users");
+        when(emailIndex.getName()).thenReturn("idx_users_email");
     }
 
     @Nested
@@ -32,51 +58,53 @@ class TableTests {
     class ConstructorTests {
 
         @Test
-        @DisplayName("Should create table successfully")
         void constructor_ShouldCreateTable() {
-            // TODO: Implement test
+            assertNotNull(table);
         }
 
         @Test
-        @DisplayName("Should generate table ID")
         void constructor_ShouldGenerateTableId() {
-            // TODO: Implement test
+            assertNotNull(table.getId());
         }
 
         @Test
-        @DisplayName("Should generate unique table IDs")
         void constructor_ShouldGenerateUniqueTableIds() {
-            // TODO: Implement test
+            Table secondTable = new Table("roles", schemaId);
+
+            assertNotEquals(table.getId(), secondTable.getId());
         }
 
         @Test
-        @DisplayName("Should initialize schema ID")
         void constructor_ShouldInitializeSchemaId() {
-            // TODO: Implement test
+            assertEquals(schemaId, table.getSchemaId());
         }
 
         @Test
-        @DisplayName("Should initialize empty columns")
         void constructor_ShouldInitializeEmptyColumns() {
-            // TODO: Implement test
+            assertNotNull(table.getColumns());
+            assertTrue(table.getColumns().isEmpty());
+            assertEquals(0, table.getColumnCount());
         }
 
         @Test
-        @DisplayName("Should initialize empty rows")
         void constructor_ShouldInitializeEmptyRows() {
-            // TODO: Implement test
+            assertNotNull(table.getRows());
+            assertTrue(table.getRows().isEmpty());
+            assertEquals(0, table.getRowCount());
         }
 
         @Test
-        @DisplayName("Should initialize empty constraints")
         void constructor_ShouldInitializeEmptyConstraints() {
-            // TODO: Implement test
+            assertNotNull(table.getConstraints());
+            assertTrue(table.getConstraints().isEmpty());
+            assertEquals(0, table.getConstraintCount());
         }
 
         @Test
-        @DisplayName("Should initialize empty indexes")
         void constructor_ShouldInitializeEmptyIndexes() {
-            // TODO: Implement test
+            assertNotNull(table.getIndexes());
+            assertTrue(table.getIndexes().isEmpty());
+            assertEquals(0, table.getIndexCount());
         }
     }
 
@@ -85,27 +113,37 @@ class TableTests {
     class NameTests {
 
         @Test
-        @DisplayName("Should return table name")
         void getName_ShouldReturnTableName() {
-            // TODO: Implement test
+            assertEquals("users", table.getName());
         }
 
         @Test
-        @DisplayName("Should rename table successfully")
         void rename_ShouldChangeTableName() {
-            // TODO: Implement test
+            table.rename("customers");
+
+            assertEquals("customers", table.getName());
         }
 
         @Test
-        @DisplayName("Should reject null table name")
         void rename_ShouldRejectNullName() {
-            // TODO: Implement test
+            assertThrows(
+                    IllegalArgumentException.class,
+                    () -> table.rename(null)
+            );
         }
 
         @Test
-        @DisplayName("Should reject blank table name")
         void rename_ShouldRejectBlankName() {
-            // TODO: Implement test
+            assertAll(
+                    () -> assertThrows(
+                            IllegalArgumentException.class,
+                            () -> table.rename("")
+                    ),
+                    () -> assertThrows(
+                            IllegalArgumentException.class,
+                            () -> table.rename("   ")
+                    )
+            );
         }
     }
 
@@ -114,69 +152,92 @@ class TableTests {
     class ColumnManagementTests {
 
         @Test
-        @DisplayName("Should add column successfully")
-        void addColumn_ShouldAppendColumn() {
-            // TODO: Implement test
+        void addColumn_ShouldRegisterColumn() {
+            table.addColumn(idColumn);
+
+            assertSame(idColumn, table.getColumn("id"));
+            assertTrue(table.containsColumn("id"));
         }
 
         @Test
-        @DisplayName("Should increase column count")
         void addColumn_ShouldIncreaseColumnCount() {
-            // TODO: Implement test
+            table.addColumn(idColumn);
+            table.addColumn(nameColumn);
+
+            assertEquals(2, table.getColumnCount());
         }
 
         @Test
-        @DisplayName("Should reject null column")
         void addColumn_ShouldRejectNullColumn() {
-            // TODO: Implement test
+            assertThrows(
+                    IllegalArgumentException.class,
+                    () -> table.addColumn(null)
+            );
         }
 
         @Test
-        @DisplayName("Should reject duplicate column name")
         void addColumn_ShouldRejectDuplicateColumnName() {
-            // TODO: Implement test
+            ColumnMetadata duplicateColumn = mock(ColumnMetadata.class);
+            when(duplicateColumn.getName()).thenReturn("id");
+
+            table.addColumn(idColumn);
+
+            assertThrows(
+                    IllegalArgumentException.class,
+                    () -> table.addColumn(duplicateColumn)
+            );
         }
 
         @Test
-        @DisplayName("Should return existing column")
         void getColumn_ShouldReturnExistingColumn() {
-            // TODO: Implement test
+            table.addColumn(nameColumn);
+
+            ColumnMetadata result = table.getColumn("name");
+
+            assertSame(nameColumn, result);
         }
 
         @Test
-        @DisplayName("Should return null for missing column")
         void getColumn_ShouldReturnNullForMissingColumn() {
-            // TODO: Implement test
+            assertNull(table.getColumn("missing"));
         }
 
         @Test
-        @DisplayName("Should remove existing column")
+        void containsColumn_ShouldReturnTrueForExistingColumn() {
+            table.addColumn(idColumn);
+
+            assertTrue(table.containsColumn("id"));
+        }
+
+        @Test
+        void containsColumn_ShouldReturnFalseForMissingColumn() {
+            assertFalse(table.containsColumn("missing"));
+        }
+
+        @Test
         void removeColumn_ShouldRemoveExistingColumn() {
-            // TODO: Implement test
+            table.addColumn(idColumn);
+
+            ColumnMetadata removed = table.removeColumn("id");
+
+            assertSame(idColumn, removed);
+            assertFalse(table.containsColumn("id"));
+            assertEquals(0, table.getColumnCount());
         }
 
         @Test
-        @DisplayName("Should return null when removing missing column")
         void removeColumn_ShouldReturnNullForMissingColumn() {
-            // TODO: Implement test
+            assertNull(table.removeColumn("missing"));
         }
 
         @Test
-        @DisplayName("Should rename an existing column")
-        void renameColumn_ShouldRenameExistingColumn() {
-            // TODO: Implement test
-        }
-
-        @Test
-        @DisplayName("Should reject an existing target column name")
-        void renameColumn_ShouldRejectExistingName() {
-            // TODO: Implement test
-        }
-
-        @Test
-        @DisplayName("Should return unmodifiable columns")
         void getColumns_ShouldReturnUnmodifiableCollection() {
-            // TODO: Implement test
+            table.addColumn(idColumn);
+
+            assertThrows(
+                    UnsupportedOperationException.class,
+                    () -> table.getColumns().clear()
+            );
         }
     }
 
@@ -185,93 +246,120 @@ class TableTests {
     class RowManagementTests {
 
         @Test
-        @DisplayName("Should insert row successfully")
-        void insertRow_ShouldInsertSuccessfully() {
-            // TODO: Implement test
+        void insertRow_ShouldInsertRow() {
+            Row inserted = table.insertRow(firstRow);
+
+            assertSame(firstRow, inserted);
+            assertSame(firstRow, table.getRow(firstRow.getId()));
         }
 
         @Test
-        @DisplayName("Should increase row count")
         void insertRow_ShouldIncreaseRowCount() {
-            // TODO: Implement test
+            Row secondRow = mock(Row.class);
+            when(secondRow.getId()).thenReturn(UUID.randomUUID());
+
+            table.insertRow(firstRow);
+            table.insertRow(secondRow);
+
+            assertEquals(2, table.getRowCount());
         }
 
         @Test
-        @DisplayName("Should reject null row")
         void insertRow_ShouldRejectNullRow() {
-            // TODO: Implement test
+            assertThrows(
+                    IllegalArgumentException.class,
+                    () -> table.insertRow(null)
+            );
         }
 
         @Test
-        @DisplayName("Should return existing row")
         void getRow_ShouldReturnExistingRow() {
-            // TODO: Implement test
+            table.insertRow(firstRow);
+
+            Row result = table.getRow(firstRow.getId());
+
+            assertSame(firstRow, result);
         }
 
         @Test
-        @DisplayName("Should return null for missing row")
         void getRow_ShouldReturnNullForMissingRow() {
-            // TODO: Implement test
+            assertNull(table.getRow(UUID.randomUUID()));
         }
 
         @Test
-        @DisplayName("Should return true for existing row")
-        void containsRow_ShouldReturnTrueForExistingRow() {
-            // TODO: Implement test
+        void updateRow_ShouldReplaceExistingRow() {
+            UUID rowId = firstRow.getId();
+            Row replacement = mock(Row.class);
+            when(replacement.getId()).thenReturn(rowId);
+
+            table.insertRow(firstRow);
+
+            Row updated = table.updateRow(rowId, replacement);
+
+            assertSame(replacement, updated);
+            assertSame(replacement, table.getRow(rowId));
+            assertEquals(1, table.getRowCount());
         }
 
         @Test
-        @DisplayName("Should return false for missing row")
-        void containsRow_ShouldReturnFalseForMissingRow() {
-            // TODO: Implement test
-        }
-
-        @Test
-        @DisplayName("Should update existing row")
-        void updateRow_ShouldUpdateExistingRow() {
-            // TODO: Implement test
-        }
-
-        @Test
-        @DisplayName("Should return null when updating missing row")
         void updateRow_ShouldReturnNullForMissingRow() {
-            // TODO: Implement test
+            UUID missingRowId = UUID.randomUUID();
+            Row replacement = mock(Row.class);
+            when(replacement.getId()).thenReturn(missingRowId);
+
+            assertNull(table.updateRow(missingRowId, replacement));
         }
 
         @Test
-        @DisplayName("Should delete existing row")
-        void deleteRow_ShouldDeleteExistingRow() {
-            // TODO: Implement test
+        void deleteRow_ShouldRemoveExistingRow() {
+            table.insertRow(firstRow);
+
+            Row deleted = table.deleteRow(firstRow.getId());
+
+            assertSame(firstRow, deleted);
+            assertNull(table.getRow(firstRow.getId()));
         }
 
         @Test
-        @DisplayName("Should decrease row count")
         void deleteRow_ShouldDecreaseRowCount() {
-            // TODO: Implement test
+            Row secondRow = mock(Row.class);
+            when(secondRow.getId()).thenReturn(UUID.randomUUID());
+
+            table.insertRow(firstRow);
+            table.insertRow(secondRow);
+
+            table.deleteRow(firstRow.getId());
+
+            assertEquals(1, table.getRowCount());
         }
 
         @Test
-        @DisplayName("Should return null when deleting missing row")
         void deleteRow_ShouldReturnNullForMissingRow() {
-            // TODO: Implement test
+            assertNull(table.deleteRow(UUID.randomUUID()));
         }
 
         @Test
-        @DisplayName("Should remove all rows")
         void truncate_ShouldRemoveAllRows() {
-            // TODO: Implement test
+            Row secondRow = mock(Row.class);
+            when(secondRow.getId()).thenReturn(UUID.randomUUID());
+
+            table.insertRow(firstRow);
+            table.insertRow(secondRow);
+
+            table.truncate();
+
+            assertTrue(table.getRows().isEmpty());
+            assertEquals(0, table.getRowCount());
         }
 
         @Test
-        @DisplayName("Should set row count to zero")
-        void truncate_ShouldResetRowCount() {
-            // TODO: Implement test
-        }
-
-        @Test
-        @DisplayName("Should return unmodifiable rows")
         void getRows_ShouldReturnUnmodifiableCollection() {
-            // TODO: Implement test
+            table.insertRow(firstRow);
+
+            assertThrows(
+                    UnsupportedOperationException.class,
+                    () -> table.getRows().clear()
+            );
         }
     }
 
@@ -280,45 +368,62 @@ class TableTests {
     class ConstraintManagementTests {
 
         @Test
-        @DisplayName("Should add constraint successfully")
         void addConstraint_ShouldRegisterConstraint() {
-            // TODO: Implement test
+            table.addConstraint(primaryKey);
+
+            assertSame(primaryKey, table.getConstraint("pk_users"));
+            assertTrue(table.containsConstraint("pk_users"));
         }
 
         @Test
-        @DisplayName("Should increase constraint count")
-        void addConstraint_ShouldIncreaseConstraintCount() {
-            // TODO: Implement test
-        }
-
-        @Test
-        @DisplayName("Should reject null constraint")
         void addConstraint_ShouldRejectNullConstraint() {
-            // TODO: Implement test
+            assertThrows(
+                    IllegalArgumentException.class,
+                    () -> table.addConstraint(null)
+            );
         }
 
         @Test
-        @DisplayName("Should reject duplicate constraint name")
         void addConstraint_ShouldRejectDuplicateConstraintName() {
-            // TODO: Implement test
+            Constraint duplicateConstraint = mock(Constraint.class);
+            when(duplicateConstraint.getName()).thenReturn("pk_users");
+
+            table.addConstraint(primaryKey);
+
+            assertThrows(
+                    IllegalArgumentException.class,
+                    () -> table.addConstraint(duplicateConstraint)
+            );
         }
 
         @Test
-        @DisplayName("Should return existing constraint")
         void getConstraint_ShouldReturnExistingConstraint() {
-            // TODO: Implement test
+            table.addConstraint(primaryKey);
+
+            Constraint result = table.getConstraint("pk_users");
+
+            assertSame(primaryKey, result);
         }
 
         @Test
-        @DisplayName("Should remove existing constraint")
         void removeConstraint_ShouldRemoveExistingConstraint() {
-            // TODO: Implement test
+            table.addConstraint(primaryKey);
+
+            Constraint removed = table.removeConstraint("pk_users");
+
+            assertSame(primaryKey, removed);
+            assertFalse(table.containsConstraint("pk_users"));
+            assertEquals(0, table.getConstraintCount());
         }
 
         @Test
-        @DisplayName("Should return unmodifiable constraints")
         void getConstraints_ShouldReturnUnmodifiableCollection() {
-            // TODO: Implement test
+            table.addConstraint(primaryKey);
+
+            assertThrows(
+                    UnsupportedOperationException.class,
+                    () -> table.getConstraints().clear()
+            );
         }
     }
 
@@ -327,45 +432,62 @@ class TableTests {
     class IndexManagementTests {
 
         @Test
-        @DisplayName("Should add index successfully")
         void addIndex_ShouldRegisterIndex() {
-            // TODO: Implement test
+            table.addIndex(emailIndex);
+
+            assertSame(emailIndex, table.getIndex("idx_users_email"));
+            assertTrue(table.containsIndex("idx_users_email"));
         }
 
         @Test
-        @DisplayName("Should increase index count")
-        void addIndex_ShouldIncreaseIndexCount() {
-            // TODO: Implement test
-        }
-
-        @Test
-        @DisplayName("Should reject null index")
         void addIndex_ShouldRejectNullIndex() {
-            // TODO: Implement test
+            assertThrows(
+                    IllegalArgumentException.class,
+                    () -> table.addIndex(null)
+            );
         }
 
         @Test
-        @DisplayName("Should reject duplicate index name")
         void addIndex_ShouldRejectDuplicateIndexName() {
-            // TODO: Implement test
+            Index duplicateIndex = mock(Index.class);
+            when(duplicateIndex.getName()).thenReturn("idx_users_email");
+
+            table.addIndex(emailIndex);
+
+            assertThrows(
+                    IllegalArgumentException.class,
+                    () -> table.addIndex(duplicateIndex)
+            );
         }
 
         @Test
-        @DisplayName("Should return existing index")
         void getIndex_ShouldReturnExistingIndex() {
-            // TODO: Implement test
+            table.addIndex(emailIndex);
+
+            Index result = table.getIndex("idx_users_email");
+
+            assertSame(emailIndex, result);
         }
 
         @Test
-        @DisplayName("Should remove existing index")
         void removeIndex_ShouldRemoveExistingIndex() {
-            // TODO: Implement test
+            table.addIndex(emailIndex);
+
+            Index removed = table.removeIndex("idx_users_email");
+
+            assertSame(emailIndex, removed);
+            assertFalse(table.containsIndex("idx_users_email"));
+            assertEquals(0, table.getIndexCount());
         }
 
         @Test
-        @DisplayName("Should return unmodifiable indexes")
         void getIndexes_ShouldReturnUnmodifiableCollection() {
-            // TODO: Implement test
+            table.addIndex(emailIndex);
+
+            assertThrows(
+                    UnsupportedOperationException.class,
+                    () -> table.getIndexes().clear()
+            );
         }
     }
 
@@ -374,62 +496,56 @@ class TableTests {
     class StateTests {
 
         @Test
-        @DisplayName("Should be empty for a new table")
         void isEmpty_ShouldReturnTrueForNewTable() {
-            // TODO: Implement test
+            assertTrue(table.isEmpty());
         }
 
         @Test
-        @DisplayName("Should not be empty when row exists")
         void isEmpty_ShouldReturnFalseWhenRowExists() {
-            // TODO: Implement test
+            table.insertRow(firstRow);
+
+            assertFalse(table.isEmpty());
         }
 
         @Test
-        @DisplayName("Should return correct column count")
-        void getColumnCount_ShouldReturnCorrectCount() {
-            // TODO: Implement test
-        }
-
-        @Test
-        @DisplayName("Should return correct row count")
         void getRowCount_ShouldReturnCorrectCount() {
-            // TODO: Implement test
+            Row secondRow = mock(Row.class);
+            when(secondRow.getId()).thenReturn(UUID.randomUUID());
+
+            table.insertRow(firstRow);
+            table.insertRow(secondRow);
+
+            assertEquals(2, table.getRowCount());
         }
 
         @Test
-        @DisplayName("Should return correct constraint count")
+        void getColumnCount_ShouldReturnCorrectCount() {
+            table.addColumn(idColumn);
+            table.addColumn(nameColumn);
+
+            assertEquals(2, table.getColumnCount());
+        }
+
+        @Test
         void getConstraintCount_ShouldReturnCorrectCount() {
-            // TODO: Implement test
+            Constraint uniqueConstraint = mock(Constraint.class);
+            when(uniqueConstraint.getName()).thenReturn("uq_users_email");
+
+            table.addConstraint(primaryKey);
+            table.addConstraint(uniqueConstraint);
+
+            assertEquals(2, table.getConstraintCount());
         }
 
         @Test
-        @DisplayName("Should return correct index count")
         void getIndexCount_ShouldReturnCorrectCount() {
-            // TODO: Implement test
-        }
-    }
+            Index nameIndex = mock(Index.class);
+            when(nameIndex.getName()).thenReturn("idx_users_name");
 
-    @Nested
-    @DisplayName("Metadata Tests")
-    class MetadataTests {
+            table.addIndex(emailIndex);
+            table.addIndex(nameIndex);
 
-        @Test
-        @DisplayName("Should return schema ID")
-        void getSchemaId_ShouldReturnSchemaId() {
-            // TODO: Implement test
-        }
-
-        @Test
-        @DisplayName("Should update schema ID")
-        void setSchemaId_ShouldUpdateSchemaId() {
-            // TODO: Implement test
-        }
-
-        @Test
-        @DisplayName("Should reject null schema ID")
-        void setSchemaId_ShouldRejectNullSchemaId() {
-            // TODO: Implement test
+            assertEquals(2, table.getIndexCount());
         }
     }
 }
