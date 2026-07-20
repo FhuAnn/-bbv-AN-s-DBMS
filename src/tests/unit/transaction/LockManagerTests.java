@@ -1,40 +1,138 @@
 package unit.transaction;
 
+import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.UUID;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
+import classes.tx.LockManager;
 
 @DisplayName("Lock Manager Tests")
 class LockManagerTests {
+    private LockManager manager;
+    private UUID owner;
+    private UUID secondOwner;
 
-    @Test
-    void AcquireSharedLock() {
+    @BeforeEach
+    void setUp() {
+        manager = new LockManager();
+        owner = UUID.randomUUID();
+        secondOwner = UUID.randomUUID();
     }
 
-    @Test
-    void AcquireExclusiveLock() {
+    @Nested
+    class ConstructorTests {
+        @Test
+        void constructor_ShouldCreateManager() {
+
+        }
+
+        @Test
+        void constructor_ShouldInitializeEmptyLocks() {
+
+        }
     }
 
-    @Test
-    void UpgradeLock() {
+    @Nested
+    class AcquireTests {
+        @Test
+        void acquire_ShouldAcquireSharedLock() {
+
+        }
+
+        @Test
+        void acquire_ShouldAcquireExclusiveLock() {
+
+        }
+
+        @Test
+        void acquire_ShouldStoreOwner() {
+
+        }
+
+        @Test
+        void acquire_ShouldStoreMode() {
+
+        }
+
+        @Test
+        void acquire_ShouldRejectConflictingOwner() {
+
+        }
+
+        @Test
+        void acquire_ShouldAllowSameOwner() {
+
+        }
+
+        @Test
+        void acquire_ShouldUpgradeSameOwnerToExclusive() {
+
+        }
+
+        @Test
+        void acquire_ShouldRejectBlankResource() {
+
+        }
+
+        @Test
+        void acquire_ShouldRejectNullOwner() {
+
+        }
+
+        @Test
+        void acquire_ShouldRejectNullMode() {
+
+        }
     }
 
-    @Test
-    void DowngradeLock() {
+    @Nested
+    class ReleaseTests {
+        @Test
+        void release_ShouldRemoveOwnedLock() {
+
+        }
+
+        @Test
+        void release_ShouldReturnFalseForWrongOwner() {
+
+        }
+
+        @Test
+        void release_ShouldReturnFalseForMissingLock() {
+
+        }
+
+        @Test
+        void releaseAll_ShouldRemoveAllOwnedLocks() {
+
+        }
     }
 
-    @Test
-    void ReleaseLock() {
-    }
+    @Nested
+    class MetadataTests {
+        @Test
+        void isLocked_ShouldReturnTrueForExistingLock() {
 
-    @Test
-    void DetectDeadlock() {
-    }
+        }
 
-    @Test
-    void TimeoutWaiting() {
-    }
+        @Test
+        void getLockMode_ShouldReturnNullForMissingLock() {
 
-    @Test
-    void ReleaseAllLocks() {
+        }
+
+        @Test
+        void getLocks_ShouldReturnUnmodifiableMap() {
+
+        }
     }
 }

@@ -1,55 +1,64 @@
 package classes.authentication;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class AuthService {
-    private final SessionMgr sessionMgr = new SessionMgr();
-    private final EmailService emailService = new InMemoryEmailService();
-    private final Map<String, User> usersByUsername = new HashMap<>();
-    private final Map<String, User> usersByEmail = new HashMap<>();
-    private final Map<String, String> resetTokens = new HashMap<>();
+    private final User userStore = new User();
+    private final Map<String, User> users = new LinkedHashMap<>();
+    private final Map<String, String> sessions = new LinkedHashMap<>();
 
-    public String hashPassword(String rawPassword) {
+    public UUID register(String username, String password) {
         return null;
     }
 
-    public boolean verifyPassword(String raw, String hashed) {
+    public String login(String username, String password) {
+        return null;
+    }
+
+    public boolean logout(String token) {
         return false;
     }
 
-    public User register(String username, String email, String rawPassword) {
-        return null;
-    }
-
-    public TokenSet login(String username, String password) {
-        return null;
-    }
-
-    public void logout(String authToken) {
-    }
-
-    public String forgotPassword(String email) {
-        return null;
-    }
-
-    public void resetPassword(String resetToken, String newPassword) {
-    }
-
-    public TokenSet generateAuthAndRefreshToken(String userId) {
-        return null;
-    }
-
-    public boolean verifyToken(TokenSet authToken) {
+    public boolean isAuthenticated(String token) {
         return false;
+
     }
 
-    public String validateRefreshToken(String refreshToken) {
+    public void changePassword(String username, String oldPassword, String newPassword) {
+
+    }
+
+    public void disableUser(String username) {
+
+    }
+
+    public int getUserCount() {
+        return users.size();
+    }
+
+    public int getSessionCount() {
+        return sessions.size();
+    }
+
+    private String hash(String password) {
         return null;
+
     }
 
-    public EmailService getEmailService() {
-        return emailService;
+    private void validateUsername(String username) {
+
+    }
+
+    private void validatePassword(String password) {
+
+    }
+
+    private void validateToken(String token) {
+
     }
 }
-
