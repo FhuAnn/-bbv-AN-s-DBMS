@@ -2,6 +2,7 @@ package classes.metadata;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,7 +65,7 @@ public class Index {
         this.columnNames = columnNames;
         this.unique = unique;
         this.enabled = true;
-        this.entries = Collections.emptyMap();
+        this.entries = new HashMap<>();
     }
 
     public UUID getId() {
@@ -101,7 +102,7 @@ public class Index {
     }
 
     public List<String> getColumnNames() {
-        return Collections.emptyList();
+        return columnNames;
     }
 
     public void setColumnNames(List<String> columnNames) {

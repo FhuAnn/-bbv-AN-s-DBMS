@@ -101,7 +101,7 @@ public class Constraint {
     }
 
     public void disable() {
-        enabled = true;
+        enabled = false;
     }
 
     public UUID getReferencedTableId() {
