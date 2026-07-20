@@ -12,7 +12,6 @@ sequenceDiagram
 ```
 
 # Constructor Tests
-
 ## 2. constructor_ShouldCreateConstraint
 
 ```mermaid
@@ -20,14 +19,11 @@ sequenceDiagram
     autonumber
     actor Test as ConstraintTests
     participant Constraint as Constraint
-    participant UUID as UUID
 
-    Test->>Constraint: new Constraint(name, type, columns)
-    Constraint->>Constraint: validate constructor arguments
-    Constraint->>UUID: randomUUID()
-    UUID-->>Constraint: constraintId
-    Constraint->>Constraint: enabled = true
-    Constraint-->>Test: constraint or exception
+    Test->>Constraint: new Constraint("pk_users", PRIMARY_KEY, ["id"])
+    Constraint->>Constraint: validate name, type, and columns
+    Constraint-->>Test: created constraint
+    Test->>Test: assertNotNull(constraint)
 ```
 
 ## 3. constructor_ShouldGenerateConstraintId
@@ -39,12 +35,12 @@ sequenceDiagram
     participant Constraint as Constraint
     participant UUID as UUID
 
-    Test->>Constraint: new Constraint(name, type, columns)
-    Constraint->>Constraint: validate constructor arguments
+    Test->>Constraint: new Constraint(...)
     Constraint->>UUID: randomUUID()
-    UUID-->>Constraint: constraintId
-    Constraint->>Constraint: enabled = true
-    Constraint-->>Test: constraint or exception
+    UUID-->>Constraint: generatedId
+    Test->>Constraint: getId()
+    Constraint-->>Test: generatedId
+    Test->>Test: assertNotNull(generatedId)
 ```
 
 ## 4. constructor_ShouldGenerateUniqueConstraintIds
@@ -53,15 +49,17 @@ sequenceDiagram
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
+    participant First as First Constraint
+    participant Second as Second Constraint
     participant UUID as UUID
 
-    Test->>Constraint: new Constraint(name, type, columns)
-    Constraint->>Constraint: validate constructor arguments
-    Constraint->>UUID: randomUUID()
-    UUID-->>Constraint: constraintId
-    Constraint->>Constraint: enabled = true
-    Constraint-->>Test: constraint or exception
+    Test->>First: new Constraint("pk_users", ...)
+    First->>UUID: randomUUID()
+    UUID-->>First: firstId
+    Test->>Second: new Constraint("uq_users_email", ...)
+    Second->>UUID: randomUUID()
+    UUID-->>Second: secondId
+    Test->>Test: assertNotEquals(firstId, secondId)
 ```
 
 ## 5. constructor_ShouldInitializeMetadata
@@ -71,14 +69,13 @@ sequenceDiagram
     autonumber
     actor Test as ConstraintTests
     participant Constraint as Constraint
-    participant UUID as UUID
 
-    Test->>Constraint: new Constraint(name, type, columns)
-    Constraint->>Constraint: validate constructor arguments
-    Constraint->>UUID: randomUUID()
-    UUID-->>Constraint: constraintId
-    Constraint->>Constraint: enabled = true
-    Constraint-->>Test: constraint or exception
+    Test->>Constraint: getName()
+    Constraint-->>Test: "pk_users"
+    Test->>Constraint: getType()
+    Constraint-->>Test: PRIMARY_KEY
+    Test->>Constraint: getColumnNames()
+    Constraint-->>Test: ["id"]
 ```
 
 ## 6. constructor_ShouldEnableConstraintByDefault
@@ -88,14 +85,10 @@ sequenceDiagram
     autonumber
     actor Test as ConstraintTests
     participant Constraint as Constraint
-    participant UUID as UUID
 
-    Test->>Constraint: new Constraint(name, type, columns)
-    Constraint->>Constraint: validate constructor arguments
-    Constraint->>UUID: randomUUID()
-    UUID-->>Constraint: constraintId
-    Constraint->>Constraint: enabled = true
-    Constraint-->>Test: constraint or exception
+    Test->>Constraint: isEnabled()
+    Constraint-->>Test: true
+    Test->>Test: assertTrue(enabled)
 ```
 
 ## 7. constructor_ShouldRejectInvalidName
@@ -105,14 +98,13 @@ sequenceDiagram
     autonumber
     actor Test as ConstraintTests
     participant Constraint as Constraint
-    participant UUID as UUID
 
-    Test->>Constraint: new Constraint(name, type, columns)
-    Constraint->>Constraint: validate constructor arguments
-    Constraint->>UUID: randomUUID()
-    UUID-->>Constraint: constraintId
-    Constraint->>Constraint: enabled = true
-    Constraint-->>Test: constraint or exception
+    Test->>Constraint: new Constraint(null, UNIQUE, ["email"])
+    Constraint->>Constraint: validateName(null)
+    Constraint-->>Test: throw IllegalArgumentException
+    Test->>Constraint: new Constraint(" ", UNIQUE, ["email"])
+    Constraint->>Constraint: validateName(" ")
+    Constraint-->>Test: throw IllegalArgumentException
 ```
 
 ## 8. constructor_ShouldRejectNullType
@@ -122,14 +114,10 @@ sequenceDiagram
     autonumber
     actor Test as ConstraintTests
     participant Constraint as Constraint
-    participant UUID as UUID
 
-    Test->>Constraint: new Constraint(name, type, columns)
-    Constraint->>Constraint: validate constructor arguments
-    Constraint->>UUID: randomUUID()
-    UUID-->>Constraint: constraintId
-    Constraint->>Constraint: enabled = true
-    Constraint-->>Test: constraint or exception
+    Test->>Constraint: new Constraint("constraint", null, ["id"])
+    Constraint->>Constraint: validate type
+    Constraint-->>Test: throw IllegalArgumentException
 ```
 
 ## 9. constructor_ShouldRejectEmptyColumns
@@ -139,14 +127,10 @@ sequenceDiagram
     autonumber
     actor Test as ConstraintTests
     participant Constraint as Constraint
-    participant UUID as UUID
 
-    Test->>Constraint: new Constraint(name, type, columns)
-    Constraint->>Constraint: validate constructor arguments
-    Constraint->>UUID: randomUUID()
-    UUID-->>Constraint: constraintId
-    Constraint->>Constraint: enabled = true
-    Constraint-->>Test: constraint or exception
+    Test->>Constraint: new Constraint("constraint", UNIQUE, [])
+    Constraint->>Constraint: validateColumnNames([])
+    Constraint-->>Test: throw IllegalArgumentException
 ```
 
 # Metadata Tests

@@ -1,7 +1,9 @@
 package classes.metadata;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
@@ -31,10 +33,10 @@ public class Constraint {
         this.id = UUID.randomUUID();
         this.name = "";
         this.type = null;
-        this.columnNames = Collections.emptyList();
+        this.columnNames = new ArrayList<>();
         this.enabled = true;
         this.referencedTableId = null;
-        this.referencedColumnNames = Collections.emptyList();
+        this.referencedColumnNames = new ArrayList<>();
         this.checkExpression = null;
     }
 
@@ -54,19 +56,15 @@ public class Constraint {
         this.id = UUID.randomUUID();
         this.name = name;
         this.type = type;
-        this.columnNames = columnNames;
+        this.columnNames = new ArrayList<>(columnNames);
         this.enabled = true;
         this.referencedTableId = null;
-        this.referencedColumnNames = Collections.emptyList();
+        this.referencedColumnNames = new ArrayList<>();
         this.checkExpression = null;
     }
 
     public UUID getId() {
         return id;
-    }
-
-    public void setId(UUID id) {
-        // TODO: Implement
     }
 
     public String getName() {
@@ -87,7 +85,7 @@ public class Constraint {
     }
 
     public List<String> getColumnNames() {
-        return Collections.emptyList();
+        return Collections.unmodifiableList(columnNames);
     }
 
     public void setColumnNames(List<String> columnNames) {
@@ -99,11 +97,11 @@ public class Constraint {
     }
 
     public void enable() {
-        // TODO: Implement
+        enabled = true;
     }
 
     public void disable() {
-        // TODO: Implement
+        enabled = true;
     }
 
     public UUID getReferencedTableId() {
@@ -120,7 +118,7 @@ public class Constraint {
     }
 
     public List<String> getReferencedColumnNames() {
-        return Collections.emptyList();
+        return Collections.unmodifiableList(referencedColumnNames);
     }
 
     public void setReferencedColumnNames(List<String> referencedColumnNames) {
@@ -176,30 +174,164 @@ public class Constraint {
     public boolean validatePrimaryKey(
             Row row,
             Set<List<Object>> existingKeys) {
-        return false;
+        requireRowAndValues(row, existingKeys, "Existing keys");
+        if (!enabled) {
+            return true;
+        }
+
+        List<Object> key = extractValues(row, columnNames);
+
+        if (key.stream().anyMatch(Objects::isNull)) {
+            return false;
+        }
+
+        return !existingKeys.contains(key);
     }
 
     public boolean validateUnique(
             Row row,
             Set<List<Object>> existingValues) {
-        return false;
+        requireRowAndValues(row, existingValues, "Existing values");
+
+        if (!enabled) {
+            return true;
+        }
+
+        List<Object> values = extractValues(row, columnNames);
+
+        if (values.stream().anyMatch(Objects::isNull)) {
+            return true;
+        }
+
+        return !existingValues.contains(values);
     }
 
     public boolean validateNotNull(Row row) {
-        return false;
+        if (row == null) {
+            throw new IllegalArgumentException(
+                    "Row must not be null.");
+        }
+
+        if (!enabled) {
+            return true;
+        }
+
+        for (String columnName : columnNames) {
+            if (row.getValue(columnName) == null) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public boolean validateForeignKey(
             Row row,
             Set<List<Object>> referencedValues) {
-        return false;
+        requireRowAndValues(
+                row,
+                referencedValues,
+                "Referenced values");
+
+        if (!enabled) {
+            return true;
+        }
+
+        List<Object> values = extractValues(row, columnNames);
+
+        if (values.stream().anyMatch(Objects::isNull)) {
+            return true;
+        }
+
+        return referencedValues.contains(values);
     }
 
     public boolean validateCheck(Row row) {
-        return false;
+        if (row == null) {
+            throw new IllegalArgumentException(
+                    "Row must not be null.");
+        }
+
+        if (!enabled) {
+            return true;
+        }
+
+        if (checkPredicate == null) {
+            throw new IllegalStateException(
+                    "Check predicate has not been configured.");
+        }
+
+        return checkPredicate.test(row);
     }
 
     public boolean isValidDefinition() {
-        return false;
+        if (id == null
+                || name == null
+                || name.trim().isEmpty()
+                || type == null
+                || columnNames.isEmpty()) {
+            return false;
+        }
+
+        return switch (type) {
+            case PRIMARY_KEY, UNIQUE, NOT_NULL -> true;
+            case FOREIGN_KEY ->
+                referencedTableId != null
+                        && !referencedColumnNames.isEmpty()
+                        && referencedColumnNames.size() == columnNames.size();
+            case CHECK ->
+                checkExpression != null
+                        && !checkExpression.trim().isEmpty()
+                        && checkPredicate != null;
+        };
+    }
+
+    private static List<Object> extractValues(
+            Row row,
+            List<String> columnNames) {
+        List<Object> values = new ArrayList<>();
+
+        for (String columnName : columnNames) {
+            values.add(row.getValue(columnName));
+        }
+
+        return Collections.unmodifiableList(values);
+    }
+
+    private static void requireRowAndValues(
+            Row row,
+            Set<List<Object>> values,
+            String valueSetName) {
+        if (row == null) {
+            throw new IllegalArgumentException(
+                    "Row must not be null.");
+        }
+
+        if (values == null) {
+            throw new IllegalArgumentException(
+                    valueSetName + " must not be null.");
+        }
+    }
+
+    private static void validateName(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Constraint name must not be null or blank.");
+        }
+    }
+
+    private static void validateColumnNames(
+            List<String> columnNames) {
+        if (columnNames == null || columnNames.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Constraint must contain at least one column.");
+        }
+
+        for (String columnName : columnNames) {
+            if (columnName == null || columnName.trim().isEmpty()) {
+                throw new IllegalArgumentException(
+                        "Column name must not be null or blank.");
+            }
+        }
     }
 }

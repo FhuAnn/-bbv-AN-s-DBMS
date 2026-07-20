@@ -1,4 +1,7 @@
 package unit.metadata;
+
+import java.util.UUID;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -12,13 +15,23 @@ import classes.metadata.View;
 class SchemaTests {
 
     private Schema schema;
+    private UUID databaseId;
+    private UUID ownerId;
+
     private Table usersTable;
+    private Table ordersTable;
+
     private View activeUsersView;
+    private View salesSummaryView;
 
     @BeforeEach
     void setUp() {
         // TODO: Initialize common test data
     }
+
+    // =========================================================
+    // Constructor Tests
+    // =========================================================
 
     @Nested
     @DisplayName("Constructor Tests")
@@ -55,20 +68,54 @@ class SchemaTests {
         }
 
         @Test
-        @DisplayName("Should initialize an empty table collection")
+        @DisplayName("Should initialize empty table collection")
         void constructor_ShouldInitializeEmptyTableCollection() {
             // TODO: Implement test
         }
 
         @Test
-        @DisplayName("Should initialize an empty view collection")
+        @DisplayName("Should initialize empty view collection")
         void constructor_ShouldInitializeEmptyViewCollection() {
+            // TODO: Implement test
+        }
+
+        @Test
+        @DisplayName("Should reject null schema name")
+        void constructor_ShouldRejectNullName() {
+            // TODO: Implement test
+        }
+
+        @Test
+        @DisplayName("Should reject empty schema name")
+        void constructor_ShouldRejectEmptyName() {
+            // TODO: Implement test
+        }
+
+        @Test
+        @DisplayName("Should reject blank schema name")
+        void constructor_ShouldRejectBlankName() {
+            // TODO: Implement test
+        }
+
+        @Test
+        @DisplayName("Should reject null database ID")
+        void constructor_ShouldRejectNullDatabaseId() {
+            // TODO: Implement test
+        }
+
+        @Test
+        @DisplayName("Should reject null owner ID")
+        void constructor_ShouldRejectNullOwnerId() {
             // TODO: Implement test
         }
     }
 
+    // =========================================================
+    // Functional - Name Tests
+    // =========================================================
+
     @Nested
-    @DisplayName("Name Tests")
+    @DisplayName("Functional - Name Tests")
     class NameTests {
 
         @Test
@@ -102,8 +149,12 @@ class SchemaTests {
         }
     }
 
+    // =========================================================
+    // Functional - Table Management Tests
+    // =========================================================
+
     @Nested
-    @DisplayName("Table Management Tests")
+    @DisplayName("Functional - Table Management Tests")
     class TableManagementTests {
 
         @Test
@@ -115,6 +166,12 @@ class SchemaTests {
         @Test
         @DisplayName("Should increase table count")
         void addTable_ShouldIncreaseTableCount() {
+            // TODO: Implement test
+        }
+
+        @Test
+        @DisplayName("Should register multiple tables")
+        void addTable_ShouldRegisterMultipleTables() {
             // TODO: Implement test
         }
 
@@ -177,10 +234,20 @@ class SchemaTests {
         void getTables_ShouldReturnUnmodifiableCollection() {
             // TODO: Implement test
         }
+
+        @Test
+        @DisplayName("External table collection changes should not affect schema")
+        void getTables_ShouldProtectInternalCollection() {
+            // TODO: Implement test
+        }
     }
 
+    // =========================================================
+    // Functional - View Management Tests
+    // =========================================================
+
     @Nested
-    @DisplayName("View Management Tests")
+    @DisplayName("Functional - View Management Tests")
     class ViewManagementTests {
 
         @Test
@@ -192,6 +259,12 @@ class SchemaTests {
         @Test
         @DisplayName("Should increase view count")
         void addView_ShouldIncreaseViewCount() {
+            // TODO: Implement test
+        }
+
+        @Test
+        @DisplayName("Should register multiple views")
+        void addView_ShouldRegisterMultipleViews() {
             // TODO: Implement test
         }
 
@@ -220,8 +293,32 @@ class SchemaTests {
         }
 
         @Test
+        @DisplayName("Should return true for existing view")
+        void containsView_ShouldReturnTrueForExistingView() {
+            // TODO: Implement test
+        }
+
+        @Test
+        @DisplayName("Should return false for missing view")
+        void containsView_ShouldReturnFalseForMissingView() {
+            // TODO: Implement test
+        }
+
+        @Test
         @DisplayName("Should remove existing view")
         void removeView_ShouldRemoveExistingView() {
+            // TODO: Implement test
+        }
+
+        @Test
+        @DisplayName("Should decrease view count")
+        void removeView_ShouldDecreaseViewCount() {
+            // TODO: Implement test
+        }
+
+        @Test
+        @DisplayName("Should return null when removing missing view")
+        void removeView_ShouldReturnNullForMissingView() {
             // TODO: Implement test
         }
 
@@ -230,10 +327,20 @@ class SchemaTests {
         void getViews_ShouldReturnUnmodifiableCollection() {
             // TODO: Implement test
         }
+
+        @Test
+        @DisplayName("External view collection changes should not affect schema")
+        void getViews_ShouldProtectInternalCollection() {
+            // TODO: Implement test
+        }
     }
 
+    // =========================================================
+    // Functional - State Tests
+    // =========================================================
+
     @Nested
-    @DisplayName("State Tests")
+    @DisplayName("Functional - State Tests")
     class StateTests {
 
         @Test
@@ -265,10 +372,20 @@ class SchemaTests {
         void getViewCount_ShouldReturnCorrectCount() {
             // TODO: Implement test
         }
+
+        @Test
+        @DisplayName("Should become empty after removing all objects")
+        void isEmpty_ShouldReturnTrueAfterRemovingAllObjects() {
+            // TODO: Implement test
+        }
     }
 
+    // =========================================================
+    // Functional - Metadata Tests
+    // =========================================================
+
     @Nested
-    @DisplayName("Metadata Tests")
+    @DisplayName("Functional - Metadata Tests")
     class MetadataTests {
 
         @Test
@@ -284,6 +401,12 @@ class SchemaTests {
         }
 
         @Test
+        @DisplayName("Should reject null database ID")
+        void setDatabaseId_ShouldRejectNullDatabaseId() {
+            // TODO: Implement test
+        }
+
+        @Test
         @DisplayName("Should return owner ID")
         void getOwnerId_ShouldReturnOwnerId() {
             // TODO: Implement test
@@ -292,6 +415,108 @@ class SchemaTests {
         @Test
         @DisplayName("Should update owner ID")
         void setOwnerId_ShouldUpdateOwnerId() {
+            // TODO: Implement test
+        }
+
+        @Test
+        @DisplayName("Should reject null owner ID")
+        void setOwnerId_ShouldRejectNullOwnerId() {
+            // TODO: Implement test
+        }
+    }
+
+    // =========================================================
+    // Validation and Exception Tests
+    // =========================================================
+
+    @Nested
+    @DisplayName("Validation and Exception Tests")
+    class ValidationExceptionTests {
+
+        @Test
+        @DisplayName("Adding table should preserve existing tables after failure")
+        void addTable_ShouldNotModifyCollectionWhenDuplicateRejected() {
+            // TODO: Implement test
+        }
+
+        @Test
+        @DisplayName("Adding view should preserve existing views after failure")
+        void addView_ShouldNotModifyCollectionWhenDuplicateRejected() {
+            // TODO: Implement test
+        }
+
+        @Test
+        @DisplayName("Removing missing table should preserve table collection")
+        void removeTable_ShouldPreserveCollectionWhenTableMissing() {
+            // TODO: Implement test
+        }
+
+        @Test
+        @DisplayName("Removing missing view should preserve view collection")
+        void removeView_ShouldPreserveCollectionWhenViewMissing() {
+            // TODO: Implement test
+        }
+    }
+
+    // =========================================================
+    // Simple Concurrency Tests
+    // =========================================================
+
+    @Nested
+    @DisplayName("Concurrency Tests")
+    class ConcurrencyTests {
+
+        @Test
+        @DisplayName("Concurrent table reads should return same table")
+        void concurrentTableReads_ShouldReturnConsistentResult()
+                throws Exception {
+
+        }
+
+        @Test
+        @DisplayName("Concurrent view reads should return same view")
+        void concurrentViewReads_ShouldReturnConsistentResult()
+                throws Exception {
+
+                 }
+
+        @Test
+        @DisplayName("Concurrent duplicate table creation should create one table")
+        void concurrentTableCreation_ShouldPreventDuplicateTable()
+                throws Exception {
+
+        }
+
+        @Test
+        @DisplayName("Concurrent duplicate view creation should create one view")
+        void concurrentViewCreation_ShouldPreventDuplicateView()
+                throws Exception {
+        }
+    }
+
+    // =========================================================
+    // Integration Tests
+    // =========================================================
+
+    @Nested
+    @DisplayName("Integration Tests")
+    class IntegrationTests {
+
+        @Test
+        @DisplayName("Schema should maintain table relationship")
+        void schemaTableIntegration_ShouldMaintainRelationship() {
+            // TODO: Implement test
+        }
+
+        @Test
+        @DisplayName("Schema should maintain view relationship")
+        void schemaViewIntegration_ShouldMaintainRelationship() {
+            // TODO: Implement test
+        }
+
+        @Test
+        @DisplayName("Schema should manage tables and views independently")
+        void schemaObjectsIntegration_ShouldManageCollectionsIndependently() {
             // TODO: Implement test
         }
     }

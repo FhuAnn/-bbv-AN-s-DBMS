@@ -617,7 +617,6 @@ class ConstraintTests {
         void isValidDefinition_ShouldAcceptConfiguredForeignKey() {
             foreignKey.setReferencedTableId(UUID.randomUUID());
             foreignKey.setReferencedColumnNames(List.of("id"));
-
             assertTrue(foreignKey.isValidDefinition());
         }
 
