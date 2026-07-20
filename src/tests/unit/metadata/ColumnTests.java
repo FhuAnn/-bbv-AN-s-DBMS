@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -18,7 +19,7 @@ import classes.metadata.ColumnMetadata;
 import enums.DataType;
 
 @DisplayName("Column Unit Tests")
-class ColumnTests { //55
+class ColumnTests { // 55
 
     private ColumnMetadata column;
 

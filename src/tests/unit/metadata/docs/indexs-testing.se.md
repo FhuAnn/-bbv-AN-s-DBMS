@@ -931,13 +931,3 @@ sequenceDiagram
     Index-->>Test: immutable view or count/state
 ```
 
-# Behavior decisions
-
-- The index stores keys in memory using a map.
-- A non-unique key may point to multiple row IDs.
-- A unique index rejects a second row ID for an existing key.
-- Duplicate insertion of the same row ID is ignored.
-- Mutating operations are rejected while the index is disabled.
-- Search remains available while disabled.
-- Returned lists and maps are unmodifiable.
-- Missing searches return an empty list; missing deletions return `false`.

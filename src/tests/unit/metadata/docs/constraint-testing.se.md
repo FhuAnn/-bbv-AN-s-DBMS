@@ -892,16 +892,3 @@ sequenceDiagram
     Constraint->>Constraint: validate type-specific metadata
     Constraint-->>Test: true or false
 ```
-
-# Behavior decisions
-
-- Constraints are enabled by default.
-- Disabled constraints always pass validation.
-- Primary-key values must be non-null and unique.
-- Unique constraints allow null values.
-- Foreign keys allow null local values.
-- Check constraints use a `Predicate<Row>` rather than implementing a SQL parser.
-- `checkExpression` is retained as metadata only.
-- Composite constraints are represented by ordered lists of column values.
-- `validate(Row)` directly supports `NOT_NULL` and `CHECK`; other types require external value sets.
-- Returned column lists are unmodifiable.

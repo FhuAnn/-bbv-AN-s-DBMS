@@ -7,9 +7,15 @@ import org.junit.jupiter.api.Test;
 
 import classes.metadata.Index;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @DisplayName("Index Unit Tests")

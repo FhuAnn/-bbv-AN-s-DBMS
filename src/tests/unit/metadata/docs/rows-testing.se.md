@@ -975,4 +975,3 @@ Row_ShouldInteractWithStorageEngine
 Row_ShouldInteractWithTransaction
 ```
 
-These tests require serialization rules, page formats, MVCC, transactions, or concurrent storage behavior. They should be implemented later as integration or advanced unit tests.

@@ -38,9 +38,9 @@ public class Index {
 
     public Index(
             String name,
-            IndexType type,
             UUID tableId,
             List<String> columnNames,
+            IndexType type,
             boolean unique) {
 
         validateName(name);
