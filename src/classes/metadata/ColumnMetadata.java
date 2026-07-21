@@ -23,6 +23,79 @@ public class ColumnMetadata extends AbstractMetadataComponent {
     private boolean identity;
     private long nextIdentityValue;
 
+    public ColumnMetadata(
+            String name,
+            DataType dataType,
+            boolean nullable,
+            Object defaultValue,
+            int position,
+            Integer length,
+            Integer precision,
+            Integer scale,
+            boolean identity,
+            long nextIdentityValue) {
+
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Column name must not be null or blank");
+        }
+
+        if (dataType == null) {
+            throw new IllegalArgumentException(
+                    "Data type must not be null");
+        }
+
+        if (position < 0) {
+            throw new IllegalArgumentException(
+                    "Column position must not be negative");
+        }
+
+        if (length != null && length <= 0) {
+            throw new IllegalArgumentException(
+                    "Length must be greater than zero");
+        }
+
+        if (precision != null && precision <= 0) {
+            throw new IllegalArgumentException(
+                    "Precision must be greater than zero");
+        }
+
+        if (scale != null && scale < 0) {
+            throw new IllegalArgumentException(
+                    "Scale must not be negative");
+        }
+
+        if (precision != null
+                && scale != null
+                && scale > precision) {
+
+            throw new IllegalArgumentException(
+                    "Scale must not be greater than precision");
+        }
+
+        if (identity && nullable) {
+            throw new IllegalArgumentException(
+                    "Identity column must not be nullable");
+        }
+
+        if (nextIdentityValue < 1L) {
+            throw new IllegalArgumentException(
+                    "Next identity value must be at least 1");
+        }
+
+        this.id = UUID.randomUUID();
+        this.name = name;
+        this.dataType = dataType;
+        this.nullable = nullable;
+        this.defaultValue = defaultValue;
+        this.position = position;
+        this.length = length;
+        this.precision = precision;
+        this.scale = scale;
+        this.identity = identity;
+        this.nextIdentityValue = nextIdentityValue;
+    }
+
     public ColumnMetadata() {
         this.id = UUID.randomUUID();
         this.name = "";

@@ -34,13 +34,13 @@ public abstract class AbstractMetadataComponent implements MetadataComponent {
     }
 
     protected static String validateName(String value) {
-        Objects.requireNonNull(value, "Metadata name must not be null.");
-        if (value.isBlank()) {
-            throw new IllegalArgumentException("Metadata name must not be blank.");
-        }
-        if (value.length() > 128) {
-            throw new IllegalArgumentException("Metadata name must not exceed 128 characters.");
-        }
+        // Objects.requireNonNull(value, "Metadata name must not be null.");
+        // if (value.isBlank()) {
+        //     throw new IllegalArgumentException("Metadata name must not be blank.");
+        // }
+        // if (value.length() > 128) {
+        //     throw new IllegalArgumentException("Metadata name must not exceed 128 characters.");
+        // }
         return value;
     }
 
