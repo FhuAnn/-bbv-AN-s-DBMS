@@ -1,343 +1,330 @@
-# TransactionManager Testing - Main Functional Sequences
+# TransactionManager Test Sequence Diagrams
 
----
+Each sequence matches one test in `TransactionManagerTests` and the roadmap.
 
-## 1. Begin Transaction
+## Fixture: setUp
 
 ```mermaid
 sequenceDiagram
-actor Client
-participant TransactionManager
-
-Client->>TransactionManager: begin()
-
-TransactionManager->>TransactionManager: allocateTransactionId()
-
-TransactionManager-->>Client: Transaction
+    autonumber
+    actor Test as TransactionManagerTests
+    participant Target as TransactionManager
+    Test->>Target: create reusable fixture
+    Target-->>Test: initialized object
 ```
 
----
+# Constructor Tests
 
-## 2. Commit Transaction
+## 1. Constructor_ShouldCreateManager
 
 ```mermaid
 sequenceDiagram
-actor Client
-participant TransactionManager
-participant WALManager
-participant LockManager
+    autonumber
+    actor Test as TransactionManagerTests
+    participant Target as TransactionManager
+    participant State as Internal State
 
-Client->>TransactionManager: commit(tx)
-
-TransactionManager->>WALManager: flush()
-
-WALManager-->>TransactionManager: success
-
-TransactionManager->>LockManager: releaseLocks()
-
-LockManager-->>TransactionManager: completed
-
-TransactionManager-->>Client: committed
+    Test->>Target: execute Constructor_ShouldCreateManager
+    Target->>Target: validate input and state
+    Target->>State: update or query internal data
+    State-->>Target: operation result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```
 
----
-
-## 3. Rollback Transaction
+## 2. Constructor_ShouldInitializeEmptyTransactions
 
 ```mermaid
 sequenceDiagram
-actor Client
-participant TransactionManager
-participant WALManager
+    autonumber
+    actor Test as TransactionManagerTests
+    participant Target as TransactionManager
+    participant State as Internal State
 
-Client->>TransactionManager: rollback(tx)
-
-TransactionManager->>WALManager: undo()
-
-WALManager-->>TransactionManager: completed
-
-TransactionManager-->>Client: rolled back
+    Test->>Target: execute Constructor_ShouldInitializeEmptyTransactions
+    Target->>Target: validate input and state
+    Target->>State: update or query internal data
+    State-->>Target: operation result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```
 
----
+# Begin Tests
 
-## 4. Rollback To Savepoint
+## 3. Begin_ShouldCreateTransaction
 
 ```mermaid
 sequenceDiagram
-actor Client
-participant TransactionManager
+    autonumber
+    actor Test as TransactionManagerTests
+    participant Target as TransactionManager
+    participant State as Internal State
 
-Client->>TransactionManager: rollback(savepoint)
-
-TransactionManager->>TransactionManager: restoreSavepoint()
-
-TransactionManager-->>Client: success
+    Test->>Target: execute Begin_ShouldCreateTransaction
+    Target->>Target: validate input and state
+    Target->>State: update or query internal data
+    State-->>Target: operation result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```
 
----
-
-## 5. Nested Transaction
+## 4. Begin_ShouldGenerateTransactionId
 
 ```mermaid
 sequenceDiagram
-actor Client
-participant TransactionManager
+    autonumber
+    actor Test as TransactionManagerTests
+    participant Target as TransactionManager
+    participant State as Internal State
 
-Client->>TransactionManager: begin()
-
-TransactionManager-->>Client: parentTx
-
-Client->>TransactionManager: beginNested()
-
-TransactionManager-->>Client: childTx
+    Test->>Target: execute Begin_ShouldGenerateTransactionId
+    Target->>Target: validate input and state
+    Target->>State: update or query internal data
+    State-->>Target: operation result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```
 
----
-
-## 6. Recover Transaction
+## 5. Begin_ShouldInitializeActiveStatus
 
 ```mermaid
 sequenceDiagram
-actor System
-participant TransactionManager
-participant WALManager
+    autonumber
+    actor Test as TransactionManagerTests
+    participant Target as TransactionManager
+    participant State as Internal State
 
-System->>TransactionManager: recover()
-
-TransactionManager->>WALManager: replay()
-
-WALManager-->>TransactionManager: completed
-
-TransactionManager-->>System: recovered
+    Test->>Target: execute Begin_ShouldInitializeActiveStatus
+    Target->>Target: validate input and state
+    Target->>State: update or query internal data
+    State-->>Target: operation result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```
 
----
-
-## 7. Transaction Timeout
+## 6. Begin_ShouldIncreaseTransactionCount
 
 ```mermaid
 sequenceDiagram
-actor Client
-participant TransactionManager
+    autonumber
+    actor Test as TransactionManagerTests
+    participant Target as TransactionManager
+    participant State as Internal State
 
-Client->>TransactionManager: begin()
-
-TransactionManager->>TransactionManager: monitorTimeout()
-
-TransactionManager-->>Client: TimeoutException
+    Test->>Target: execute Begin_ShouldIncreaseTransactionCount
+    Target->>Target: validate input and state
+    Target->>State: update or query internal data
+    State-->>Target: operation result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```
 
----
-
-## 8. Retry Transaction
+## 7. Begin_ShouldGenerateUniqueIds
 
 ```mermaid
 sequenceDiagram
-actor Client
-participant TransactionManager
+    autonumber
+    actor Test as TransactionManagerTests
+    participant Target as TransactionManager
+    participant State as Internal State
 
-Client->>TransactionManager: execute()
-
-TransactionManager-->>Client: Deadlock
-
-Client->>TransactionManager: retry()
-
-TransactionManager-->>Client: committed
+    Test->>Target: execute Begin_ShouldGenerateUniqueIds
+    Target->>Target: validate input and state
+    Target->>State: update or query internal data
+    State-->>Target: operation result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```
 
----
+# Commit Tests
 
-## 9. Deadlock Recovery
+## 8. Commit_ShouldCommitActiveTransaction
 
 ```mermaid
 sequenceDiagram
-actor Tx1
-actor Tx2
+    autonumber
+    actor Test as TransactionManagerTests
+    participant Target as TransactionManager
+    participant State as Internal State
 
-participant LockManager
-participant TransactionManager
-
-Tx1->>LockManager: lock(A)
-
-Tx2->>LockManager: lock(B)
-
-Tx1->>LockManager: lock(B)
-
-Tx2->>LockManager: lock(A)
-
-LockManager->>TransactionManager: deadlockDetected()
-
-TransactionManager-->>Tx2: abort()
-
-TransactionManager-->>Tx1: continue
+    Test->>Target: execute Commit_ShouldCommitActiveTransaction
+    Target->>Target: validate input and state
+    Target->>State: update or query internal data
+    State-->>Target: operation result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```
 
----
-
-## 10. Concurrent Commit
+## 9. Commit_ShouldRejectMissingTransaction
 
 ```mermaid
 sequenceDiagram
-actor Tx1
-actor Tx2
+    autonumber
+    actor Test as TransactionManagerTests
+    participant Target as TransactionManager
+    participant State as Internal State
 
-participant TransactionManager
-participant WALManager
-
-Tx1->>TransactionManager: commit()
-
-Tx2->>TransactionManager: commit()
-
-TransactionManager->>WALManager: flush()
-
-WALManager-->>Tx1: success
-
-WALManager-->>Tx2: success
+    Test->>Target: execute Commit_ShouldRejectMissingTransaction
+    Target->>Target: validate input and state
+    Target->>State: update or query internal data
+    State-->>Target: operation result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```
 
----
-
-## 11. Isolation Validation
+## 10. Commit_ShouldRejectNullId
 
 ```mermaid
 sequenceDiagram
-actor Tx1
-actor Tx2
+    autonumber
+    actor Test as TransactionManagerTests
+    participant Target as TransactionManager
+    participant State as Internal State
 
-participant TransactionManager
-
-Tx1->>TransactionManager: read()
-
-Tx2->>TransactionManager: update()
-
-TransactionManager->>TransactionManager: checkIsolation()
-
-TransactionManager-->>Tx1: Snapshot
+    Test->>Target: execute Commit_ShouldRejectNullId
+    Target->>Target: validate input and state
+    Target->>State: update or query internal data
+    State-->>Target: operation result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```
 
----
-
-## 12. Invalid Transaction
+## 11. Commit_ShouldRejectAlreadyCommittedTransaction
 
 ```mermaid
 sequenceDiagram
-actor Client
-participant TransactionManager
+    autonumber
+    actor Test as TransactionManagerTests
+    participant Target as TransactionManager
+    participant State as Internal State
 
-Client->>TransactionManager: commit(invalidTx)
-
-TransactionManager-->>Client: InvalidTransactionException
+    Test->>Target: execute Commit_ShouldRejectAlreadyCommittedTransaction
+    Target->>Target: validate input and state
+    Target->>State: update or query internal data
+    State-->>Target: operation result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```
 
----
+# Rollback Tests
 
-## 13. Create Read Only Transaction
+## 12. Rollback_ShouldRollbackActiveTransaction
 
 ```mermaid
 sequenceDiagram
-actor Client
-participant TransactionManager
+    autonumber
+    actor Test as TransactionManagerTests
+    participant Target as TransactionManager
+    participant State as Internal State
 
-Client->>TransactionManager: beginReadOnly()
-TransactionManager->>TransactionManager: allocateTransactionId()
-TransactionManager-->>Client: readOnlyTx
+    Test->>Target: execute Rollback_ShouldRollbackActiveTransaction
+    Target->>Target: validate input and state
+    Target->>State: update or query internal data
+    State-->>Target: operation result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```
 
----
-
-## 14. Begin Nested Transaction Level 2
+## 13. Rollback_ShouldRejectMissingTransaction
 
 ```mermaid
 sequenceDiagram
-actor Client
-participant TransactionManager
+    autonumber
+    actor Test as TransactionManagerTests
+    participant Target as TransactionManager
+    participant State as Internal State
 
-Client->>TransactionManager: beginNested(level=2)
-TransactionManager->>TransactionManager: createChildTransaction()
-TransactionManager-->>Client: nestedTx
+    Test->>Target: execute Rollback_ShouldRejectMissingTransaction
+    Target->>Target: validate input and state
+    Target->>State: update or query internal data
+    State-->>Target: operation result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```
 
----
-
-## 15. Create Savepoint
+## 14. Rollback_ShouldRejectAlreadyFinishedTransaction
 
 ```mermaid
 sequenceDiagram
-actor Client
-participant TransactionManager
+    autonumber
+    actor Test as TransactionManagerTests
+    participant Target as TransactionManager
+    participant State as Internal State
 
-Client->>TransactionManager: createSavepoint(name)
-TransactionManager->>TransactionManager: storeSavepoint()
-TransactionManager-->>Client: savepoint
+    Test->>Target: execute Rollback_ShouldRejectAlreadyFinishedTransaction
+    Target->>Target: validate input and state
+    Target->>State: update or query internal data
+    State-->>Target: operation result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```
 
----
+# Metadata Tests
 
-## 16. Release Savepoint
+## 15. GetTransaction_ShouldReturnStoredTransaction
 
 ```mermaid
 sequenceDiagram
-actor Client
-participant TransactionManager
+    autonumber
+    actor Test as TransactionManagerTests
+    participant Target as TransactionManager
+    participant State as Internal State
 
-Client->>TransactionManager: releaseSavepoint(name)
-TransactionManager->>TransactionManager: dropSavepoint()
-TransactionManager-->>Client: released
+    Test->>Target: execute GetTransaction_ShouldReturnStoredTransaction
+    Target->>Target: validate input and state
+    Target->>State: update or query internal data
+    State-->>Target: operation result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```
 
----
-
-## 17. Suspend Transaction
+## 16. ContainsTransaction_ShouldReturnTrueForExistingTransaction
 
 ```mermaid
 sequenceDiagram
-actor Client
-participant TransactionManager
+    autonumber
+    actor Test as TransactionManagerTests
+    participant Target as TransactionManager
+    participant State as Internal State
 
-Client->>TransactionManager: suspend(tx)
-TransactionManager->>TransactionManager: markSuspended()
-TransactionManager-->>Client: suspended
+    Test->>Target: execute ContainsTransaction_ShouldReturnTrueForExistingTransaction
+    Target->>Target: validate input and state
+    Target->>State: update or query internal data
+    State-->>Target: operation result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```
 
----
-
-## 18. Resume Transaction
+## 17. ContainsTransaction_ShouldReturnFalseForMissingTransaction
 
 ```mermaid
 sequenceDiagram
-actor Client
-participant TransactionManager
+    autonumber
+    actor Test as TransactionManagerTests
+    participant Target as TransactionManager
+    participant State as Internal State
 
-Client->>TransactionManager: resume(tx)
-TransactionManager->>TransactionManager: markActive()
-TransactionManager-->>Client: resumed
+    Test->>Target: execute ContainsTransaction_ShouldReturnFalseForMissingTransaction
+    Target->>Target: validate input and state
+    Target->>State: update or query internal data
+    State-->>Target: operation result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```
 
----
-
-## 19. Check Transaction Status
+## 18. GetTransactions_ShouldReturnUnmodifiableMap
 
 ```mermaid
 sequenceDiagram
-actor Client
-participant TransactionManager
+    autonumber
+    actor Test as TransactionManagerTests
+    participant Target as TransactionManager
+    participant State as Internal State
 
-Client->>TransactionManager: status(tx)
-TransactionManager->>TransactionManager: inspectState()
-TransactionManager-->>Client: state
-```
-
----
-
-## 20. Register Transaction Context
-
-```mermaid
-sequenceDiagram
-actor Client
-participant TransactionManager
-
-Client->>TransactionManager: registerContext(tx)
-TransactionManager->>TransactionManager: attachContext()
-TransactionManager-->>Client: registered
+    Test->>Target: execute GetTransactions_ShouldReturnUnmodifiableMap
+    Target->>Target: validate input and state
+    Target->>State: update or query internal data
+    State-->>Target: operation result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```

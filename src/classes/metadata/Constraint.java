@@ -8,7 +8,11 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
 
-public class Constraint {
+import classes.abstraction.AbstractMetadataComponent;
+import enums.MetadataType;
+import interfaces.MetadataComponent;
+
+public class Constraint extends AbstractMetadataComponent {
 
     public enum ConstraintType {
         PRIMARY_KEY,
@@ -63,17 +67,14 @@ public class Constraint {
         this.checkExpression = null;
     }
 
-    public UUID getId() {
-        return id;
+    @Override
+    public MetadataType getMetadataType() {
+        return MetadataType.COLUMN;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void rename(String newName) {
-        validateName(newName);
-        this.name = newName;
+    @Override
+    public List<MetadataComponent> getChildren() {
+        return List.of();
     }
 
     public ConstraintType getType() {
@@ -310,13 +311,6 @@ public class Constraint {
         if (values == null) {
             throw new IllegalArgumentException(
                     valueSetName + " must not be null.");
-        }
-    }
-
-    private static void validateName(String value) {
-        if (value == null || value.trim().isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Constraint name must not be null or blank.");
         }
     }
 

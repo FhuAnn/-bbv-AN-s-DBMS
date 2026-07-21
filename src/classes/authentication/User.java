@@ -8,6 +8,16 @@ public class User {
     public String email;
     public String hashedPassword;
 
+    public User() {
+
+    }
+
+    public User(String username, String email, String hashedPassword) {
+        this.username = username;
+        this.email = email;
+        this.hashedPassword = hashedPassword;
+    }
+
     public User createNewUser(String username, String email, String rawPassword) {
         return null;
     }

@@ -1,378 +1,383 @@
-# SQLParser Testing - Main Functional Sequences
+# Parser Test Sequence Diagrams
 
----
+Each sequence matches one test in `ParserTests` and the roadmap.
 
-## 1. Parse SELECT
+## Fixture: setUp
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant SQLParser
-participant Lexer
-participant ASTBuilder
-
-Test->>SQLParser: parse("SELECT * FROM Student")
-SQLParser->>Lexer: tokenize()
-Lexer-->>SQLParser: tokens
-SQLParser->>ASTBuilder: buildSelectAST()
-ASTBuilder-->>SQLParser: ASTBuildResult
-SQLParser-->>Test: AST
+    autonumber
+    actor Test as ParserTests
+    participant Target as Parser
+    Test->>Target: create reusable fixture
+    Target-->>Test: initialized object
 ```
 
----
+# Constructor Tests
 
-## 2. Parse INSERT
+## 1. Constructor_ShouldCreateParser
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant SQLParser
-participant Lexer
-participant ASTBuilder
+    autonumber
+    actor Test as ParserTests
+    participant Target as Parser
+    participant Internal as Internal State
 
-Test->>SQLParser: parse("INSERT INTO Student VALUES (...) ")
-SQLParser->>Lexer: tokenize()
-Lexer-->>SQLParser: tokens
-SQLParser->>ASTBuilder: buildInsertAST()
-ASTBuilder-->>SQLParser: ASTBuildResult
-SQLParser-->>Test: AST
+    Test->>Target: execute Constructor_ShouldCreateParser
+    Target->>Target: validate input
+    Target->>Internal: parse, optimize, or execute operation
+    Internal-->>Target: result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```
 
----
+# Select Tests
 
-## 3. Parse JOIN
+## 2. Parse_ShouldParseSelectStatement
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant SQLParser
-participant Lexer
-participant ASTBuilder
+    autonumber
+    actor Test as ParserTests
+    participant Target as Parser
+    participant Internal as Internal State
 
-Test->>SQLParser: parse("SELECT ... JOIN ...")
-SQLParser->>Lexer: tokenize()
-Lexer-->>SQLParser: tokens
-SQLParser->>ASTBuilder: buildJoinAST()
-ASTBuilder-->>SQLParser: ASTBuildResult
-SQLParser-->>Test: AST
+    Test->>Target: execute Parse_ShouldParseSelectStatement
+    Target->>Target: validate input
+    Target->>Internal: parse, optimize, or execute operation
+    Internal-->>Target: result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```
 
----
-
-## 4. Parse Invalid Syntax
+## 3. ParseSelect_ShouldExtractTableName
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant SQLParser
-participant ErrorHandler
+    autonumber
+    actor Test as ParserTests
+    participant Target as Parser
+    participant Internal as Internal State
 
-Test->>SQLParser: parse("SELEKT * FROM Student")
-SQLParser->>ErrorHandler: handleError()
-ErrorHandler-->>SQLParser: SyntaxErrorException
-SQLParser-->>Test: exception
+    Test->>Target: execute ParseSelect_ShouldExtractTableName
+    Target->>Target: validate input
+    Target->>Internal: parse, optimize, or execute operation
+    Internal-->>Target: result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```
 
----
-
-## 5. Parse UPDATE
+## 4. ParseSelect_ShouldExtractColumns
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant SQLParser
-participant Lexer
-participant ASTBuilder
+    autonumber
+    actor Test as ParserTests
+    participant Target as Parser
+    participant Internal as Internal State
 
-Test->>SQLParser: parse("UPDATE Student SET age=20")
-SQLParser->>Lexer: tokenize()
-Lexer-->>SQLParser: tokens
-SQLParser->>ASTBuilder: buildUpdateAST()
-ASTBuilder-->>SQLParser: ASTBuildResult
-SQLParser-->>Test: AST
+    Test->>Target: execute ParseSelect_ShouldExtractColumns
+    Target->>Target: validate input
+    Target->>Internal: parse, optimize, or execute operation
+    Internal-->>Target: result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```
 
----
-
-## 6. Parse DELETE
+## 5. ParseSelect_ShouldSupportWildcard
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant SQLParser
-participant Lexer
-participant ASTBuilder
+    autonumber
+    actor Test as ParserTests
+    participant Target as Parser
+    participant Internal as Internal State
 
-Test->>SQLParser: parse("DELETE FROM Student")
-SQLParser->>Lexer: tokenize()
-Lexer-->>SQLParser: tokens
-SQLParser->>ASTBuilder: buildDeleteAST()
-ASTBuilder-->>SQLParser: ASTBuildResult
-SQLParser-->>Test: AST
+    Test->>Target: execute ParseSelect_ShouldSupportWildcard
+    Target->>Target: validate input
+    Target->>Internal: parse, optimize, or execute operation
+    Internal-->>Target: result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```
 
----
-
-## 7. Parse CREATE TABLE
+## 6. ParseSelect_ShouldNormalizeWhitespace
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant SQLParser
-participant Lexer
-participant ASTBuilder
+    autonumber
+    actor Test as ParserTests
+    participant Target as Parser
+    participant Internal as Internal State
 
-Test->>SQLParser: parse("CREATE TABLE Student(...)")
-SQLParser->>Lexer: tokenize()
-Lexer-->>SQLParser: tokens
-SQLParser->>ASTBuilder: buildCreateTableAST()
-ASTBuilder-->>SQLParser: ASTBuildResult
-SQLParser-->>Test: AST
+    Test->>Target: execute ParseSelect_ShouldNormalizeWhitespace
+    Target->>Target: validate input
+    Target->>Internal: parse, optimize, or execute operation
+    Internal-->>Target: result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```
 
----
-
-## 8. Parse ALTER TABLE
+## 7. ParseSelect_ShouldRejectMissingFrom
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant SQLParser
-participant Lexer
-participant ASTBuilder
+    autonumber
+    actor Test as ParserTests
+    participant Target as Parser
+    participant Internal as Internal State
 
-Test->>SQLParser: parse("ALTER TABLE Student ADD COLUMN age")
-SQLParser->>Lexer: tokenize()
-Lexer-->>SQLParser: tokens
-SQLParser->>ASTBuilder: buildAlterTableAST()
-ASTBuilder-->>SQLParser: ASTBuildResult
-SQLParser-->>Test: AST
+    Test->>Target: execute ParseSelect_ShouldRejectMissingFrom
+    Target->>Target: validate input
+    Target->>Internal: parse, optimize, or execute operation
+    Internal-->>Target: result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```
 
----
-
-## 9. Parse DROP TABLE
+## 8. ParseSelect_ShouldRejectMissingColumns
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant SQLParser
-participant Lexer
-participant ASTBuilder
+    autonumber
+    actor Test as ParserTests
+    participant Target as Parser
+    participant Internal as Internal State
 
-Test->>SQLParser: parse("DROP TABLE Student")
-SQLParser->>Lexer: tokenize()
-Lexer-->>SQLParser: tokens
-SQLParser->>ASTBuilder: buildDropTableAST()
-ASTBuilder-->>SQLParser: ASTBuildResult
-SQLParser-->>Test: AST
+    Test->>Target: execute ParseSelect_ShouldRejectMissingColumns
+    Target->>Target: validate input
+    Target->>Internal: parse, optimize, or execute operation
+    Internal-->>Target: result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```
 
----
-
-## 10. Parse GROUP BY
+## 9. ParseSelect_ShouldRejectMissingTable
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant SQLParser
-participant Lexer
-participant ASTBuilder
+    autonumber
+    actor Test as ParserTests
+    participant Target as Parser
+    participant Internal as Internal State
 
-Test->>SQLParser: parse("SELECT dept, COUNT(*) FROM Student GROUP BY dept")
-SQLParser->>Lexer: tokenize()
-Lexer-->>SQLParser: tokens
-SQLParser->>ASTBuilder: buildGroupByAST()
-ASTBuilder-->>SQLParser: ASTBuildResult
-SQLParser-->>Test: AST
+    Test->>Target: execute ParseSelect_ShouldRejectMissingTable
+    Target->>Target: validate input
+    Target->>Internal: parse, optimize, or execute operation
+    Internal-->>Target: result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```
 
----
+# Insert Tests
 
-## 11. Parse HAVING
+## 10. Parse_ShouldParseInsertStatement
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant SQLParser
-participant Lexer
-participant ASTBuilder
+    autonumber
+    actor Test as ParserTests
+    participant Target as Parser
+    participant Internal as Internal State
 
-Test->>SQLParser: parse("SELECT dept FROM Student GROUP BY dept HAVING COUNT(*) > 1")
-SQLParser->>Lexer: tokenize()
-Lexer-->>SQLParser: tokens
-SQLParser->>ASTBuilder: buildHavingAST()
-ASTBuilder-->>SQLParser: ASTBuildResult
-SQLParser-->>Test: AST
+    Test->>Target: execute Parse_ShouldParseInsertStatement
+    Target->>Target: validate input
+    Target->>Internal: parse, optimize, or execute operation
+    Internal-->>Target: result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```
 
----
-
-## 12. Parse ORDER BY
+## 11. ParseInsert_ShouldExtractTableName
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant SQLParser
-participant Lexer
-participant ASTBuilder
+    autonumber
+    actor Test as ParserTests
+    participant Target as Parser
+    participant Internal as Internal State
 
-Test->>SQLParser: parse("SELECT * FROM Student ORDER BY name")
-SQLParser->>Lexer: tokenize()
-Lexer-->>SQLParser: tokens
-SQLParser->>ASTBuilder: buildOrderByAST()
-ASTBuilder-->>SQLParser: ASTBuildResult
-SQLParser-->>Test: AST
+    Test->>Target: execute ParseInsert_ShouldExtractTableName
+    Target->>Target: validate input
+    Target->>Internal: parse, optimize, or execute operation
+    Internal-->>Target: result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```
 
----
-
-## 13. Parse JOIN Alias
+## 12. ParseInsert_ShouldExtractColumns
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant SQLParser
-participant Lexer
-participant ASTBuilder
+    autonumber
+    actor Test as ParserTests
+    participant Target as Parser
+    participant Internal as Internal State
 
-Test->>SQLParser: parse("SELECT * FROM A a JOIN B b ON a.id=b.id")
-SQLParser->>Lexer: tokenize()
-Lexer-->>SQLParser: tokens
-SQLParser->>ASTBuilder: buildJoinAST()
-ASTBuilder-->>SQLParser: ASTBuildResult
-SQLParser-->>Test: AST
+    Test->>Target: execute ParseInsert_ShouldExtractColumns
+    Target->>Target: validate input
+    Target->>Internal: parse, optimize, or execute operation
+    Internal-->>Target: result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```
 
----
+# Update Tests
 
-## 14. Parse Subquery
+## 13. Parse_ShouldParseUpdateStatement
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant SQLParser
-participant Lexer
-participant ASTBuilder
+    autonumber
+    actor Test as ParserTests
+    participant Target as Parser
+    participant Internal as Internal State
 
-Test->>SQLParser: parse("SELECT * FROM (SELECT * FROM Student)")
-SQLParser->>Lexer: tokenize()
-Lexer-->>SQLParser: tokens
-SQLParser->>ASTBuilder: buildSubqueryAST()
-ASTBuilder-->>SQLParser: ASTBuildResult
-SQLParser-->>Test: AST
+    Test->>Target: execute Parse_ShouldParseUpdateStatement
+    Target->>Target: validate input
+    Target->>Internal: parse, optimize, or execute operation
+    Internal-->>Target: result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```
 
----
-
-## 15. Parse CTE
+## 14. ParseUpdate_ShouldExtractTableName
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant SQLParser
-participant Lexer
-participant ASTBuilder
+    autonumber
+    actor Test as ParserTests
+    participant Target as Parser
+    participant Internal as Internal State
 
-Test->>SQLParser: parse("WITH T AS (...) SELECT * FROM T")
-SQLParser->>Lexer: tokenize()
-Lexer-->>SQLParser: tokens
-SQLParser->>ASTBuilder: buildCTEAST()
-ASTBuilder-->>SQLParser: ASTBuildResult
-SQLParser-->>Test: AST
+    Test->>Target: execute ParseUpdate_ShouldExtractTableName
+    Target->>Target: validate input
+    Target->>Internal: parse, optimize, or execute operation
+    Internal-->>Target: result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```
 
----
+# Delete Tests
 
-## 16. Parse Window Function
+## 15. Parse_ShouldParseDeleteStatement
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant SQLParser
-participant Lexer
-participant ASTBuilder
+    autonumber
+    actor Test as ParserTests
+    participant Target as Parser
+    participant Internal as Internal State
 
-Test->>SQLParser: parse("SELECT ROW_NUMBER() OVER(...) FROM Student")
-SQLParser->>Lexer: tokenize()
-Lexer-->>SQLParser: tokens
-SQLParser->>ASTBuilder: buildWindowFunctionAST()
-ASTBuilder-->>SQLParser: ASTBuildResult
-SQLParser-->>Test: AST
+    Test->>Target: execute Parse_ShouldParseDeleteStatement
+    Target->>Target: validate input
+    Target->>Internal: parse, optimize, or execute operation
+    Internal-->>Target: result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```
 
----
-
-## 17. Parse Transaction Begin
+## 16. ParseDelete_ShouldExtractTableName
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant SQLParser
-participant Lexer
-participant ASTBuilder
+    autonumber
+    actor Test as ParserTests
+    participant Target as Parser
+    participant Internal as Internal State
 
-Test->>SQLParser: parse("BEGIN TRANSACTION")
-SQLParser->>Lexer: tokenize()
-Lexer-->>SQLParser: tokens
-SQLParser->>ASTBuilder: buildBeginTransactionAST()
-ASTBuilder-->>SQLParser: ASTBuildResult
-SQLParser-->>Test: AST
+    Test->>Target: execute ParseDelete_ShouldExtractTableName
+    Target->>Target: validate input
+    Target->>Internal: parse, optimize, or execute operation
+    Internal-->>Target: result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```
 
----
+# Validation Tests
 
-## 18. Parse Commit
+## 17. Parse_ShouldRejectNullSql
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant SQLParser
-participant Lexer
-participant ASTBuilder
+    autonumber
+    actor Test as ParserTests
+    participant Target as Parser
+    participant Internal as Internal State
 
-Test->>SQLParser: parse("COMMIT")
-SQLParser->>Lexer: tokenize()
-Lexer-->>SQLParser: tokens
-SQLParser->>ASTBuilder: buildCommitAST()
-ASTBuilder-->>SQLParser: ASTBuildResult
-SQLParser-->>Test: AST
+    Test->>Target: execute Parse_ShouldRejectNullSql
+    Target->>Target: validate input
+    Target->>Internal: parse, optimize, or execute operation
+    Internal-->>Target: result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```
 
----
-
-## 19. Parse Rollback
+## 18. Parse_ShouldRejectBlankSql
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant SQLParser
-participant Lexer
-participant ASTBuilder
+    autonumber
+    actor Test as ParserTests
+    participant Target as Parser
+    participant Internal as Internal State
 
-Test->>SQLParser: parse("ROLLBACK")
-SQLParser->>Lexer: tokenize()
-Lexer-->>SQLParser: tokens
-SQLParser->>ASTBuilder: buildRollbackAST()
-ASTBuilder-->>SQLParser: ASTBuildResult
-SQLParser-->>Test: AST
+    Test->>Target: execute Parse_ShouldRejectBlankSql
+    Target->>Target: validate input
+    Target->>Internal: parse, optimize, or execute operation
+    Internal-->>Target: result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```
 
----
-
-## 20. Parse Parameterized Query
+## 19. Parse_ShouldRejectUnsupportedStatement
 
 ```mermaid
 sequenceDiagram
-actor Test
-participant SQLParser
-participant Lexer
-participant ASTBuilder
+    autonumber
+    actor Test as ParserTests
+    participant Target as Parser
+    participant Internal as Internal State
 
-Test->>SQLParser: parse("SELECT * FROM Student WHERE id = ?")
-SQLParser->>Lexer: tokenize()
-Lexer-->>SQLParser: tokens
-SQLParser->>ASTBuilder: buildParameterizedAST()
-ASTBuilder-->>SQLParser: ASTBuildResult
-SQLParser-->>Test: AST
+    Test->>Target: execute Parse_ShouldRejectUnsupportedStatement
+    Target->>Target: validate input
+    Target->>Internal: parse, optimize, or execute operation
+    Internal-->>Target: result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
+```
+
+## 20. GetColumns_ShouldReturnUnmodifiableList
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ParserTests
+    participant Target as Parser
+    participant Internal as Internal State
+
+    Test->>Target: execute GetColumns_ShouldReturnUnmodifiableList
+    Target->>Target: validate input
+    Target->>Internal: parse, optimize, or execute operation
+    Internal-->>Target: result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
+```
+
+## 21. ParsedQuery_ShouldPreserveRawSql
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ParserTests
+    participant Target as Parser
+    participant Internal as Internal State
+
+    Test->>Target: execute ParsedQuery_ShouldPreserveRawSql
+    Target->>Target: validate input
+    Target->>Internal: parse, optimize, or execute operation
+    Internal-->>Target: result
+    Target-->>Test: result or exception
+    Test->>Test: assert expected behavior
 ```

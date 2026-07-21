@@ -1,11 +1,15 @@
 package classes.metadata;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import classes.abstraction.AbstractMetadataComponent;
 import enums.DataType;
+import enums.MetadataType;
+import interfaces.MetadataComponent;
 
-public class ColumnMetadata {
+public class ColumnMetadata extends AbstractMetadataComponent {
 
     private UUID id;
     private String name;
@@ -18,6 +22,79 @@ public class ColumnMetadata {
     private Integer scale;
     private boolean identity;
     private long nextIdentityValue;
+
+    public ColumnMetadata(
+            String name,
+            DataType dataType,
+            boolean nullable,
+            Object defaultValue,
+            int position,
+            Integer length,
+            Integer precision,
+            Integer scale,
+            boolean identity,
+            long nextIdentityValue) {
+
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Column name must not be null or blank");
+        }
+
+        if (dataType == null) {
+            throw new IllegalArgumentException(
+                    "Data type must not be null");
+        }
+
+        if (position < 0) {
+            throw new IllegalArgumentException(
+                    "Column position must not be negative");
+        }
+
+        if (length != null && length <= 0) {
+            throw new IllegalArgumentException(
+                    "Length must be greater than zero");
+        }
+
+        if (precision != null && precision <= 0) {
+            throw new IllegalArgumentException(
+                    "Precision must be greater than zero");
+        }
+
+        if (scale != null && scale < 0) {
+            throw new IllegalArgumentException(
+                    "Scale must not be negative");
+        }
+
+        if (precision != null
+                && scale != null
+                && scale > precision) {
+
+            throw new IllegalArgumentException(
+                    "Scale must not be greater than precision");
+        }
+
+        if (identity && nullable) {
+            throw new IllegalArgumentException(
+                    "Identity column must not be nullable");
+        }
+
+        if (nextIdentityValue < 1L) {
+            throw new IllegalArgumentException(
+                    "Next identity value must be at least 1");
+        }
+
+        this.id = UUID.randomUUID();
+        this.name = name;
+        this.dataType = dataType;
+        this.nullable = nullable;
+        this.defaultValue = defaultValue;
+        this.position = position;
+        this.length = length;
+        this.precision = precision;
+        this.scale = scale;
+        this.identity = identity;
+        this.nextIdentityValue = nextIdentityValue;
+    }
 
     public ColumnMetadata() {
         this.id = UUID.randomUUID();
@@ -33,6 +110,16 @@ public class ColumnMetadata {
         this.nextIdentityValue = 1L;
     }
 
+    @Override
+    public MetadataType getMetadataType() {
+        return MetadataType.COLUMN;
+    }
+
+    @Override
+    public List<MetadataComponent> getChildren() {
+        return List.of();
+    }
+
     public ColumnMetadata(String name, DataType dataType) {
         validateName(name);
         if (dataType == null) {
@@ -42,27 +129,14 @@ public class ColumnMetadata {
         this.id = UUID.randomUUID();
         this.name = name;
         this.dataType = dataType;
-        this.nullable = true;
-        this.defaultValue = null;
-        this.position = 0;
-        this.length = null;
-        this.precision = null;
-        this.scale = null;
-        this.identity = false;
-        this.nextIdentityValue = 1L;
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void rename(String newName) {
-        validateName(newName);
-        this.name = newName;
+        // this.nullable = true;
+        // this.defaultValue = null;
+        // this.position = 0;
+        // this.length = null;
+        // this.precision = null;
+        // this.scale = null;
+        // this.identity = false;
+        // this.nextIdentityValue = 1L;
     }
 
     public DataType getDataType() {
@@ -329,13 +403,6 @@ public class ColumnMetadata {
                 value instanceof byte[];
             default -> true;
         };
-    }
-
-    private static void validateName(String value) {
-        if (value == null || value.trim().isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Column name must not be null or blank.");
-        }
     }
 
     @Override
