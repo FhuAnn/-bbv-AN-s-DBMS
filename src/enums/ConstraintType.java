@@ -1,5 +1,5 @@
 package enums;
 
 public enum ConstraintType {
-    PRIMARY_KEY, FOREIGN_KEY, UNIQUE, CHECK
+    PRIMARY_KEY, FOREIGN_KEY, UNIQUE, CHECK, NOT_NULL
 }

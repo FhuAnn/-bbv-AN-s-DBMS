@@ -8,10 +8,11 @@ import java.util.Objects;
 import java.util.UUID;
 
 import classes.abstraction.AbstractMetadataComponent;
+import classes.prototype.MetadataPrototype;
 import enums.MetadataType;
 import interfaces.MetadataComponent;
 
-public class Schema extends AbstractMetadataComponent {
+public class Schema extends AbstractMetadataComponent implements MetadataPrototype<Schema> {
 
     private UUID id;
     private String name;
@@ -227,19 +228,19 @@ public class Schema extends AbstractMetadataComponent {
 
     @Override
     public void addChild(MetadataComponent child) {
-        Objects.requireNonNull(
-                child,
-                "Child must not be null");
+        // Objects.requireNonNull(
+        //         child,
+        //         "Child must not be null");
 
-        if (child instanceof Table table) {
-            addTable(table);
-            return;
-        }
+        // if (child instanceof Table table) {
+        //     addTable(table);
+        //     return;
+        // }
 
-        if (child instanceof View view) {
-            addView(view);
-            return;
-        }
+        // if (child instanceof View view) {
+        //     addView(view);
+        //     return;
+        // }
 
         throw new IllegalArgumentException(
                 "Schema can contain only Table or View objects");
@@ -247,31 +248,35 @@ public class Schema extends AbstractMetadataComponent {
 
     @Override
     public MetadataComponent removeChild(UUID childId) {
-        Objects.requireNonNull(
-                childId,
-                "Child ID must not be null");
+        // Objects.requireNonNull(
+        //         childId,
+        //         "Child ID must not be null");
 
-        Table table = tables.stream()
-                .filter(item -> item.getId().equals(childId))
-                .findFirst()
-                .orElse(null);
+        // Table table = tables.stream()
+        //         .filter(item -> item.getId().equals(childId))
+        //         .findFirst()
+        //         .orElse(null);
 
-        if (table != null) {
-            tables.remove(table);
-            return table;
-        }
+        // if (table != null) {
+        //     tables.remove(table);
+        //     return table;
+        // }
 
-        View view = views.stream()
-                .filter(item -> item.getId().equals(childId))
-                .findFirst()
-                .orElse(null);
+        // View view = views.stream()
+        //         .filter(item -> item.getId().equals(childId))
+        //         .findFirst()
+        //         .orElse(null);
 
-        if (view != null) {
-            views.remove(view);
-            return view;
-        }
+        // if (view != null) {
+        //     views.remove(view);
+        //     return view;
+        // }
 
         return null;
+    }
+
+    public Schema copyAs(String newName, UUID targetSchemaId) {
+        return null; // TODO: Implement
     }
 
 }

@@ -47,4 +47,6 @@ public abstract class AbstractMetadataComponent implements MetadataComponent {
     protected static String key(String value) {
         return value.toLowerCase(java.util.Locale.ROOT);
     }
+
+    
 }

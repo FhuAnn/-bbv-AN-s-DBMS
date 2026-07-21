@@ -1,4 +1,3 @@
-
 package classes.metadata;
 
 import java.util.ArrayList;
@@ -8,10 +7,12 @@ import java.util.Objects;
 import java.util.UUID;
 
 import classes.abstraction.AbstractMetadataComponent;
+import classes.prototype.MetadataPrototype;
 import enums.MetadataType;
+import interfaces.IConstraint;
 import interfaces.MetadataComponent;
 
-public class Table extends AbstractMetadataComponent {
+public class Table extends AbstractMetadataComponent implements MetadataPrototype<Table> {
 
     private UUID id;
     private String name;
@@ -19,7 +20,7 @@ public class Table extends AbstractMetadataComponent {
 
     private final List<ColumnMetadata> columns;
     private final List<Index> indexes;
-    private final List<Constraint> constraints;
+    private final List<IConstraint> constraints;
 
     public Table(String name, UUID schemaId) {
         if (name == null || name.isBlank()) {
@@ -38,7 +39,6 @@ public class Table extends AbstractMetadataComponent {
         this.indexes = new ArrayList<>();
         this.constraints = new ArrayList<>();
     }
-
 
     public UUID getSchemaId() {
         return schemaId;
@@ -72,7 +72,7 @@ public class Table extends AbstractMetadataComponent {
             return;
         }
 
-        if (child instanceof Constraint constraint) {
+        if (child instanceof IConstraint constraint) {
             addConstraint(constraint);
             return;
         }
@@ -102,11 +102,16 @@ public class Table extends AbstractMetadataComponent {
         indexes.add(index);
     }
 
-    public void addConstraint(Constraint constraint) {
+    public void addConstraint(IConstraint constraint) {
         Objects.requireNonNull(constraint);
         constraints.add(constraint);
     }
+
     public List<ColumnMetadata> getColumns() {
-       return Collections.unmodifiableList(columns);
+        return Collections.unmodifiableList(columns);
+    }
+
+    public Table copyAs(String newName, UUID targetSchemaId) {
+        return null; // TODO: Implement
     }
 }
