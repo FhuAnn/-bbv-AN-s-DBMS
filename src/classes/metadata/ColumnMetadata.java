@@ -129,14 +129,14 @@ public class ColumnMetadata extends AbstractMetadataComponent {
         this.id = UUID.randomUUID();
         this.name = name;
         this.dataType = dataType;
-        this.nullable = true;
-        this.defaultValue = null;
-        this.position = 0;
-        this.length = null;
-        this.precision = null;
-        this.scale = null;
-        this.identity = false;
-        this.nextIdentityValue = 1L;
+        // this.nullable = true;
+        // this.defaultValue = null;
+        // this.position = 0;
+        // this.length = null;
+        // this.precision = null;
+        // this.scale = null;
+        // this.identity = false;
+        // this.nextIdentityValue = 1L;
     }
 
     public DataType getDataType() {
