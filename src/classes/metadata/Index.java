@@ -10,7 +10,11 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.DisplayName;
 
-public class Index {
+import classes.abstraction.AbstractMetadataComponent;
+import enums.MetadataType;
+import interfaces.MetadataComponent;
+
+public class Index extends AbstractMetadataComponent {
 
     public enum IndexType {
         HASH,
@@ -68,21 +72,14 @@ public class Index {
         this.entries = new HashMap<>();
     }
 
-    public UUID getId() {
-        return id;
+    @Override
+    public MetadataType getMetadataType() {
+        return MetadataType.COLUMN;
     }
 
-    public void setId(UUID id) {
-        // TODO: Implement
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void rename(String newName) {
-        validateName(newName);
-        this.name = newName;
+    @Override
+    public List<MetadataComponent> getChildren() {
+        return List.of();
     }
 
     public IndexType getType() {
@@ -274,12 +271,6 @@ public class Index {
         }
     }
 
-    private static void validateName(String value) {
-        if (value == null || value.trim().isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Index name must not be null or blank.");
-        }
-    }
 
     private static void validateColumnNames(
             List<String> columnNames) {

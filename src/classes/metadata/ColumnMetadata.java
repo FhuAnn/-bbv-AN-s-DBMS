@@ -1,11 +1,15 @@
 package classes.metadata;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import classes.abstraction.AbstractMetadataComponent;
 import enums.DataType;
+import enums.MetadataType;
+import interfaces.MetadataComponent;
 
-public class ColumnMetadata {
+public class ColumnMetadata extends AbstractMetadataComponent {
 
     private UUID id;
     private String name;
@@ -33,6 +37,16 @@ public class ColumnMetadata {
         this.nextIdentityValue = 1L;
     }
 
+    @Override
+    public MetadataType getMetadataType() {
+        return MetadataType.COLUMN;
+    }
+
+    @Override
+    public List<MetadataComponent> getChildren() {
+        return List.of();
+    }
+
     public ColumnMetadata(String name, DataType dataType) {
         validateName(name);
         if (dataType == null) {
@@ -50,19 +64,6 @@ public class ColumnMetadata {
         this.scale = null;
         this.identity = false;
         this.nextIdentityValue = 1L;
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void rename(String newName) {
-        validateName(newName);
-        this.name = newName;
     }
 
     public DataType getDataType() {
@@ -329,13 +330,6 @@ public class ColumnMetadata {
                 value instanceof byte[];
             default -> true;
         };
-    }
-
-    private static void validateName(String value) {
-        if (value == null || value.trim().isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Column name must not be null or blank.");
-        }
     }
 
     @Override

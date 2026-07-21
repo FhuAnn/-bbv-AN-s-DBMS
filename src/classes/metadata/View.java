@@ -2,10 +2,15 @@ package classes.metadata;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-public class View {
+import classes.abstraction.AbstractMetadataComponent;
+import enums.MetadataType;
+import interfaces.MetadataComponent;
+
+public class View extends AbstractMetadataComponent {
 
     private UUID id;
     private String name;
@@ -39,8 +44,7 @@ public class View {
             String name,
             UUID schemaId,
             String definition,
-            boolean materialized
-    ) {
+            boolean materialized) {
         this.id = UUID.randomUUID();
         this.name = name;
         this.schemaId = schemaId;
@@ -50,16 +54,18 @@ public class View {
         this.dependencyIds = new LinkedHashSet<>();
     }
 
-    public UUID getId() {
-        return id;
+    @Override
+    public MetadataType getMetadataType() {
+        return MetadataType.COLUMN;
+    }
+
+    @Override
+    public List<MetadataComponent> getChildren() {
+        return List.of();
     }
 
     public void setId(UUID id) {
         // TODO: Implement
-    }
-
-    public String getName() {
-        return name;
     }
 
     public void setName(String name) {
@@ -95,10 +101,6 @@ public class View {
     }
 
     public void setValid(boolean valid) {
-        // TODO: Implement
-    }
-
-    public void rename(String newName) {
         // TODO: Implement
     }
 
