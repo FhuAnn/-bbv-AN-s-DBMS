@@ -1,4 +1,5 @@
 package classes.abstraction;
+
 import java.util.Objects;
 import java.util.UUID;
 
@@ -7,9 +8,11 @@ import interfaces.MetadataComponent;
 public abstract class AbstractMetadataComponent implements MetadataComponent {
     private final UUID id;
     private String name;
+
     public AbstractMetadataComponent() {
         this(UUID.randomUUID(), "");
     }
+
     protected AbstractMetadataComponent(String name) {
         this(UUID.randomUUID(), name);
     }
@@ -36,10 +39,11 @@ public abstract class AbstractMetadataComponent implements MetadataComponent {
     protected static String validateName(String value) {
         // Objects.requireNonNull(value, "Metadata name must not be null.");
         // if (value.isBlank()) {
-        //     throw new IllegalArgumentException("Metadata name must not be blank.");
+        // throw new IllegalArgumentException("Metadata name must not be blank.");
         // }
         // if (value.length() > 128) {
-        //     throw new IllegalArgumentException("Metadata name must not exceed 128 characters.");
+        // throw new IllegalArgumentException("Metadata name must not exceed 128
+        // characters.");
         // }
         return value;
     }
@@ -48,5 +52,4 @@ public abstract class AbstractMetadataComponent implements MetadataComponent {
         return value.toLowerCase(java.util.Locale.ROOT);
     }
 
-    
 }

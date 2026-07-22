@@ -5,7 +5,7 @@ import java.util.UUID;
 import enums.ConstraintType;
 
 
-public interface IConstraint {
+public interface IConstraint  {
     UUID getId();
 
     String getName();
@@ -13,4 +13,6 @@ public interface IConstraint {
     ConstraintType getType();
 
     boolean validateDefinition();
+
+    void rename(String newName);
 }

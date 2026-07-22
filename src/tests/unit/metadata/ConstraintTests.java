@@ -16,22 +16,37 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import classes.metadata.Constraint;
+import classes.metadata.CheckConstraint;
+import classes.metadata.ConstraintDefinition;
+import classes.metadata.ForeignKeyConstraint;
+import classes.metadata.NotNullConstraint;
+import classes.metadata.PrimaryKeyConstraint;
 import classes.metadata.Row;
+import classes.metadata.UniqueConstraint;
+import enums.ConstraintType;
+import factories.ConstraintFactory;
+import factories.DefaultConstraintFactory;
+import interfaces.IConstraint;
 
 @DisplayName("Constraint Unit Tests")
 class ConstraintTests {
 
-    private Constraint primaryKey;
-    private Constraint uniqueConstraint;
-    private Constraint notNullConstraint;
-    private Constraint foreignKey;
-    private Constraint checkConstraint;
+    private PrimaryKeyConstraint primaryKey;
+    private UniqueConstraint uniqueConstraint;
+    private NotNullConstraint notNullConstraint;
+    private ForeignKeyConstraint foreignKey;
+    private CheckConstraint checkConstraint;
     private Row row;
-
+    private ConstraintFactory constraintFactory;
     @BeforeEach
     void setUp() {
-        primaryKey = new Constraint(
+        constraintFactory = new DefaultConstraintFactory();
+        constraintFactory.create(new ConstraintDefinition(
+                "pk_users",
+                ConstraintType.PRIMARY_KEY,
+                List.of("id")
+        ));
+        primaryKey = new ForeignKeyConstraint(
                 "pk_users",
                 Constraint.ConstraintType.PRIMARY_KEY,
                 List.of("id")
@@ -49,7 +64,7 @@ class ConstraintTests {
                 List.of("name")
         );
 
-        foreignKey = new Constraint(
+        foreignKey = new ForeignKeyConstraint(
                 "fk_orders_user",
                 Constraint.ConstraintType.FOREIGN_KEY,
                 List.of("user_id")

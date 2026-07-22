@@ -3,37 +3,27 @@ package classes.metadata;
 import java.util.List;
 import java.util.UUID;
 
+import classes.abstraction.Constraint;
 import enums.ConstraintType;
 import interfaces.IConstraint;
 
-public class UniqueConstraint implements IConstraint {
+public class UniqueConstraint extends Constraint  {
 
     private final UUID id;
-    private final String name;
+    private String name;
     private final UUID tableId;
     private final List<UUID> columnIds;
 
     public UniqueConstraint(
             String name,
             UUID tableId,
-            List<UUID> columnIds
-    ) {
+            List<UUID> columnIds) {
         this.id = UUID.randomUUID();
         this.name = name;
         this.tableId = tableId;
         this.columnIds = columnIds == null
                 ? List.of()
                 : List.copyOf(columnIds);
-    }
-
-    @Override
-    public UUID getId() {
-        return id;
-    }
-
-    @Override
-    public String getName() {
-        return name;
     }
 
     public UUID getTableId() {
@@ -53,4 +43,6 @@ public class UniqueConstraint implements IConstraint {
     public boolean validateDefinition() {
         return false;
     }
+
+
 }

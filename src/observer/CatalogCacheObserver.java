@@ -10,11 +10,11 @@ public final class CatalogCacheObserver implements IMetadataObserver {
 
     @Override
     public void onMetadataChanged(MetadataEvent event) {
-        if (event.eventType() == MetadataEventType.DELETED) {
-            namesById.remove(event.metadataId());
-        } else {
-            namesById.put(event.metadataId(), event.metadataName());
-        }
+        // if (event.eventType() == MetadataEventType.DELETED) {
+        //     namesById.remove(event.metadataId());
+        // } else {
+        //     namesById.put(event.metadataId(), event.metadataName());
+        // }
     }
 
     public boolean contains(UUID metadataId) {
