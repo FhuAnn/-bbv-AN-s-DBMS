@@ -4,7 +4,7 @@ import classes.metadata.ColumnMetadata;
 import enums.DataType;
 
 public class ColumnMetadataBuilder {
-      private String name;
+    private String name;
     private DataType dataType;
 
     private boolean nullable = true;
@@ -81,15 +81,14 @@ public class ColumnMetadataBuilder {
         validateRequiredFields();
         validateConfiguration();
 
-        
         return null;
     }
 
     private void validateRequiredFields() {
-       
+
     }
 
     private void validateConfiguration() {
-     
+
     }
 }

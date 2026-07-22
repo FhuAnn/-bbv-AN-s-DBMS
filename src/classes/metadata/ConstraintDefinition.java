@@ -1,17 +1,19 @@
 package classes.metadata;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.Predicate;
+
+import classes.abstraction.AbstractMetadataComponent;
+import enums.ConstraintType;
+import enums.MetadataType;
+import interfaces.MetadataComponent;
 
 public class ConstraintDefinition {
-
-    public enum ConstraintType {
-        PRIMARY_KEY,
-        UNIQUE,
-        NOT_NULL,
-        FOREIGN_KEY,
-        CHECK
-    }
 
     private final String name;
     private final ConstraintType type;
@@ -42,10 +44,6 @@ public class ConstraintDefinition {
         this.expression = expression;
     }
 
-    public String getName() {
-        return name;
-    }
-
     public ConstraintType getType() {
         return type;
     }
@@ -69,5 +67,4 @@ public class ConstraintDefinition {
     public String getExpression() {
         return null;
     }
-
 }

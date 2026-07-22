@@ -3,11 +3,9 @@ package classes.metadata;
 import java.util.List;
 import java.util.UUID;
 
-import classes.abstraction.AbstractMetadataComponent;
 import classes.abstraction.Constraint;
 import enums.ConstraintType;
 import enums.MetadataType;
-import interfaces.IConstraint;
 import interfaces.MetadataComponent;
 
 public class NotNullConstraint extends Constraint {
