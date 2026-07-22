@@ -10,7 +10,7 @@ import classes.metadata.ColumnMetadata;
 import classes.metadata.Schema;
 import classes.metadata.Table;
 import enums.DataType;
-import enums.DatabaseState;
+import enums.DatabaseStateType;
 import exception.InvalidSchemaException;
 import exception.ReadOnlyDatabaseException;
 import exception.SchemaAlreadyExistsException;
@@ -109,7 +109,7 @@ class DatabaseTests {
         @Test
         @DisplayName("Should initialize database as closed")
         void constructor_ShouldInitializeClosedState() {
-            assertEquals(DatabaseState.CLOSED, database.getState());
+            assertEquals(DatabaseStateType.CLOSED, database.getState());
         }
 
         @Test
@@ -179,7 +179,7 @@ class DatabaseTests {
         void open_ShouldChangeDatabaseStateToOpen() {
             database.open();
 
-            assertEquals(DatabaseState.OPEN, database.getState());
+            assertEquals(DatabaseStateType.OPEN, database.getState());
         }
 
         @Test
@@ -188,7 +188,7 @@ class DatabaseTests {
             database.open();
             database.open();
 
-            assertEquals(DatabaseState.OPEN, database.getState());
+            assertEquals(DatabaseStateType.OPEN, database.getState());
         }
 
         @Test
@@ -198,7 +198,7 @@ class DatabaseTests {
 
             database.close();
 
-            assertEquals(DatabaseState.CLOSED, database.getState());
+            assertEquals(DatabaseStateType.CLOSED, database.getState());
         }
 
         @Test
@@ -207,7 +207,7 @@ class DatabaseTests {
             database.close();
             database.close();
 
-            assertEquals(DatabaseState.CLOSED, database.getState());
+            assertEquals(DatabaseStateType.CLOSED, database.getState());
         }
 
         @Test
@@ -218,7 +218,7 @@ class DatabaseTests {
 
             database.open();
 
-            assertEquals(DatabaseState.OPEN, database.getState());
+            assertEquals(DatabaseStateType.OPEN, database.getState());
         }
     }
 
@@ -684,7 +684,7 @@ class DatabaseTests {
                 }
 
                 assertEquals(
-                        DatabaseState.OPEN,
+                        DatabaseStateType.OPEN,
                         database.getState()
                 );
             } finally {
