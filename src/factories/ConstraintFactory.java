@@ -1,8 +1,8 @@
 package factories;
 
+import classes.abstraction.Constraint;
 import classes.metadata.ConstraintDefinition;
-import interfaces.IConstraint;
 
 public interface ConstraintFactory {
-    IConstraint create(ConstraintDefinition definition);
+    Constraint create(ConstraintDefinition definition);
 }

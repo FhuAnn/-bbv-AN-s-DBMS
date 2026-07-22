@@ -67,4 +67,7 @@ public class ConstraintDefinition {
     public String getExpression() {
         return null;
     }
+    public String getName() {
+        return null;
+    }
 }
