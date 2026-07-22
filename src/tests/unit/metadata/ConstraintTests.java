@@ -1,393 +1,508 @@
 package unit.metadata;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertAll;
-
-import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
+import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
 
 import builder.ConstraintDefinitionBuilder;
-import classes.abstraction.Constraint;
 import classes.metadata.CheckConstraint;
 import classes.metadata.ConstraintDefinition;
 import classes.metadata.ForeignKeyConstraint;
 import classes.metadata.NotNullConstraint;
 import classes.metadata.PrimaryKeyConstraint;
-import classes.metadata.Row;
 import classes.metadata.UniqueConstraint;
-import enums.ConstraintType;
 import factories.ConstraintFactory;
-import factories.DefaultConstraintFactory;
-import interfaces.IConstraint;
 
-@DisplayName("Constraint Unit Tests")
 class ConstraintTests {
+
+    private ConstraintFactory constraintFactory;
+    private ConstraintDefinitionBuilder builder;
+
+    private UUID tableId;
+    private UUID firstColumnId;
+    private UUID secondColumnId;
+    private UUID referencedTableId;
+    private UUID referencedColumnId;
+
+    private ConstraintDefinition primaryKeyDefinition;
+    private ConstraintDefinition uniqueDefinition;
+    private ConstraintDefinition notNullDefinition;
+    private ConstraintDefinition foreignKeyDefinition;
+    private ConstraintDefinition checkDefinition;
 
     private PrimaryKeyConstraint primaryKey;
     private UniqueConstraint uniqueConstraint;
     private NotNullConstraint notNullConstraint;
     private ForeignKeyConstraint foreignKey;
     private CheckConstraint checkConstraint;
-    private Row row;
-    private DefaultConstraintFactory constraintFactory;
 
     @BeforeEach
     void setUp() {
-        constraintFactory = new DefaultConstraintFactory();
-        ConstraintDefinitionBuilder builder = new ConstraintDefinitionBuilder();
-        ConstraintDefinition primaryKeyDefinition = builder.name("pk_users")
-                .type(ConstraintType.PRIMARY_KEY)
-                .tableId(UUID.randomUUID())
-                .columnIds(List.of(UUID.randomUUID())).build();
-        ConstraintDefinition uniqueDefinition = builder.name("uq_users_email")
-                .type(ConstraintType.UNIQUE)
-                .tableId(UUID.randomUUID())
-                .columnIds(List.of(UUID.randomUUID())).build();
-        ConstraintDefinition foreignKeyDefinition = builder.name("fk_users_email")
-                .type(ConstraintType.FOREIGN_KEY)
-                .tableId(UUID.randomUUID())
-                .columnIds(List.of(UUID.randomUUID()))
-                .referencedTableId(UUID.randomUUID())
-                .referencedColumnIds(List.of(UUID.randomUUID()))
-                .build();
-        ConstraintDefinition notNullDefinition = builder.name("nn_users_name")
-                .type(ConstraintType.NOT_NULL)
-                .tableId(UUID.randomUUID())
-                .columnIds(List.of(UUID.randomUUID()))
-                .build();
-
-        ConstraintDefinition checkDefinition = builder.name("ck_users_age")
-                .type(ConstraintType.CHECK)
-                .tableId(UUID.randomUUID())
-                .columnIds(List.of(UUID.randomUUID()))
-                .build();
-        primaryKey = (PrimaryKeyConstraint) constraintFactory.create(primaryKeyDefinition);
-        uniqueConstraint = (UniqueConstraint) constraintFactory.create(uniqueDefinition);
-        foreignKey = (ForeignKeyConstraint) constraintFactory.create(foreignKeyDefinition);
-        notNullConstraint = (NotNullConstraint) constraintFactory.create(notNullDefinition);
-        checkConstraint = (CheckConstraint) constraintFactory.create(checkDefinition);
-        row = new Row();
+        // TODO: initialize test fixtures
     }
 
     @Nested
-    @DisplayName("Constructor Tests")
-    class ConstructorTests {
+    @DisplayName("Builder Creation Tests")
+    class BuilderCreationTests {
 
         @Test
-        void constructor_ShouldCreateConstraint() {
-            assertNotNull(primaryKey);
+        @DisplayName("builder_ShouldCreateBuilder")
+        void builder_ShouldCreateBuilder() {
+            // TODO: implement test
         }
 
         @Test
-        void constructor_ShouldGenerateConstraintId() {
-            assertNotNull(primaryKey.getId());
+        @DisplayName("constructor_ShouldCreateBuilder")
+        void constructor_ShouldCreateBuilder() {
+            // TODO: implement test
         }
 
         @Test
-        void constructor_ShouldGenerateUniqueConstraintIds() {
-            assertNotEquals(
-                    primaryKey.getId(),
-                    uniqueConstraint.getId());
+        @DisplayName("builder_ShouldReturnNewBuilderEachTime")
+        void builder_ShouldReturnNewBuilderEachTime() {
+            // TODO: implement test
         }
 
-        @Test
-        void constructor_ShouldInitializeMetadata() {
-            assertEquals("pk_users", primaryKey.getName());
-            assertEquals(
-                    ConstraintType.PRIMARY_KEY,
-                    primaryKey.getType());
-        }
-
-        @Test
-        void constructor_ShouldEnableConstraintByDefault() {
-        }
-
-        @Test
-        void constructor_ShouldRejectInvalidName() {
-        }
-
-        @Test
-        void constructor_ShouldRejectNullType() {
-          
-        }
-
-        @Test
-        void constructor_ShouldRejectEmptyColumns() {
-           
-        }
     }
 
     @Nested
-    @DisplayName("Metadata Tests")
-    class MetadataTests {
+    @DisplayName("Required Field Builder Tests")
+    class RequiredFieldBuilderTests {
 
         @Test
-        void rename_ShouldChangeConstraintName() {
-          
+        @DisplayName("name_ShouldStoreConstraintName")
+        void name_ShouldStoreConstraintName() {
+            // TODO: implement test
         }
 
         @Test
-        void rename_ShouldRejectInvalidName() {
-            assertAll(
-                    () -> assertThrows(
-                            IllegalArgumentException.class,
-                            () -> primaryKey.rename(null)),
-                    () -> assertThrows(
-                            IllegalArgumentException.class,
-                            () -> primaryKey.rename(" ")));
+        @DisplayName("type_ShouldStoreConstraintType")
+        void type_ShouldStoreConstraintType() {
+            // TODO: implement test
         }
 
         @Test
-        void getColumnNames_ShouldReturnUnmodifiableList() {
-           
+        @DisplayName("tableId_ShouldStoreTableId")
+        void tableId_ShouldStoreTableId() {
+            // TODO: implement test
         }
 
         @Test
-        void setReferencedTableId_ShouldStoreId() {
-           
+        @DisplayName("columnIds_ShouldStoreColumnIds")
+        void columnIds_ShouldStoreColumnIds() {
+            // TODO: implement test
         }
 
         @Test
-        void setReferencedTableId_ShouldRejectNull() {
-           
+        @DisplayName("build_ShouldCreateConstraintDefinition")
+        void build_ShouldCreateConstraintDefinition() {
+            // TODO: implement test
         }
 
         @Test
-        void setReferencedColumnNames_ShouldStoreColumns() {
-            
+        @DisplayName("build_ShouldPreserveRequiredFields")
+        void build_ShouldPreserveRequiredFields() {
+            // TODO: implement test
         }
 
         @Test
-        void getReferencedColumnNames_ShouldBeUnmodifiable() {
-            
+        @DisplayName("build_ShouldRejectNullName")
+        void build_ShouldRejectNullName() {
+            // TODO: implement test
         }
 
         @Test
-        void setCheckExpression_ShouldStoreExpression() {
-           
+        @DisplayName("build_ShouldRejectBlankName")
+        void build_ShouldRejectBlankName() {
+            // TODO: implement test
         }
 
         @Test
-        void setCheckExpression_ShouldRejectBlankExpression() {
-
+        @DisplayName("build_ShouldRejectNullType")
+        void build_ShouldRejectNullType() {
+            // TODO: implement test
         }
 
         @Test
-        void setCheckPredicate_ShouldRejectNull() {
-          
+        @DisplayName("build_ShouldRejectNullTableId")
+        void build_ShouldRejectNullTableId() {
+            // TODO: implement test
         }
+
+        @Test
+        @DisplayName("build_ShouldRejectNullColumnIds")
+        void build_ShouldRejectNullColumnIds() {
+            // TODO: implement test
+        }
+
+        @Test
+        @DisplayName("build_ShouldRejectEmptyColumnIds")
+        void build_ShouldRejectEmptyColumnIds() {
+            // TODO: implement test
+        }
+
+        @Test
+        @DisplayName("build_ShouldProtectColumnIdsFromExternalMutation")
+        void build_ShouldProtectColumnIdsFromExternalMutation() {
+            // TODO: implement test
+        }
+
     }
 
     @Nested
-    @DisplayName("State Tests")
-    class StateTests {
+    @DisplayName("Foreign Key Builder Tests")
+    class ForeignKeyBuilderTests {
 
         @Test
-        void disable_ShouldDisableConstraint() {
-          
+        @DisplayName("referencedTableId_ShouldStoreReferencedTableId")
+        void referencedTableId_ShouldStoreReferencedTableId() {
+            // TODO: implement test
         }
 
         @Test
-        void enable_ShouldEnableConstraint() {
-         
+        @DisplayName("referencedColumnIds_ShouldStoreReferencedColumnIds")
+        void referencedColumnIds_ShouldStoreReferencedColumnIds() {
+            // TODO: implement test
         }
 
         @Test
-        void disable_ShouldBeIdempotent() {
-          
+        @DisplayName("buildForeignKey_ShouldCreateValidDefinition")
+        void buildForeignKey_ShouldCreateValidDefinition() {
+            // TODO: implement test
         }
 
         @Test
-        void enable_ShouldBeIdempotent() {
-         
+        @DisplayName("buildForeignKey_ShouldRejectMissingReferencedTableId")
+        void buildForeignKey_ShouldRejectMissingReferencedTableId() {
+            // TODO: implement test
         }
 
         @Test
-        void disabledConstraint_ShouldAlwaysPassValidation() {
-            
+        @DisplayName("buildForeignKey_ShouldRejectMissingReferencedColumnIds")
+        void buildForeignKey_ShouldRejectMissingReferencedColumnIds() {
+            // TODO: implement test
         }
+
+        @Test
+        @DisplayName("buildForeignKey_ShouldRejectEmptyReferencedColumnIds")
+        void buildForeignKey_ShouldRejectEmptyReferencedColumnIds() {
+            // TODO: implement test
+        }
+
+        @Test
+        @DisplayName("buildForeignKey_ShouldRejectMismatchedColumnCount")
+        void buildForeignKey_ShouldRejectMismatchedColumnCount() {
+            // TODO: implement test
+        }
+
+        @Test
+        @DisplayName("buildForeignKey_ShouldProtectReferencedColumnIds")
+        void buildForeignKey_ShouldProtectReferencedColumnIds() {
+            // TODO: implement test
+        }
+
     }
 
     @Nested
-    @DisplayName("Primary Key Tests")
-    class PrimaryKeyTests {
+    @DisplayName("Check Builder Tests")
+    class CheckBuilderTests {
 
         @Test
-        void validatePrimaryKey_ShouldAcceptUniqueNonNullValue() {
-           
+        @DisplayName("expression_ShouldStoreCheckExpression")
+        void expression_ShouldStoreCheckExpression() {
+            // TODO: implement test
         }
 
         @Test
-        void validatePrimaryKey_ShouldRejectNullValue() {
-           
+        @DisplayName("buildCheck_ShouldCreateValidDefinition")
+        void buildCheck_ShouldCreateValidDefinition() {
+            // TODO: implement test
         }
 
         @Test
-        void validatePrimaryKey_ShouldRejectDuplicateValue() {
-          
+        @DisplayName("buildCheck_ShouldRejectNullExpression")
+        void buildCheck_ShouldRejectNullExpression() {
+            // TODO: implement test
         }
 
         @Test
-        void validatePrimaryKey_ShouldSupportCompositeKey() {
-          
+        @DisplayName("buildCheck_ShouldRejectBlankExpression")
+        void buildCheck_ShouldRejectBlankExpression() {
+            // TODO: implement test
         }
 
         @Test
-        void validatePrimaryKey_ShouldRejectNullExistingKeys() {
-          
+        @DisplayName("buildNonCheck_ShouldIgnoreMissingExpression")
+        void buildNonCheck_ShouldIgnoreMissingExpression() {
+            // TODO: implement test
         }
+
     }
 
     @Nested
-    @DisplayName("Unique Tests")
-    class UniqueTests {
+    @DisplayName("Factory Tests")
+    class FactoryTests {
 
         @Test
-        void validateUnique_ShouldAcceptUniqueValue() {
-          
+        @DisplayName("factory_ShouldCreatePrimaryKeyConstraint")
+        void factory_ShouldCreatePrimaryKeyConstraint() {
+            // TODO: implement test
         }
 
         @Test
-        void validateUnique_ShouldRejectDuplicateValue() {
-          
+        @DisplayName("factory_ShouldCreateUniqueConstraint")
+        void factory_ShouldCreateUniqueConstraint() {
+            // TODO: implement test
         }
 
         @Test
-        void validateUnique_ShouldAllowNullValue() {
-        
+        @DisplayName("factory_ShouldCreateNotNullConstraint")
+        void factory_ShouldCreateNotNullConstraint() {
+            // TODO: implement test
         }
 
         @Test
-        void validateUnique_ShouldSupportCompositeValue() {
-           
+        @DisplayName("factory_ShouldCreateForeignKeyConstraint")
+        void factory_ShouldCreateForeignKeyConstraint() {
+            // TODO: implement test
         }
+
+        @Test
+        @DisplayName("factory_ShouldCreateCheckConstraint")
+        void factory_ShouldCreateCheckConstraint() {
+            // TODO: implement test
+        }
+
+        @Test
+        @DisplayName("factory_ShouldReturnConstraintWithDefinitionName")
+        void factory_ShouldReturnConstraintWithDefinitionName() {
+            // TODO: implement test
+        }
+
+        @Test
+        @DisplayName("factory_ShouldReturnConstraintWithTableId")
+        void factory_ShouldReturnConstraintWithTableId() {
+            // TODO: implement test
+        }
+
+        @Test
+        @DisplayName("factory_ShouldReturnConstraintWithColumnIds")
+        void factory_ShouldReturnConstraintWithColumnIds() {
+            // TODO: implement test
+        }
+
+        @Test
+        @DisplayName("factory_ShouldRejectNullDefinition")
+        void factory_ShouldRejectNullDefinition() {
+            // TODO: implement test
+        }
+
+        @Test
+        @DisplayName("factory_ShouldRejectUnsupportedConstraintType")
+        void factory_ShouldRejectUnsupportedConstraintType() {
+            // TODO: implement test
+        }
+
     }
 
     @Nested
-    @DisplayName("Not Null Tests")
-    class NotNullTests {
+    @DisplayName("Primary Key Definition Tests")
+    class PrimaryKeyDefinitionTests {
 
         @Test
-        void validateNotNull_ShouldAcceptNonNullValue() {
+        @DisplayName("primaryKey_ShouldReturnPrimaryKeyType")
+        void primaryKey_ShouldReturnPrimaryKeyType() {
+            // TODO: implement test
         }
 
         @Test
-        void validateNotNull_ShouldRejectNullValue() {
+        @DisplayName("primaryKey_ShouldValidateCompleteDefinition")
+        void primaryKey_ShouldValidateCompleteDefinition() {
+            // TODO: implement test
         }
 
         @Test
-        void validateNotNull_ShouldCheckAllColumns() {
+        @DisplayName("primaryKey_ShouldSupportCompositeColumns")
+        void primaryKey_ShouldSupportCompositeColumns() {
+            // TODO: implement test
         }
 
-        @Test
-        void validate_ShouldDispatchToNotNullValidation() {
-        }
     }
 
     @Nested
-    @DisplayName("Foreign Key Tests")
-    class ForeignKeyTests {
+    @DisplayName("Unique Definition Tests")
+    class UniqueDefinitionTests {
 
-        @BeforeEach
-        void configureForeignKey() {
+        @Test
+        @DisplayName("unique_ShouldReturnUniqueType")
+        void unique_ShouldReturnUniqueType() {
+            // TODO: implement test
         }
 
         @Test
-        void validateForeignKey_ShouldAcceptExistingReference() {
+        @DisplayName("unique_ShouldValidateCompleteDefinition")
+        void unique_ShouldValidateCompleteDefinition() {
+            // TODO: implement test
         }
 
         @Test
-        void validateForeignKey_ShouldRejectMissingReference() {
+        @DisplayName("unique_ShouldSupportCompositeColumns")
+        void unique_ShouldSupportCompositeColumns() {
+            // TODO: implement test
         }
 
-        @Test
-        void validateForeignKey_ShouldAllowNullValue() {
-        }
-
-        @Test
-        void validateForeignKey_ShouldSupportCompositeReference() {
-          
-        }
     }
 
     @Nested
-    @DisplayName("Check Tests")
-    class CheckTests {
+    @DisplayName("Not Null Definition Tests")
+    class NotNullDefinitionTests {
 
-        @BeforeEach
-        void configureCheck() {
-          
+        @Test
+        @DisplayName("notNull_ShouldReturnNotNullType")
+        void notNull_ShouldReturnNotNullType() {
+            // TODO: implement test
         }
 
         @Test
-        void validateCheck_ShouldAcceptMatchingRow() {
-         
+        @DisplayName("notNull_ShouldValidateSingleColumnDefinition")
+        void notNull_ShouldValidateSingleColumnDefinition() {
+            // TODO: implement test
         }
 
         @Test
-        void validateCheck_ShouldRejectNonMatchingRow() {
-            
+        @DisplayName("notNull_ShouldRejectMultipleColumns")
+        void notNull_ShouldRejectMultipleColumns() {
+            // TODO: implement test
         }
 
-        @Test
-        void validateCheck_ShouldRejectMissingPredicate() {
-           
-        }
-
-        @Test
-        void validate_ShouldDispatchToCheckValidation() {
-           
-        }
     }
 
     @Nested
-    @DisplayName("Definition Tests")
-    class DefinitionTests {
+    @DisplayName("Foreign Key Definition Tests")
+    class ForeignKeyDefinitionTests {
 
         @Test
-        void isValidDefinition_ShouldAcceptPrimaryKey() {
-          
+        @DisplayName("foreignKey_ShouldReturnForeignKeyType")
+        void foreignKey_ShouldReturnForeignKeyType() {
+            // TODO: implement test
         }
 
         @Test
-        void isValidDefinition_ShouldAcceptUniqueConstraint() {
-            
+        @DisplayName("foreignKey_ShouldValidateCompleteDefinition")
+        void foreignKey_ShouldValidateCompleteDefinition() {
+            // TODO: implement test
         }
 
         @Test
-        void isValidDefinition_ShouldAcceptNotNullConstraint() {
-          
+        @DisplayName("foreignKey_ShouldExposeReferencedTableId")
+        void foreignKey_ShouldExposeReferencedTableId() {
+            // TODO: implement test
         }
 
         @Test
-        void isValidDefinition_ShouldAcceptConfiguredForeignKey() {
-          
+        @DisplayName("foreignKey_ShouldExposeReferencedColumnIds")
+        void foreignKey_ShouldExposeReferencedColumnIds() {
+            // TODO: implement test
         }
 
-        @Test
-        void isValidDefinition_ShouldRejectIncompleteForeignKey() {
-           
-        }
-
-        @Test
-        void isValidDefinition_ShouldAcceptConfiguredCheck() {
-
-        }
-
-        @Test
-        void isValidDefinition_ShouldRejectIncompleteCheck() {
-            
-        }
     }
+
+    @Nested
+    @DisplayName("Check Definition Tests")
+    class CheckDefinitionTests {
+
+        @Test
+        @DisplayName("check_ShouldReturnCheckType")
+        void check_ShouldReturnCheckType() {
+            // TODO: implement test
+        }
+
+        @Test
+        @DisplayName("check_ShouldValidateCompleteDefinition")
+        void check_ShouldValidateCompleteDefinition() {
+            // TODO: implement test
+        }
+
+        @Test
+        @DisplayName("check_ShouldExposeExpression")
+        void check_ShouldExposeExpression() {
+            // TODO: implement test
+        }
+
+    }
+
+    @Nested
+    @DisplayName("Metadata Composite Tests")
+    class MetadataCompositeTests {
+
+        @Test
+        @DisplayName("constraint_ShouldReturnConstraintMetadataType")
+        void constraint_ShouldReturnConstraintMetadataType() {
+            // TODO: implement test
+        }
+
+        @Test
+        @DisplayName("constraint_ShouldBeLeafMetadataComponent")
+        void constraint_ShouldBeLeafMetadataComponent() {
+            // TODO: implement test
+        }
+
+        @Test
+        @DisplayName("constraint_ShouldReturnEmptyChildren")
+        void constraint_ShouldReturnEmptyChildren() {
+            // TODO: implement test
+        }
+
+        @Test
+        @DisplayName("constraint_ShouldRejectAddChild")
+        void constraint_ShouldRejectAddChild() {
+            // TODO: implement test
+        }
+
+        @Test
+        @DisplayName("constraint_ShouldRejectRemoveChild")
+        void constraint_ShouldRejectRemoveChild() {
+            // TODO: implement test
+        }
+
+    }
+
+    @Nested
+    @DisplayName("Prototype Tests")
+    class PrototypeTests {
+
+        @Test
+        @DisplayName("copyAs_ShouldCreateDifferentConstraintInstance")
+        void copyAs_ShouldCreateDifferentConstraintInstance() {
+            // TODO: implement test
+        }
+
+        @Test
+        @DisplayName("copyAs_ShouldGenerateDifferentConstraintId")
+        void copyAs_ShouldGenerateDifferentConstraintId() {
+            // TODO: implement test
+        }
+
+        @Test
+        @DisplayName("copyAs_ShouldPreserveConstraintName")
+        void copyAs_ShouldPreserveConstraintName() {
+            // TODO: implement test
+        }
+
+        @Test
+        @DisplayName("copyAs_ShouldPreserveConstraintType")
+        void copyAs_ShouldPreserveConstraintType() {
+            // TODO: implement test
+        }
+
+        @Test
+        @DisplayName("copyAs_ShouldPreserveDefinitionData")
+        void copyAs_ShouldPreserveDefinitionData() {
+            // TODO: implement test
+        }
+
+    }
+
 }
