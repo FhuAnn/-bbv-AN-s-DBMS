@@ -1,12 +1,11 @@
 package factories;
 
+import classes.abstraction.Constraint;
 import classes.metadata.ConstraintDefinition;
-
-import interfaces.IConstraint;
 
 public class DefaultConstraintFactory implements ConstraintFactory {
     @Override
-    public IConstraint create(ConstraintDefinition definition) {
+    public Constraint create(ConstraintDefinition definition) {
         // Implement the logic to create a constraint based on the definition
         return switch (definition.getType()) {
             case PRIMARY_KEY -> createPrimaryKey(definition);
@@ -17,28 +16,28 @@ public class DefaultConstraintFactory implements ConstraintFactory {
         };
     }
 
-    private IConstraint createPrimaryKey(
+    private Constraint createPrimaryKey(
             ConstraintDefinition definition) {
         return null;
     }
 
-    private IConstraint createForeignKey(
+    private Constraint createForeignKey(
             ConstraintDefinition definition) {
 
         return null;
     }
 
-    private IConstraint createUnique(
+    private Constraint createUnique(
             ConstraintDefinition definition) {
         return null;
     }
 
-    private IConstraint createCheck(
+    private Constraint createCheck(
             ConstraintDefinition definition) {
         return null;
     }
 
-    private IConstraint createNotNull(
+    private Constraint createNotNull(
             ConstraintDefinition definition) {
         return null;
     }

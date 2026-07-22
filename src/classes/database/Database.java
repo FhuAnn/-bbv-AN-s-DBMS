@@ -12,13 +12,14 @@ import classes.metadata.Schema;
 import classes.queryprocessor.QueryResult;
 import classes.storageengine.StorageEngine;
 import classes.tx.TransactionManager;
-import enums.DatabaseState;
+import enums.DatabaseStateType;
 import enums.MetadataType;
 import exception.InvalidSchemaException;
 import exception.ReadOnlyDatabaseException;
 import exception.SchemaAlreadyExistsException;
 import exception.SchemaNotEmptyException;
 import exception.SchemaNotFoundException;
+import interfaces.IDatabaseState;
 import interfaces.MetadataComponent;
 
 public class Database extends AbstractMetadataComponent {
@@ -28,8 +29,7 @@ public class Database extends AbstractMetadataComponent {
     private boolean readOnly;
     private final Catalog catalog;
     private final List<Schema> schemas;
-    private DatabaseState state;
-
+    private IDatabaseState state;
     private static final int MAX_NAME_LENGTH = 128;
 
     public Database(String name) {
@@ -40,85 +40,99 @@ public class Database extends AbstractMetadataComponent {
         this.readOnly = false;
         this.catalog = new Catalog();
         this.schemas = new ArrayList<>();
-        this.state = DatabaseState.CLOSED;
+        /*
+         * Trạng thái ban đầu của Database.
+         */
+        this.state = new ClosedDatabaseState();
     }
 
     public void open() {
-        state = DatabaseState.OPEN;
+        state.open(this);
     }
 
     public void close() {
-        state = DatabaseState.CLOSED;
+        state.close(this);
+    }
+
+    public void setReadOnly(boolean readOnly) {
+        state.setReadOnly(this, readOnly);
     }
 
     public void addSchema(Schema schema) {
+        state.addSchema(this, schema);
+    }
+
+    public Schema removeSchema(String schemaName) {
+        return state.removeSchema(
+                this,
+                schemaName);
+    }
+
+    /*
+     * =====================================================
+     * State transition
+     * Concrete State sử dụng method này để thay đổi hành vi
+     * của Database.
+     * =====================================================
+     */
+
+    public void changeState(IDatabaseState newState) {
+        this.state = Objects.requireNonNull(
+                newState,
+                "Database state must not be null");
+    }
+    /*
+     * =====================================================
+     * Internal operations
+     * Chỉ state phù hợp mới được gọi các method này.
+     * =====================================================
+     */
+
+    public void doAddSchema(Schema schema) {
         Objects.requireNonNull(
                 schema,
                 "Schema must not be null");
 
-        if (readOnly) {
-            throw new ReadOnlyDatabaseException(name);
-        }
-
         if (!id.equals(schema.getDatabaseId())) {
-            throw new InvalidSchemaException(
+            throw new IllegalArgumentException(
                     "Schema belongs to another database");
         }
 
         if (containsSchema(schema.getName())) {
-            throw new SchemaAlreadyExistsException(
-                    schema.getName());
+            throw new IllegalArgumentException(
+                    "Duplicate schema name: "
+                            + schema.getName());
         }
 
         schemas.add(schema);
-        catalog.addSchema(schema);
+        // catalog.putSchema(schema);
     }
 
-    public void removeSchema(String schemaName) {
-        if (readOnly) {
-            throw new ReadOnlyDatabaseException(name);
-        }
-
-        validateObjectName(schemaName, "Schema");
-
-        Schema schema = getSchema(schemaName);
-
-        if (!schema.isEmpty()) {
-            throw new SchemaNotEmptyException(schemaName);
-        }
-
-        schemas.remove(schema);
-        catalog.removeSchema(schema.getId());
+    public Schema doRemoveSchema(String schemaName) {
+        return null;
     }
+
+    public void doRename(String newName) {
+
+    }
+
+    /*
+     * =====================================================
+     * Read operations
+     * Những thao tác đọc không cần delegate qua State.
+     * =====================================================
+     */
 
     public Schema getSchema(String schemaName) {
-        validateObjectName(schemaName, "Schema");
-
-        return schemas.stream()
-                .filter(schema -> schema.getName()
-                        .equalsIgnoreCase(schemaName))
-                .findFirst()
-                .orElseThrow(() -> new SchemaNotFoundException(schemaName));
+        return null;
     }
 
     public boolean containsSchema(String schemaName) {
-        if (schemaName == null || schemaName.isBlank()) {
-            return false;
-        }
-
-        return schemas.stream()
-                .anyMatch(schema -> schema.getName()
-                        .equalsIgnoreCase(schemaName));
+        return true;
     }
 
     public List<Schema> getSchemas() {
-        return Collections.unmodifiableList(
-                new ArrayList<>(schemas));
-    }
-    
-
-    public void setReadOnly(boolean readOnly) {
-        this.readOnly = readOnly;
+        return null;
     }
 
     @Override
@@ -128,36 +142,17 @@ public class Database extends AbstractMetadataComponent {
 
     @Override
     public List<MetadataComponent> getChildren() {
-        return List.copyOf(schemas);
+        return null;
     }
 
     @Override
     public void addChild(MetadataComponent child) {
-        if (!(child instanceof Schema schema)) {
-            throw new IllegalArgumentException(
-                    "Database can contain only Schema objects");
-        }
 
-        addSchema(schema);
     }
 
     @Override
     public MetadataComponent removeChild(UUID childId) {
-        Objects.requireNonNull(
-                childId,
-                "Child ID must not be null");
-
-        Schema schema = schemas.stream()
-                .filter(item -> item.getId().equals(childId))
-                .findFirst()
-                .orElse(null);
-
-        if (schema == null) {
-            return null;
-        }
-
-        removeSchema(schema.getName());
-        return schema;
+        return null;
     }
 
     public boolean isReadOnly() {
@@ -168,25 +163,17 @@ public class Database extends AbstractMetadataComponent {
         return catalog;
     }
 
-    public DatabaseState getState() {
-        return state;
-    }
-
-   
-
     private static void validateObjectName(
             String value,
             String objectType) {
 
-        if (value == null) {
-            throw new IllegalArgumentException(
-                    objectType + " name must not be null");
-        }
-
-        if (value.isBlank()) {
-            throw new IllegalArgumentException(
-                    objectType + " name must not be blank");
-        }
     }
 
+    private static void validateSchemaName(
+            String value) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Schema name must not be null or blank");
+        }
+    }
 }
