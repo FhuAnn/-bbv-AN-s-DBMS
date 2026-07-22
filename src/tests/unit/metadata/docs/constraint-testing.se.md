@@ -1,894 +1,1083 @@
+# Constraint Test Sequence Diagrams (65 tests)
 
-## 1. setUp
+Each sequence matches one skeleton test in `ConstraintTests.java`.
+
+## Fixture: setUp
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
+    participant Builder as ConstraintDefinitionBuilder
+    participant Factory as DefaultConstraintFactory
 
-    Test->>Constraint: configure fixture
-    Constraint-->>Test: void
+    Test->>Builder: create builder fixture
+    Test->>Factory: create factory fixture
+    Test->>Test: generate UUID test data
+    Test->>Test: prepare five ConstraintDefinition fixtures
+    Test->>Factory: create five constraint subtype fixtures
 ```
 
-# Constructor Tests
-## 2. constructor_ShouldCreateConstraint
+# Builder Creation Tests
+
+## 1. builder_ShouldCreateBuilder
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
+    participant Target as ConstraintDefinitionBuilder
+    participant Internal as Internal State
 
-    Test->>Constraint: new Constraint("pk_users", PRIMARY_KEY, ["id"])
-    Constraint->>Constraint: validate name, type, and columns
-    Constraint-->>Test: created constraint
-    Test->>Test: assertNotNull(constraint)
+    Test->>Target: configure fields and/or build()
+    Target->>Internal: validate required fields and configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 3. constructor_ShouldGenerateConstraintId
+## 2. constructor_ShouldCreateBuilder
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
-    participant UUID as UUID
+    participant Target as ConstraintDefinitionBuilder
+    participant Internal as Internal State
 
-    Test->>Constraint: new Constraint(...)
-    Constraint->>UUID: randomUUID()
-    UUID-->>Constraint: generatedId
-    Test->>Constraint: getId()
-    Constraint-->>Test: generatedId
-    Test->>Test: assertNotNull(generatedId)
+    Test->>Target: builder() or constructor
+    Target->>Internal: create builder instance
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 4. constructor_ShouldGenerateUniqueConstraintIds
+## 3. builder_ShouldReturnNewBuilderEachTime
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant First as First Constraint
-    participant Second as Second Constraint
-    participant UUID as UUID
+    participant Target as ConstraintDefinitionBuilder
+    participant Internal as Internal State
 
-    Test->>First: new Constraint("pk_users", ...)
-    First->>UUID: randomUUID()
-    UUID-->>First: firstId
-    Test->>Second: new Constraint("uq_users_email", ...)
-    Second->>UUID: randomUUID()
-    UUID-->>Second: secondId
-    Test->>Test: assertNotEquals(firstId, secondId)
+    Test->>Target: configure fields and/or build()
+    Target->>Internal: validate required fields and configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 5. constructor_ShouldInitializeMetadata
+# Required Field Builder Tests
+
+## 4. name_ShouldStoreConstraintName
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
+    participant Target as ConstraintDefinitionBuilder
+    participant Internal as Internal State
 
-    Test->>Constraint: getName()
-    Constraint-->>Test: "pk_users"
-    Test->>Constraint: getType()
-    Constraint-->>Test: PRIMARY_KEY
-    Test->>Constraint: getColumnNames()
-    Constraint-->>Test: ["id"]
+    Test->>Target: configure fields and/or build()
+    Target->>Internal: validate required fields and configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 6. constructor_ShouldEnableConstraintByDefault
+## 5. type_ShouldStoreConstraintType
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
+    participant Target as ConstraintDefinitionBuilder
+    participant Internal as Internal State
 
-    Test->>Constraint: isEnabled()
-    Constraint-->>Test: true
-    Test->>Test: assertTrue(enabled)
+    Test->>Target: configure fields and/or build()
+    Target->>Internal: validate required fields and configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 7. constructor_ShouldRejectInvalidName
+## 6. tableId_ShouldStoreTableId
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
+    participant Target as ConstraintDefinitionBuilder
+    participant Internal as Internal State
 
-    Test->>Constraint: new Constraint(null, UNIQUE, ["email"])
-    Constraint->>Constraint: validateName(null)
-    Constraint-->>Test: throw IllegalArgumentException
-    Test->>Constraint: new Constraint(" ", UNIQUE, ["email"])
-    Constraint->>Constraint: validateName(" ")
-    Constraint-->>Test: throw IllegalArgumentException
+    Test->>Target: configure fields and/or build()
+    Target->>Internal: validate required fields and configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 8. constructor_ShouldRejectNullType
+## 7. columnIds_ShouldStoreColumnIds
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
+    participant Target as ConstraintDefinitionBuilder
+    participant Internal as Internal State
 
-    Test->>Constraint: new Constraint("constraint", null, ["id"])
-    Constraint->>Constraint: validate type
-    Constraint-->>Test: throw IllegalArgumentException
+    Test->>Target: configure fields and/or build()
+    Target->>Internal: validate required fields and configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 9. constructor_ShouldRejectEmptyColumns
+## 8. build_ShouldCreateConstraintDefinition
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
+    participant Target as ConstraintDefinitionBuilder
+    participant Internal as Internal State
 
-    Test->>Constraint: new Constraint("constraint", UNIQUE, [])
-    Constraint->>Constraint: validateColumnNames([])
-    Constraint-->>Test: throw IllegalArgumentException
+    Test->>Target: configure fields and/or build()
+    Target->>Internal: validate required fields and configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-# Metadata Tests
-
-## 10. rename_ShouldChangeConstraintName
+## 9. build_ShouldPreserveRequiredFields
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
+    participant Target as ConstraintDefinitionBuilder
+    participant Internal as Internal State
 
-    Test->>Constraint: execute metadata operation
-    Constraint->>Constraint: validate supplied metadata
-    Constraint->>Constraint: store or return metadata
-    Constraint-->>Test: result or exception
+    Test->>Target: configure fields and/or build()
+    Target->>Internal: validate required fields and configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 11. rename_ShouldRejectInvalidName
+## 10. build_ShouldRejectNullName
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
+    participant Target as ConstraintDefinitionBuilder
+    participant Internal as Internal State
 
-    Test->>Constraint: execute metadata operation
-    Constraint->>Constraint: validate supplied metadata
-    Constraint->>Constraint: store or return metadata
-    Constraint-->>Test: result or exception
+    Test->>Target: configure fields and/or build()
+    Target->>Internal: validate required fields and configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 12. getColumnNames_ShouldReturnUnmodifiableList
+## 11. build_ShouldRejectBlankName
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
+    participant Target as ConstraintDefinitionBuilder
+    participant Internal as Internal State
 
-    Test->>Constraint: execute metadata operation
-    Constraint->>Constraint: validate supplied metadata
-    Constraint->>Constraint: store or return metadata
-    Constraint-->>Test: result or exception
+    Test->>Target: configure fields and/or build()
+    Target->>Internal: validate required fields and configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 13. setReferencedTableId_ShouldStoreId
+## 12. build_ShouldRejectNullType
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
+    participant Target as ConstraintDefinitionBuilder
+    participant Internal as Internal State
 
-    Test->>Constraint: execute metadata operation
-    Constraint->>Constraint: validate supplied metadata
-    Constraint->>Constraint: store or return metadata
-    Constraint-->>Test: result or exception
+    Test->>Target: configure fields and/or build()
+    Target->>Internal: validate required fields and configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 14. setReferencedTableId_ShouldRejectNull
+## 13. build_ShouldRejectNullTableId
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
+    participant Target as ConstraintDefinitionBuilder
+    participant Internal as Internal State
 
-    Test->>Constraint: execute metadata operation
-    Constraint->>Constraint: validate supplied metadata
-    Constraint->>Constraint: store or return metadata
-    Constraint-->>Test: result or exception
+    Test->>Target: configure fields and/or build()
+    Target->>Internal: validate required fields and configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 15. setReferencedColumnNames_ShouldStoreColumns
+## 14. build_ShouldRejectNullColumnIds
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
+    participant Target as ConstraintDefinitionBuilder
+    participant Internal as Internal State
 
-    Test->>Constraint: execute metadata operation
-    Constraint->>Constraint: validate supplied metadata
-    Constraint->>Constraint: store or return metadata
-    Constraint-->>Test: result or exception
+    Test->>Target: configure fields and/or build()
+    Target->>Internal: validate required fields and configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 16. getReferencedColumnNames_ShouldBeUnmodifiable
+## 15. build_ShouldRejectEmptyColumnIds
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
+    participant Target as ConstraintDefinitionBuilder
+    participant Internal as Internal State
 
-    Test->>Constraint: execute metadata operation
-    Constraint->>Constraint: validate supplied metadata
-    Constraint->>Constraint: store or return metadata
-    Constraint-->>Test: result or exception
+    Test->>Target: configure fields and/or build()
+    Target->>Internal: validate required fields and configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 17. setCheckExpression_ShouldStoreExpression
+## 16. build_ShouldProtectColumnIdsFromExternalMutation
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
+    participant Target as ConstraintDefinitionBuilder
+    participant Internal as Internal State
 
-    Test->>Constraint: execute metadata operation
-    Constraint->>Constraint: validate supplied metadata
-    Constraint->>Constraint: store or return metadata
-    Constraint-->>Test: result or exception
+    Test->>Target: configure fields and/or build()
+    Target->>Internal: validate required fields and configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 18. setCheckExpression_ShouldRejectBlankExpression
+# Foreign Key Builder Tests
+
+## 17. referencedTableId_ShouldStoreReferencedTableId
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
+    participant Target as ConstraintDefinitionBuilder
+    participant Internal as Internal State
 
-    Test->>Constraint: execute metadata operation
-    Constraint->>Constraint: validate supplied metadata
-    Constraint->>Constraint: store or return metadata
-    Constraint-->>Test: result or exception
+    Test->>Target: configure fields and/or build()
+    Target->>Internal: validate required fields and configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 19. setCheckPredicate_ShouldRejectNull
+## 18. referencedColumnIds_ShouldStoreReferencedColumnIds
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
+    participant Target as ConstraintDefinitionBuilder
+    participant Internal as Internal State
 
-    Test->>Constraint: execute metadata operation
-    Constraint->>Constraint: validate supplied metadata
-    Constraint->>Constraint: store or return metadata
-    Constraint-->>Test: result or exception
+    Test->>Target: configure fields and/or build()
+    Target->>Internal: validate required fields and configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-# State Tests
-
-## 20. disable_ShouldDisableConstraint
+## 19. buildForeignKey_ShouldCreateValidDefinition
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
+    participant Target as ConstraintDefinitionBuilder
+    participant Internal as Internal State
 
-    Test->>Constraint: change or inspect enabled state
-    Constraint->>Constraint: enabled = requested state
-    Constraint-->>Test: state or validation result
+    Test->>Target: configure fields and/or build()
+    Target->>Internal: validate required fields and configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 21. enable_ShouldEnableConstraint
+## 20. buildForeignKey_ShouldRejectMissingReferencedTableId
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
+    participant Target as ConstraintDefinitionBuilder
+    participant Internal as Internal State
 
-    Test->>Constraint: change or inspect enabled state
-    Constraint->>Constraint: enabled = requested state
-    Constraint-->>Test: state or validation result
+    Test->>Target: configure fields and/or build()
+    Target->>Internal: validate required fields and configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 22. disable_ShouldBeIdempotent
+## 21. buildForeignKey_ShouldRejectMissingReferencedColumnIds
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
+    participant Target as ConstraintDefinitionBuilder
+    participant Internal as Internal State
 
-    Test->>Constraint: change or inspect enabled state
-    Constraint->>Constraint: enabled = requested state
-    Constraint-->>Test: state or validation result
+    Test->>Target: configure fields and/or build()
+    Target->>Internal: validate required fields and configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 23. enable_ShouldBeIdempotent
+## 22. buildForeignKey_ShouldRejectEmptyReferencedColumnIds
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
+    participant Target as ConstraintDefinitionBuilder
+    participant Internal as Internal State
 
-    Test->>Constraint: change or inspect enabled state
-    Constraint->>Constraint: enabled = requested state
-    Constraint-->>Test: state or validation result
+    Test->>Target: configure fields and/or build()
+    Target->>Internal: validate required fields and configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 24. disabledConstraint_ShouldAlwaysPassValidation
+## 23. buildForeignKey_ShouldRejectMismatchedColumnCount
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
+    participant Target as ConstraintDefinitionBuilder
+    participant Internal as Internal State
 
-    Test->>Constraint: change or inspect enabled state
-    Constraint->>Constraint: enabled = requested state
-    Constraint-->>Test: state or validation result
+    Test->>Target: configure fields and/or build()
+    Target->>Internal: validate required fields and configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-# Primary Key Tests
-
-## 25. validatePrimaryKey_ShouldAcceptUniqueNonNullValue
+## 24. buildForeignKey_ShouldProtectReferencedColumnIds
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
-    participant Row as Row
-    participant Existing as Existing Values
+    participant Target as ConstraintDefinitionBuilder
+    participant Internal as Internal State
 
-    Test->>Constraint: validatePrimaryKey(row, existingKeys)
-    Constraint->>Row: getValue for each key column
-    Row-->>Constraint: key values
-    Constraint->>Constraint: reject null components
-    Constraint->>Existing: contains(compositeKey)
-    Existing-->>Constraint: true or false
-    Constraint-->>Test: validation result
+    Test->>Target: configure fields and/or build()
+    Target->>Internal: validate required fields and configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 26. validatePrimaryKey_ShouldRejectNullValue
+# Check Builder Tests
+
+## 25. expression_ShouldStoreCheckExpression
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
-    participant Row as Row
-    participant Existing as Existing Values
+    participant Target as ConstraintDefinitionBuilder
+    participant Internal as Internal State
 
-    Test->>Constraint: validatePrimaryKey(row, existingKeys)
-    Constraint->>Row: getValue for each key column
-    Row-->>Constraint: key values
-    Constraint->>Constraint: reject null components
-    Constraint->>Existing: contains(compositeKey)
-    Existing-->>Constraint: true or false
-    Constraint-->>Test: validation result
+    Test->>Target: configure fields and/or build()
+    Target->>Internal: validate required fields and configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 27. validatePrimaryKey_ShouldRejectDuplicateValue
+## 26. buildCheck_ShouldCreateValidDefinition
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
-    participant Row as Row
-    participant Existing as Existing Values
+    participant Target as ConstraintDefinitionBuilder
+    participant Internal as Internal State
 
-    Test->>Constraint: validatePrimaryKey(row, existingKeys)
-    Constraint->>Row: getValue for each key column
-    Row-->>Constraint: key values
-    Constraint->>Constraint: reject null components
-    Constraint->>Existing: contains(compositeKey)
-    Existing-->>Constraint: true or false
-    Constraint-->>Test: validation result
+    Test->>Target: configure fields and/or build()
+    Target->>Internal: validate required fields and configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 28. validatePrimaryKey_ShouldSupportCompositeKey
+## 27. buildCheck_ShouldRejectNullExpression
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
-    participant Row as Row
-    participant Existing as Existing Values
+    participant Target as ConstraintDefinitionBuilder
+    participant Internal as Internal State
 
-    Test->>Constraint: validatePrimaryKey(row, existingKeys)
-    Constraint->>Row: getValue for each key column
-    Row-->>Constraint: key values
-    Constraint->>Constraint: reject null components
-    Constraint->>Existing: contains(compositeKey)
-    Existing-->>Constraint: true or false
-    Constraint-->>Test: validation result
+    Test->>Target: configure fields and/or build()
+    Target->>Internal: validate required fields and configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 29. validatePrimaryKey_ShouldRejectNullExistingKeys
+## 28. buildCheck_ShouldRejectBlankExpression
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
-    participant Row as Row
-    participant Existing as Existing Values
+    participant Target as ConstraintDefinitionBuilder
+    participant Internal as Internal State
 
-    Test->>Constraint: validatePrimaryKey(row, existingKeys)
-    Constraint->>Row: getValue for each key column
-    Row-->>Constraint: key values
-    Constraint->>Constraint: reject null components
-    Constraint->>Existing: contains(compositeKey)
-    Existing-->>Constraint: true or false
-    Constraint-->>Test: validation result
+    Test->>Target: configure fields and/or build()
+    Target->>Internal: validate required fields and configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-# Unique Tests
-
-## 30. validateUnique_ShouldAcceptUniqueValue
+## 29. buildNonCheck_ShouldIgnoreMissingExpression
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
-    participant Row as Row
-    participant Existing as Existing Values
+    participant Target as ConstraintDefinitionBuilder
+    participant Internal as Internal State
 
-    Test->>Constraint: validateUnique(row, existingValues)
-    Constraint->>Row: getValue for each unique column
-    Row-->>Constraint: values
-    alt Any value is null
-    Constraint-->>Test: true
-    else All values are non-null
-    Constraint->>Existing: contains(values)
-    Existing-->>Constraint: true or false
-    Constraint-->>Test: inverse result
-    end
+    Test->>Target: configure fields and/or build()
+    Target->>Internal: validate required fields and configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 31. validateUnique_ShouldRejectDuplicateValue
+# Factory Tests
+
+## 30. factory_ShouldCreatePrimaryKeyConstraint
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
-    participant Row as Row
-    participant Existing as Existing Values
+    participant Target as DefaultConstraintFactory
+    participant Internal as Internal State
 
-    Test->>Constraint: validateUnique(row, existingValues)
-    Constraint->>Row: getValue for each unique column
-    Row-->>Constraint: values
-    alt Any value is null
-    Constraint-->>Test: true
-    else All values are non-null
-    Constraint->>Existing: contains(values)
-    Existing-->>Constraint: true or false
-    Constraint-->>Test: inverse result
-    end
+    Test->>Target: create(definition)
+    Target->>Internal: select subtype from ConstraintType
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 32. validateUnique_ShouldAllowNullValue
+## 31. factory_ShouldCreateUniqueConstraint
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
-    participant Row as Row
-    participant Existing as Existing Values
+    participant Target as DefaultConstraintFactory
+    participant Internal as Internal State
 
-    Test->>Constraint: validateUnique(row, existingValues)
-    Constraint->>Row: getValue for each unique column
-    Row-->>Constraint: values
-    alt Any value is null
-    Constraint-->>Test: true
-    else All values are non-null
-    Constraint->>Existing: contains(values)
-    Existing-->>Constraint: true or false
-    Constraint-->>Test: inverse result
-    end
+    Test->>Target: create(definition)
+    Target->>Internal: select subtype from ConstraintType
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 33. validateUnique_ShouldSupportCompositeValue
+## 32. factory_ShouldCreateNotNullConstraint
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
-    participant Row as Row
-    participant Existing as Existing Values
+    participant Target as DefaultConstraintFactory
+    participant Internal as Internal State
 
-    Test->>Constraint: validateUnique(row, existingValues)
-    Constraint->>Row: getValue for each unique column
-    Row-->>Constraint: values
-    alt Any value is null
-    Constraint-->>Test: true
-    else All values are non-null
-    Constraint->>Existing: contains(values)
-    Existing-->>Constraint: true or false
-    Constraint-->>Test: inverse result
-    end
+    Test->>Target: create(definition)
+    Target->>Internal: select subtype from ConstraintType
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-# Not Null Tests
-
-## 34. validateNotNull_ShouldAcceptNonNullValue
+## 33. factory_ShouldCreateForeignKeyConstraint
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
-    participant Row as Row
+    participant Target as DefaultConstraintFactory
+    participant Internal as Internal State
 
-    Test->>Constraint: validateNotNull(row)
-    loop Every configured column
-    Constraint->>Row: getValue(columnName)
-    Row-->>Constraint: value
-    end
-    Constraint-->>Test: true when all values are non-null
+    Test->>Target: create(definition)
+    Target->>Internal: select subtype from ConstraintType
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 35. validateNotNull_ShouldRejectNullValue
+## 34. factory_ShouldCreateCheckConstraint
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
-    participant Row as Row
+    participant Target as DefaultConstraintFactory
+    participant Internal as Internal State
 
-    Test->>Constraint: validateNotNull(row)
-    loop Every configured column
-    Constraint->>Row: getValue(columnName)
-    Row-->>Constraint: value
-    end
-    Constraint-->>Test: true when all values are non-null
+    Test->>Target: create(definition)
+    Target->>Internal: select subtype from ConstraintType
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 36. validateNotNull_ShouldCheckAllColumns
+## 35. factory_ShouldReturnConstraintWithDefinitionName
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
-    participant Row as Row
+    participant Target as DefaultConstraintFactory
+    participant Internal as Internal State
 
-    Test->>Constraint: validateNotNull(row)
-    loop Every configured column
-    Constraint->>Row: getValue(columnName)
-    Row-->>Constraint: value
-    end
-    Constraint-->>Test: true when all values are non-null
+    Test->>Target: create(definition)
+    Target->>Internal: select subtype from ConstraintType
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-# Dispatch Tests
-
-## 37. validate_ShouldDispatchToNotNullValidation
+## 36. factory_ShouldReturnConstraintWithTableId
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
-    participant Row as Row
+    participant Target as DefaultConstraintFactory
+    participant Internal as Internal State
 
-    Test->>Constraint: validate(row)
-    Constraint->>Constraint: inspect constraint type
-    Constraint->>Constraint: dispatch to supported validator
-    Constraint-->>Test: validation result or exception
+    Test->>Target: create(definition)
+    Target->>Internal: select subtype from ConstraintType
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-# Fixture Setup
-
-## 38. configureForeignKey
+## 37. factory_ShouldReturnConstraintWithColumnIds
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
+    participant Target as DefaultConstraintFactory
+    participant Internal as Internal State
 
-    Test->>Constraint: configure fixture
-    Constraint-->>Test: void
+    Test->>Target: create(definition)
+    Target->>Internal: select subtype from ConstraintType
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-# Foreign Key Tests
-
-## 39. validateForeignKey_ShouldAcceptExistingReference
+## 38. factory_ShouldRejectNullDefinition
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
-    participant Row as Row
-    participant Referenced as Referenced Values
+    participant Target as DefaultConstraintFactory
+    participant Internal as Internal State
 
-    Test->>Constraint: validateForeignKey(row, referencedValues)
-    Constraint->>Row: getValue for each local column
-    Row-->>Constraint: foreign key values
-    alt Any local value is null
-    Constraint-->>Test: true
-    else All local values exist
-    Constraint->>Referenced: contains(values)
-    Referenced-->>Constraint: true or false
-    Constraint-->>Test: validation result
-    end
+    Test->>Target: create(definition)
+    Target->>Internal: select subtype from ConstraintType
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 40. validateForeignKey_ShouldRejectMissingReference
+## 39. factory_ShouldRejectUnsupportedConstraintType
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
-    participant Row as Row
-    participant Referenced as Referenced Values
+    participant Target as DefaultConstraintFactory
+    participant Internal as Internal State
 
-    Test->>Constraint: validateForeignKey(row, referencedValues)
-    Constraint->>Row: getValue for each local column
-    Row-->>Constraint: foreign key values
-    alt Any local value is null
-    Constraint-->>Test: true
-    else All local values exist
-    Constraint->>Referenced: contains(values)
-    Referenced-->>Constraint: true or false
-    Constraint-->>Test: validation result
-    end
+    Test->>Target: create(definition)
+    Target->>Internal: select subtype from ConstraintType
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 41. validateForeignKey_ShouldAllowNullValue
+# Primary Key Definition Tests
+
+## 40. primaryKey_ShouldReturnPrimaryKeyType
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
-    participant Row as Row
-    participant Referenced as Referenced Values
+    participant Target as Constraint subtype
+    participant Internal as Internal State
 
-    Test->>Constraint: validateForeignKey(row, referencedValues)
-    Constraint->>Row: getValue for each local column
-    Row-->>Constraint: foreign key values
-    alt Any local value is null
-    Constraint-->>Test: true
-    else All local values exist
-    Constraint->>Referenced: contains(values)
-    Referenced-->>Constraint: true or false
-    Constraint-->>Test: validation result
-    end
+    Test->>Target: query metadata or validateDefinition()
+    Target->>Internal: validate subtype-specific configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 42. validateForeignKey_ShouldSupportCompositeReference
+## 41. primaryKey_ShouldValidateCompleteDefinition
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
-    participant Row as Row
-    participant Referenced as Referenced Values
+    participant Target as Constraint subtype
+    participant Internal as Internal State
 
-    Test->>Constraint: validateForeignKey(row, referencedValues)
-    Constraint->>Row: getValue for each local column
-    Row-->>Constraint: foreign key values
-    alt Any local value is null
-    Constraint-->>Test: true
-    else All local values exist
-    Constraint->>Referenced: contains(values)
-    Referenced-->>Constraint: true or false
-    Constraint-->>Test: validation result
-    end
+    Test->>Target: query metadata or validateDefinition()
+    Target->>Internal: validate subtype-specific configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-# Fixture Setup
-
-## 43. configureCheck
+## 42. primaryKey_ShouldSupportCompositeColumns
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
+    participant Target as Constraint subtype
+    participant Internal as Internal State
 
-    Test->>Constraint: configure fixture
-    Constraint-->>Test: void
+    Test->>Target: query metadata or validateDefinition()
+    Target->>Internal: validate subtype-specific configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-# Check Tests
+# Unique Definition Tests
 
-## 44. validateCheck_ShouldAcceptMatchingRow
+## 43. unique_ShouldReturnUniqueType
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
-    participant Predicate as Check Predicate
-    participant Row as Row
+    participant Target as Constraint subtype
+    participant Internal as Internal State
 
-    Test->>Constraint: validateCheck(row)
-    Constraint->>Constraint: ensure predicate exists
-    Constraint->>Predicate: test(row)
-    Predicate->>Row: read required values
-    Row-->>Predicate: values
-    Predicate-->>Constraint: true or false
-    Constraint-->>Test: validation result
+    Test->>Target: query metadata or validateDefinition()
+    Target->>Internal: validate subtype-specific configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 45. validateCheck_ShouldRejectNonMatchingRow
+## 44. unique_ShouldValidateCompleteDefinition
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
-    participant Predicate as Check Predicate
-    participant Row as Row
+    participant Target as Constraint subtype
+    participant Internal as Internal State
 
-    Test->>Constraint: validateCheck(row)
-    Constraint->>Constraint: ensure predicate exists
-    Constraint->>Predicate: test(row)
-    Predicate->>Row: read required values
-    Row-->>Predicate: values
-    Predicate-->>Constraint: true or false
-    Constraint-->>Test: validation result
+    Test->>Target: query metadata or validateDefinition()
+    Target->>Internal: validate subtype-specific configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 46. validateCheck_ShouldRejectMissingPredicate
+## 45. unique_ShouldSupportCompositeColumns
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
-    participant Predicate as Check Predicate
-    participant Row as Row
+    participant Target as Constraint subtype
+    participant Internal as Internal State
 
-    Test->>Constraint: validateCheck(row)
-    Constraint->>Constraint: ensure predicate exists
-    Constraint->>Predicate: test(row)
-    Predicate->>Row: read required values
-    Row-->>Predicate: values
-    Predicate-->>Constraint: true or false
-    Constraint-->>Test: validation result
+    Test->>Target: query metadata or validateDefinition()
+    Target->>Internal: validate subtype-specific configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-# Dispatch Tests
+# Not Null Definition Tests
 
-## 47. validate_ShouldDispatchToCheckValidation
+## 46. notNull_ShouldReturnNotNullType
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
-    participant Row as Row
+    participant Target as Constraint subtype
+    participant Internal as Internal State
 
-    Test->>Constraint: validate(row)
-    Constraint->>Constraint: inspect constraint type
-    Constraint->>Constraint: dispatch to supported validator
-    Constraint-->>Test: validation result or exception
+    Test->>Target: query metadata or validateDefinition()
+    Target->>Internal: validate subtype-specific configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-# Definition Tests
-
-## 48. isValidDefinition_ShouldAcceptPrimaryKey
+## 47. notNull_ShouldValidateSingleColumnDefinition
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
+    participant Target as Constraint subtype
+    participant Internal as Internal State
 
-    Test->>Constraint: isValidDefinition()
-    Constraint->>Constraint: validate common metadata
-    Constraint->>Constraint: validate type-specific metadata
-    Constraint-->>Test: true or false
+    Test->>Target: query metadata or validateDefinition()
+    Target->>Internal: validate subtype-specific configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 49. isValidDefinition_ShouldAcceptUniqueConstraint
+## 48. notNull_ShouldRejectMultipleColumns
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
+    participant Target as Constraint subtype
+    participant Internal as Internal State
 
-    Test->>Constraint: isValidDefinition()
-    Constraint->>Constraint: validate common metadata
-    Constraint->>Constraint: validate type-specific metadata
-    Constraint-->>Test: true or false
+    Test->>Target: query metadata or validateDefinition()
+    Target->>Internal: validate subtype-specific configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 50. isValidDefinition_ShouldAcceptNotNullConstraint
+# Foreign Key Definition Tests
+
+## 49. foreignKey_ShouldReturnForeignKeyType
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
+    participant Target as Constraint subtype
+    participant Internal as Internal State
 
-    Test->>Constraint: isValidDefinition()
-    Constraint->>Constraint: validate common metadata
-    Constraint->>Constraint: validate type-specific metadata
-    Constraint-->>Test: true or false
+    Test->>Target: query metadata or validateDefinition()
+    Target->>Internal: validate subtype-specific configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 51. isValidDefinition_ShouldAcceptConfiguredForeignKey
+## 50. foreignKey_ShouldValidateCompleteDefinition
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
+    participant Target as Constraint subtype
+    participant Internal as Internal State
 
-    Test->>Constraint: isValidDefinition()
-    Constraint->>Constraint: validate common metadata
-    Constraint->>Constraint: validate type-specific metadata
-    Constraint-->>Test: true or false
+    Test->>Target: query metadata or validateDefinition()
+    Target->>Internal: validate subtype-specific configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 52. isValidDefinition_ShouldRejectIncompleteForeignKey
+## 51. foreignKey_ShouldExposeReferencedTableId
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
+    participant Target as Constraint subtype
+    participant Internal as Internal State
 
-    Test->>Constraint: isValidDefinition()
-    Constraint->>Constraint: validate common metadata
-    Constraint->>Constraint: validate type-specific metadata
-    Constraint-->>Test: true or false
+    Test->>Target: query metadata or validateDefinition()
+    Target->>Internal: validate subtype-specific configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 53. isValidDefinition_ShouldAcceptConfiguredCheck
+## 52. foreignKey_ShouldExposeReferencedColumnIds
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
+    participant Target as Constraint subtype
+    participant Internal as Internal State
 
-    Test->>Constraint: isValidDefinition()
-    Constraint->>Constraint: validate common metadata
-    Constraint->>Constraint: validate type-specific metadata
-    Constraint-->>Test: true or false
+    Test->>Target: query metadata or validateDefinition()
+    Target->>Internal: validate subtype-specific configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```
 
-## 54. isValidDefinition_ShouldRejectIncompleteCheck
+# Check Definition Tests
+
+## 53. check_ShouldReturnCheckType
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Test as ConstraintTests
-    participant Constraint as Constraint
+    participant Target as Constraint subtype
+    participant Internal as Internal State
 
-    Test->>Constraint: isValidDefinition()
-    Constraint->>Constraint: validate common metadata
-    Constraint->>Constraint: validate type-specific metadata
-    Constraint-->>Test: true or false
+    Test->>Target: query metadata or validateDefinition()
+    Target->>Internal: validate subtype-specific configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
+```
+
+## 54. check_ShouldValidateCompleteDefinition
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Target as Constraint subtype
+    participant Internal as Internal State
+
+    Test->>Target: query metadata or validateDefinition()
+    Target->>Internal: validate subtype-specific configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
+```
+
+## 55. check_ShouldExposeExpression
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Target as Constraint subtype
+    participant Internal as Internal State
+
+    Test->>Target: query metadata or validateDefinition()
+    Target->>Internal: validate subtype-specific configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
+```
+
+# Metadata Composite Tests
+
+## 56. constraint_ShouldReturnConstraintMetadataType
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Target as Constraint subtype
+    participant Internal as Internal State
+
+    Test->>Target: query metadata or validateDefinition()
+    Target->>Internal: validate subtype-specific configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
+```
+
+## 57. constraint_ShouldBeLeafMetadataComponent
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Target as Constraint subtype
+    participant Internal as Internal State
+
+    Test->>Target: query metadata or validateDefinition()
+    Target->>Internal: validate subtype-specific configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
+```
+
+## 58. constraint_ShouldReturnEmptyChildren
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Target as Constraint subtype
+    participant Internal as Internal State
+
+    Test->>Target: query metadata or validateDefinition()
+    Target->>Internal: validate subtype-specific configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
+```
+
+## 59. constraint_ShouldRejectAddChild
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Target as Constraint subtype
+    participant Internal as Internal State
+
+    Test->>Target: query metadata or validateDefinition()
+    Target->>Internal: validate subtype-specific configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
+```
+
+## 60. constraint_ShouldRejectRemoveChild
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Target as Constraint subtype
+    participant Internal as Internal State
+
+    Test->>Target: query metadata or validateDefinition()
+    Target->>Internal: validate subtype-specific configuration
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
+```
+
+# Prototype Tests
+
+## 61. copyAs_ShouldCreateDifferentConstraintInstance
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Target as Constraint
+    participant Internal as Internal State
+
+    Test->>Target: copyAs()
+    Target->>Internal: deep-copy constraint definition
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
+```
+
+## 62. copyAs_ShouldGenerateDifferentConstraintId
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Target as Constraint
+    participant Internal as Internal State
+
+    Test->>Target: copyAs()
+    Target->>Internal: deep-copy constraint definition
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
+```
+
+## 63. copyAs_ShouldPreserveConstraintName
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Target as Constraint
+    participant Internal as Internal State
+
+    Test->>Target: copyAs()
+    Target->>Internal: deep-copy constraint definition
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
+```
+
+## 64. copyAs_ShouldPreserveConstraintType
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Target as Constraint
+    participant Internal as Internal State
+
+    Test->>Target: copyAs()
+    Target->>Internal: deep-copy constraint definition
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
+```
+
+## 65. copyAs_ShouldPreserveDefinitionData
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Test as ConstraintTests
+    participant Target as Constraint
+    participant Internal as Internal State
+
+    Test->>Target: copyAs()
+    Target->>Internal: deep-copy constraint definition
+    Internal-->>Target: result
+    Target-->>Test: object, value, or exception
+    Test->>Test: verify expected behavior
 ```

@@ -3,13 +3,13 @@ package classes.metadata;
 import java.util.List;
 import java.util.UUID;
 
+import classes.abstraction.AbstractMetadataComponent;
+import classes.abstraction.Constraint;
 import enums.ConstraintType;
-import interfaces.IConstraint;
 
-public class ForeignKeyConstraint implements IConstraint {
 
-    private final UUID id;
-    private final String name;
+public class ForeignKeyConstraint extends Constraint {
+
     private final UUID tableId;
     private final List<UUID> columnIds;
     private final UUID referencedTableId;
@@ -21,8 +21,6 @@ public class ForeignKeyConstraint implements IConstraint {
             List<UUID> columnIds,
             UUID referencedTableId,
             List<UUID> referencedColumnIds) {
-        this.id = UUID.randomUUID();
-        this.name = name;
         this.tableId = tableId;
         this.columnIds = columnIds == null
                 ? List.of()
@@ -31,17 +29,6 @@ public class ForeignKeyConstraint implements IConstraint {
         this.referencedColumnIds = referencedColumnIds == null
                 ? List.of()
                 : List.copyOf(referencedColumnIds);
-    }
-
-    @Override
-    public UUID getId() {
-        return null;
-    }
-
-    @Override
-    public String getName() {
-        return null;
-
     }
 
     public UUID getTableId() {
@@ -65,12 +52,13 @@ public class ForeignKeyConstraint implements IConstraint {
     }
 
     @Override
+    public boolean validateDefinition() {
+        return false;
+    }
+
+    @Override
     public ConstraintType getType() {
         return ConstraintType.FOREIGN_KEY;
     }
 
-    @Override
-    public boolean validateDefinition() {
-        return false;
-    }
 }

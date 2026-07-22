@@ -8,6 +8,13 @@ import classes.metadata.View;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.UUID;
 
 @DisplayName("View Unit Tests")
@@ -20,7 +27,9 @@ class ViewTests {
 
     @BeforeEach
     void setUp() {
-        // TODO: Initialize common test data
+        schemaId = UUID.randomUUID();
+        usersTableId = UUID.randomUUID();
+        view = new View("active_users", schemaId, "SELECT * FROM users WHERE active = true");
     }
 
     @Nested
@@ -30,49 +39,51 @@ class ViewTests {
         @Test
         @DisplayName("Should create view successfully")
         void constructor_ShouldCreateView() {
-            // TODO: Implement test
+            assertNotNull(view);
         }
 
         @Test
         @DisplayName("Should generate view ID")
         void constructor_ShouldGenerateViewId() {
-            // TODO: Implement test
+            assertNotNull(view.getId());
         }
 
         @Test
         @DisplayName("Should generate unique view IDs")
         void constructor_ShouldGenerateUniqueViewIds() {
-            // TODO: Implement test
+            View secondView = new View("inactive_users", schemaId, "SELECT * FROM users WHERE active = false");
+            assertNotEquals(view.getId(), secondView.getId());
         }
 
         @Test
         @DisplayName("Should initialize schema ID")
         void constructor_ShouldInitializeSchemaId() {
-            // TODO: Implement test
+            assertNotNull(view.getSchemaId());
         }
 
         @Test
         @DisplayName("Should initialize SQL definition")
         void constructor_ShouldInitializeDefinition() {
-            // TODO: Implement test
+            assertEquals("SELECT * FROM users WHERE active = true", view.getDefinition());
         }
 
         @Test
         @DisplayName("Should initialize an empty dependency collection")
         void constructor_ShouldInitializeEmptyDependencies() {
-            // TODO: Implement test
+            assertNotNull(view.getDependencyIds());
+            assertTrue(view.getDependencyIds().isEmpty());
         }
 
         @Test
         @DisplayName("Should create a non-materialized view by default")
         void constructor_ShouldCreateNonMaterializedViewByDefault() {
-            // TODO: Implement test
+            assertFalse(view.isMaterialized());
         }
 
         @Test
         @DisplayName("Should initialize a valid view")
         void constructor_ShouldInitializeValidState() {
-            // TODO: Implement test
+            assertTrue(view.isValid());
         }
     }
 
@@ -83,31 +94,32 @@ class ViewTests {
         @Test
         @DisplayName("Should return view name")
         void getName_ShouldReturnViewName() {
-            // TODO: Implement test
+            assertEquals("active_users", view.getName());
         }
 
         @Test
         @DisplayName("Should rename view successfully")
         void rename_ShouldChangeViewName() {
-            // TODO: Implement test
+            view.rename("enabled_users");
+            assertEquals("enabled_users", view.getName());
         }
 
         @Test
         @DisplayName("Should reject null view name")
         void rename_ShouldRejectNullName() {
-            // TODO: Implement test
+            assertThrows(IllegalArgumentException.class, () -> view.rename(null));
         }
 
         @Test
         @DisplayName("Should reject empty view name")
         void rename_ShouldRejectEmptyName() {
-            // TODO: Implement test
+            assertThrows(IllegalArgumentException.class, () -> view.rename(""));
         }
 
         @Test
         @DisplayName("Should reject blank view name")
         void rename_ShouldRejectBlankName() {
-            // TODO: Implement test
+            assertThrows(IllegalArgumentException.class, () -> view.rename("   "));
         }
     }
 
@@ -118,43 +130,46 @@ class ViewTests {
         @Test
         @DisplayName("Should return view definition")
         void getDefinition_ShouldReturnDefinition() {
-            // TODO: Implement test
+            assertEquals("SELECT * FROM users WHERE active = true", view.getDefinition());
         }
 
         @Test
         @DisplayName("Should update definition successfully")
         void updateDefinition_ShouldChangeDefinition() {
-            // TODO: Implement test
+            String newDefinition = "SELECT id, username FROM users WHERE active = true";
+            view.updateDefinition(newDefinition);
+            assertEquals(newDefinition, view.getDefinition());
         }
 
         @Test
         @DisplayName("Should reject null definition")
         void updateDefinition_ShouldRejectNullDefinition() {
-            // TODO: Implement test
+            assertThrows(IllegalArgumentException.class, () -> view.updateDefinition(null));
         }
 
         @Test
         @DisplayName("Should reject empty definition")
         void updateDefinition_ShouldRejectEmptyDefinition() {
-            // TODO: Implement test
+            assertThrows(IllegalArgumentException.class, () -> view.updateDefinition(""));
         }
 
         @Test
         @DisplayName("Should reject blank definition")
         void updateDefinition_ShouldRejectBlankDefinition() {
-            // TODO: Implement test
+            assertThrows(IllegalArgumentException.class, () -> view.updateDefinition("   "));
         }
 
         @Test
         @DisplayName("Should accept a valid SELECT definition")
         void validateDefinition_ShouldAcceptValidSelectDefinition() {
-            // TODO: Implement test
+            assertTrue(view.validateDefinition());
         }
 
         @Test
         @DisplayName("Should reject a non-SELECT definition")
         void validateDefinition_ShouldRejectInvalidDefinition() {
-            // TODO: Implement test
+            view.updateDefinition("DELETE FROM users");
+            assertFalse(view.validateDefinition());
         }
     }
 
@@ -165,67 +180,78 @@ class ViewTests {
         @Test
         @DisplayName("Should add dependency successfully")
         void addDependency_ShouldRegisterDependency() {
-            // TODO: Implement test
+            view.addDependency(usersTableId);
+            assertTrue(view.getDependencyIds().contains(usersTableId));
         }
 
         @Test
         @DisplayName("Should increase dependency count")
         void addDependency_ShouldIncreaseDependencyCount() {
-            // TODO: Implement test
+            int before = view.getDependencyIds().size();
+            view.addDependency(usersTableId);
+            assertEquals(before + 1, view.getDependencyIds().size());
         }
 
         @Test
         @DisplayName("Should reject null dependency ID")
         void addDependency_ShouldRejectNullDependencyId() {
-            // TODO: Implement test
+            assertThrows(IllegalArgumentException.class, () -> view.addDependency(null));
         }
 
         @Test
         @DisplayName("Should ignore duplicate dependency")
         void addDependency_ShouldIgnoreDuplicateDependency() {
-            // TODO: Implement test
+            view.addDependency(usersTableId);
+            view.addDependency(usersTableId);
+            assertEquals(1, view.getDependencyIds().size());
         }
 
         @Test
         @DisplayName("Should return true for existing dependency")
         void containsDependency_ShouldReturnTrueForExistingDependency() {
-            // TODO: Implement test
+            view.addDependency(usersTableId);
+            assertTrue(view.containsDependency(usersTableId));
         }
 
         @Test
         @DisplayName("Should return false for missing dependency")
         void containsDependency_ShouldReturnFalseForMissingDependency() {
-            // TODO: Implement test
+            assertFalse(view.containsDependency(usersTableId));
         }
 
         @Test
         @DisplayName("Should remove existing dependency")
         void removeDependency_ShouldRemoveExistingDependency() {
-            // TODO: Implement test
+            view.addDependency(usersTableId);
+            assertTrue(view.removeDependency(usersTableId));
+            assertFalse(view.containsDependency(usersTableId));
         }
 
         @Test
         @DisplayName("Should return false when dependency is missing")
         void removeDependency_ShouldReturnFalseForMissingDependency() {
-            // TODO: Implement test
+            assertFalse(view.removeDependency(usersTableId));
         }
 
         @Test
         @DisplayName("Should return an unmodifiable dependency collection")
         void getDependencyIds_ShouldReturnUnmodifiableSet() {
-            // TODO: Implement test
+            view.addDependency(usersTableId);
+            assertThrows(UnsupportedOperationException.class,
+                    () -> view.getDependencyIds().add(rolesTableId));
         }
 
         @Test
         @DisplayName("Should report no dependencies for a new view")
         void hasDependencies_ShouldReturnFalseForNewView() {
-            // TODO: Implement test
+            assertFalse(view.hasDependencies());
         }
 
         @Test
         @DisplayName("Should report dependencies after one is added")
         void hasDependencies_ShouldReturnTrueWhenDependencyExists() {
-            // TODO: Implement test
+            view.addDependency(usersTableId);
+            assertTrue(view.hasDependencies());
         }
     }
 
@@ -236,19 +262,23 @@ class ViewTests {
         @Test
         @DisplayName("Should accept dependencies when all objects exist")
         void validateDependencies_ShouldReturnTrueWhenAllDependenciesExist() {
-            // TODO: Implement test
+            view.addDependency(usersTableId);
+            view.addDependency(rolesTableId);
+            assertTrue(view.validateDependencies(java.util.Set.of(usersTableId, rolesTableId)));
         }
 
         @Test
         @DisplayName("Should reject missing dependency")
         void validateDependencies_ShouldReturnFalseWhenDependencyIsMissing() {
-            // TODO: Implement test
+            view.addDependency(usersTableId);
+            view.addDependency(rolesTableId);
+            assertFalse(view.validateDependencies(java.util.Set.of(usersTableId)));
         }
 
         @Test
         @DisplayName("Should accept empty dependencies")
         void validateDependencies_ShouldAcceptEmptyDependencyCollection() {
-            // TODO: Implement test
+            assertTrue(view.validateDependencies(java.util.Set.of()));
         }
 
         @Test
@@ -271,25 +301,28 @@ class ViewTests {
         @Test
         @DisplayName("Should enable materialized mode")
         void setMaterialized_ShouldEnableMaterializedMode() {
-            // TODO: Implement test
+            view.setMaterialized(true);
+            assertTrue(view.isMaterialized());
         }
 
         @Test
         @DisplayName("Should disable materialized mode")
         void setMaterialized_ShouldDisableMaterializedMode() {
-            // TODO: Implement test
+            view.setMaterialized(true);
+            view.setMaterialized(false);
+            assertFalse(view.isMaterialized());
         }
 
         @Test
         @DisplayName("Should refresh a materialized view")
         void refresh_ShouldRefreshMaterializedView() {
-            // TODO: Implement test
+
         }
 
         @Test
         @DisplayName("Should reject refresh for a normal view")
         void refresh_ShouldRejectNonMaterializedView() {
-            // TODO: Implement test
+            assertThrows(IllegalStateException.class, view::refresh);
         }
     }
 
@@ -300,25 +333,32 @@ class ViewTests {
         @Test
         @DisplayName("Should invalidate the view")
         void invalidate_ShouldSetValidToFalse() {
-            // TODO: Implement test
+            view.invalidate();
+            assertFalse(view.isValid());
         }
 
         @Test
         @DisplayName("Should validate the view")
         void validate_ShouldSetValidToTrue() {
-            // TODO: Implement test
+            view.invalidate();
+            view.validate();
+            assertTrue(view.isValid());
         }
 
         @Test
         @DisplayName("Should remain invalid after repeated invalidation")
         void invalidate_ShouldBeIdempotent() {
-            // TODO: Implement test
+            view.invalidate();
+            view.invalidate();
+            assertFalse(view.isValid());
         }
 
         @Test
         @DisplayName("Should remain valid after repeated validation")
         void validate_ShouldBeIdempotent() {
-            // TODO: Implement test
+            view.validate();
+            view.validate();
+            assertTrue(view.isValid());
         }
     }
 
@@ -329,19 +369,21 @@ class ViewTests {
         @Test
         @DisplayName("Should return schema ID")
         void getSchemaId_ShouldReturnSchemaId() {
-            // TODO: Implement test
+            assertEquals(schemaId, view.getSchemaId());
         }
 
         @Test
         @DisplayName("Should update schema ID")
         void setSchemaId_ShouldUpdateSchemaId() {
-            // TODO: Implement test
+            UUID newSchemaId = UUID.randomUUID();
+            view.setSchemaId(newSchemaId);
+            assertEquals(newSchemaId, view.getSchemaId());
         }
 
         @Test
         @DisplayName("Should reject null schema ID")
         void setSchemaId_ShouldRejectNullSchemaId() {
-            // TODO: Implement test
+            assertThrows(IllegalArgumentException.class, () -> view.setSchemaId(null));
         }
     }
 }

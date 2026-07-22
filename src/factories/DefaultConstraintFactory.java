@@ -1,14 +1,7 @@
 package factories;
 
-import java.util.List;
-import java.util.UUID;
-
-import classes.metadata.CheckConstraint;
 import classes.metadata.ConstraintDefinition;
-import classes.metadata.ForeignKeyConstraint;
-import classes.metadata.NotNullConstraint;
-import classes.metadata.PrimaryKeyConstraint;
-import classes.metadata.UniqueConstraint;
+
 import interfaces.IConstraint;
 
 public class DefaultConstraintFactory implements ConstraintFactory {
@@ -29,7 +22,7 @@ public class DefaultConstraintFactory implements ConstraintFactory {
         return null;
     }
 
-    private IConstraint createForeignKey(   
+    private IConstraint createForeignKey(
             ConstraintDefinition definition) {
 
         return null;
@@ -37,7 +30,7 @@ public class DefaultConstraintFactory implements ConstraintFactory {
 
     private IConstraint createUnique(
             ConstraintDefinition definition) {
-      return null;
+        return null;
     }
 
     private IConstraint createCheck(

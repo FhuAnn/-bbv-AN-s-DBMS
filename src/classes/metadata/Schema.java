@@ -80,15 +80,15 @@ public class Schema extends AbstractMetadataComponent implements MetadataPrototy
     }
 
     public void setTables(List<Table> tables) {
-        Objects.requireNonNull(
-                tables,
-                "Tables must not be null");
+        // Objects.requireNonNull(
+        //         tables,
+        //         "Tables must not be null");
 
-        this.tables.clear();
+        // this.tables.clear();
 
-        for (Table table : tables) {
-            addTable(table);
-        }
+        // for (Table table : tables) {
+        //     addTable(table);
+        // }
     }
 
     public List<View> getViews() {
@@ -97,63 +97,66 @@ public class Schema extends AbstractMetadataComponent implements MetadataPrototy
     }
 
     public void setViews(List<View> views) {
-        Objects.requireNonNull(
-                views,
-                "Views must not be null");
+        // Objects.requireNonNull(
+        //         views,
+        //         "Views must not be null");
 
-        this.views.clear();
+        // this.views.clear();
 
-        for (View view : views) {
-            addView(view);
-        }
+        // for (View view : views) {
+        //     addView(view);
+        // }
     }
 
     public void addTable(Table table) {
-        Objects.requireNonNull(
-                table,
-                "Table must not be null");
+        // Objects.requireNonNull(
+        //         table,
+        //         "Table must not be null");
 
-        if (!id.equals(table.getSchemaId())) {
-            throw new IllegalArgumentException(
-                    "Table belongs to another schema");
-        }
+        // if (!id.equals(table.getSchemaId())) {
+        //     throw new IllegalArgumentException(
+        //             "Table belongs to another schema");
+        // }
 
-        if (containsTable(table.getName())) {
-            throw new IllegalArgumentException(
-                    "Duplicate table: " + table.getName());
-        }
+        // if (containsTable(table.getName())) {
+        //     throw new IllegalArgumentException(
+        //             "Duplicate table: " + table.getName());
+        // }
 
-        tables.add(table);
+        // tables.add(table);
     }
 
     public Table getTable(String tableName) {
-        validateName(tableName);
+        // validateName(tableName);
 
-        return tables.stream()
-                .filter(table -> table.getName()
-                        .equalsIgnoreCase(tableName))
-                .findFirst()
-                .orElse(null);
+        // return tables.stream()
+        //         .filter(table -> table.getName()
+        //                 .equalsIgnoreCase(tableName))
+        //         .findFirst()
+        //         .orElse(null);
+        return null;
     }
 
     public boolean containsTable(String tableName) {
-        if (tableName == null || tableName.isBlank()) {
-            return false;
-        }
+        // if (tableName == null || tableName.isBlank()) {
+        //     return false;
+        // }
 
-        return tables.stream()
-                .anyMatch(table -> table.getName()
-                        .equalsIgnoreCase(tableName));
+        // return tables.stream()
+        //         .anyMatch(table -> table.getName()
+        //                 .equalsIgnoreCase(tableName));
+        return true;
     }
 
     public Table removeTable(String tableName) {
-        Table table = getTable(tableName);
+        // Table table = getTable(tableName);
 
-        if (table != null) {
-            tables.remove(table);
-        }
+        // if (table != null) {
+        //     tables.remove(table);
+        // }
 
-        return table;
+        // return table;
+        return null;
     }
 
     public void addView(View view) {

@@ -5,8 +5,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import classes.abstraction.Constraint;
 import classes.metadata.ColumnMetadata;
-import classes.metadata.Constraint;
 import classes.metadata.Index;
 import classes.metadata.Row;
 import classes.metadata.Table;
@@ -97,14 +97,14 @@ class TableTests {
         void constructor_ShouldInitializeEmptyConstraints() {
             assertNotNull(table.getConstraints());
             assertTrue(table.getConstraints().isEmpty());
-            assertEquals(0, table.getConstraintCount());
+            assertEquals(0, table.getConstraints().size());
         }
 
         @Test
         void constructor_ShouldInitializeEmptyIndexes() {
             assertNotNull(table.getIndexes());
             assertTrue(table.getIndexes().isEmpty());
-            assertEquals(0, table.getIndexCount());
+            assertEquals(0, table.getIndexes().size());
         }
     }
 
@@ -349,7 +349,7 @@ class TableTests {
             table.truncate();
 
             assertTrue(table.getRows().isEmpty());
-            assertEquals(0, table.getRowCount());
+            assertEquals(0, table.getRows().size());
         }
 
         @Test
@@ -413,7 +413,7 @@ class TableTests {
 
             assertSame(primaryKey, removed);
             assertFalse(table.containsConstraint("pk_users"));
-            assertEquals(0, table.getConstraintCount());
+            assertEquals(0, table.getConstraints().size());
         }
 
         @Test

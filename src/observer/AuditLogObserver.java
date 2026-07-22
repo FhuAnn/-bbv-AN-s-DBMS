@@ -7,10 +7,10 @@ public final class AuditLogObserver implements IMetadataObserver {
 
     @Override
     public void onMetadataChanged(MetadataEvent event) {
-        entries.add(event.occurredAt() + " "
-                + event.eventType() + " "
-                + event.metadataType() + " "
-                + event.metadataName());
+        // entries.add(event.occurredAt() + " "
+        //         + event.eventType() + " "
+        //         + event.metadataType() + " "
+        //         + event.metadataName());
     }
 
     public List<String> getEntries() {
