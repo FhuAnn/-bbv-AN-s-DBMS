@@ -42,8 +42,7 @@ class DatabaseTests {
         return new Schema(
                 name,
                 database.getId(),
-                ownerId
-        );
+                ownerId);
     }
 
     // =========================================================
@@ -81,8 +80,7 @@ class DatabaseTests {
 
             assertNotEquals(
                     firstDatabase.getId(),
-                    secondDatabase.getId()
-            );
+                    secondDatabase.getId());
         }
 
         @Test
@@ -123,8 +121,7 @@ class DatabaseTests {
         void constructor_ShouldRejectNullName() {
             assertThrows(
                     IllegalArgumentException.class,
-                    () -> new Database(null)
-            );
+                    () -> new Database(null));
         }
 
         @Test
@@ -132,8 +129,7 @@ class DatabaseTests {
         void constructor_ShouldRejectEmptyName() {
             assertThrows(
                     IllegalArgumentException.class,
-                    () -> new Database("")
-            );
+                    () -> new Database(""));
         }
 
         @Test
@@ -141,8 +137,7 @@ class DatabaseTests {
         void constructor_ShouldRejectBlankName() {
             assertThrows(
                     IllegalArgumentException.class,
-                    () -> new Database("   ")
-            );
+                    () -> new Database("   "));
         }
 
         @Test
@@ -151,8 +146,7 @@ class DatabaseTests {
             String invalidName = "a".repeat(129);
             assertThrows(
                     IllegalArgumentException.class,
-                    () -> new Database(invalidName)
-            );
+                    () -> new Database(invalidName));
         }
 
         @Test
@@ -270,8 +264,7 @@ class DatabaseTests {
         void addSchema_ShouldRejectNullSchema() {
             assertThrows(
                     IllegalArgumentException.class,
-                    () -> database.addSchema(null)
-            );
+                    () -> database.addSchema(null));
         }
 
         @Test
@@ -284,8 +277,7 @@ class DatabaseTests {
 
             assertThrows(
                     SchemaAlreadyExistsException.class,
-                    () -> database.addSchema(duplicateSchema)
-            );
+                    () -> database.addSchema(duplicateSchema));
 
             assertEquals(1, database.getSchemas().size());
         }
@@ -296,13 +288,11 @@ class DatabaseTests {
             Schema schema = new Schema(
                     "sales",
                     UUID.randomUUID(),
-                    ownerId
-            );
+                    ownerId);
 
             assertThrows(
                     InvalidSchemaException.class,
-                    () -> database.addSchema(schema)
-            );
+                    () -> database.addSchema(schema));
         }
 
         @Test
@@ -321,8 +311,7 @@ class DatabaseTests {
         void getSchema_ShouldThrowWhenSchemaDoesNotExist() {
             assertThrows(
                     SchemaNotFoundException.class,
-                    () -> database.getSchema("unknown")
-            );
+                    () -> database.getSchema("unknown"));
         }
 
         @Test
@@ -370,8 +359,7 @@ class DatabaseTests {
         void removeSchema_ShouldThrowWhenSchemaNotFound() {
             assertThrows(
                     SchemaNotFoundException.class,
-                    () -> database.removeSchema("unknown")
-            );
+                    () -> database.removeSchema("unknown"));
         }
 
         @Test
@@ -379,8 +367,7 @@ class DatabaseTests {
         void removeSchema_ShouldRejectNullName() {
             assertThrows(
                     IllegalArgumentException.class,
-                    () -> database.removeSchema(null)
-            );
+                    () -> database.removeSchema(null));
         }
 
         @Test
@@ -388,8 +375,7 @@ class DatabaseTests {
         void removeSchema_ShouldRejectBlankName() {
             assertThrows(
                     IllegalArgumentException.class,
-                    () -> database.removeSchema(" ")
-            );
+                    () -> database.removeSchema(" "));
         }
 
         @Test
@@ -400,8 +386,7 @@ class DatabaseTests {
 
             Table table = new Table(
                     "orders",
-                    schema.getId()
-            );
+                    schema.getId());
 
             schema.addTable(table);
             database.addSchema(schema);
@@ -409,8 +394,7 @@ class DatabaseTests {
             // Act
             SchemaNotEmptyException exception = assertThrows(
                     SchemaNotEmptyException.class,
-                    () -> database.removeSchema("sales")
-            );
+                    () -> database.removeSchema("sales"));
 
             // Assert
             assertNotNull(exception);
@@ -454,8 +438,7 @@ class DatabaseTests {
 
             assertThrows(
                     ReadOnlyDatabaseException.class,
-                    () -> database.addSchema(schema)
-            );
+                    () -> database.addSchema(schema));
 
             assertFalse(database.containsSchema("sales"));
         }
@@ -470,8 +453,7 @@ class DatabaseTests {
 
             assertThrows(
                     ReadOnlyDatabaseException.class,
-                    () -> database.removeSchema("sales")
-            );
+                    () -> database.removeSchema("sales"));
 
             assertTrue(database.containsSchema("sales"));
         }
@@ -509,8 +491,7 @@ class DatabaseTests {
         void rename_ShouldRejectNullName() {
             assertThrows(
                     IllegalArgumentException.class,
-                    () -> database.rename(null)
-            );
+                    () -> database.rename(null));
 
             assertEquals("shop_db", database.getName());
         }
@@ -520,8 +501,7 @@ class DatabaseTests {
         void rename_ShouldRejectBlankName() {
             assertThrows(
                     IllegalArgumentException.class,
-                    () -> database.rename("   ")
-            );
+                    () -> database.rename("   "));
 
             assertEquals("shop_db", database.getName());
         }
@@ -533,8 +513,7 @@ class DatabaseTests {
 
             assertThrows(
                     IllegalArgumentException.class,
-                    () -> database.rename(invalidName)
-            );
+                    () -> database.rename(invalidName));
 
             assertEquals("shop_db", database.getName());
         }
@@ -546,8 +525,7 @@ class DatabaseTests {
 
             assertThrows(
                     ReadOnlyDatabaseException.class,
-                    () -> database.rename("new_name")
-            );
+                    () -> database.rename("new_name"));
 
             assertEquals("shop_db", database.getName());
         }
@@ -570,8 +548,7 @@ class DatabaseTests {
 
             assertThrows(
                     UnsupportedOperationException.class,
-                    () -> schemas.add(createSchema("report"))
-            );
+                    () -> schemas.add(createSchema("report")));
         }
 
         @Test
@@ -583,8 +560,7 @@ class DatabaseTests {
 
             assertThrows(
                     UnsupportedOperationException.class,
-                    schemas::clear
-            );
+                    schemas::clear);
 
             assertEquals(1, database.getSchemas().size());
             assertTrue(database.containsSchema("sales"));
@@ -609,15 +585,13 @@ class DatabaseTests {
             assertTrue(
                     database.getCatalog()
                             .getSchemas()
-                            .containsKey(schema.getId())
-            );
+                            .containsKey(schema.getId()));
 
             assertSame(
                     schema,
                     database.getCatalog()
                             .getSchemas()
-                            .get(schema.getId())
-            );
+                            .get(schema.getId()));
         }
 
         @Test
@@ -631,8 +605,7 @@ class DatabaseTests {
             assertFalse(
                     database.getCatalog()
                             .getSchemas()
-                            .containsKey(schema.getId())
-            );
+                            .containsKey(schema.getId()));
         }
 
         @Test
@@ -643,8 +616,7 @@ class DatabaseTests {
 
             assertEquals(
                     database.getSchemas().size(),
-                    database.getCatalog().getSchemas().size()
-            );
+                    database.getCatalog().getSchemas().size());
         }
     }
 
@@ -661,8 +633,7 @@ class DatabaseTests {
         void concurrentOpen_ShouldMaintainDatabaseState() throws Exception {
             int threadCount = 10;
 
-            ExecutorService executor =
-                    Executors.newFixedThreadPool(threadCount);
+            ExecutorService executor = Executors.newFixedThreadPool(threadCount);
 
             CountDownLatch startLatch = new CountDownLatch(1);
 
@@ -685,8 +656,9 @@ class DatabaseTests {
 
                 assertEquals(
                         DatabaseStateType.OPEN,
-                        database.getState()
-                );
+
+                        database.getState());
+
             } finally {
                 executor.shutdownNow();
             }
@@ -700,15 +672,12 @@ class DatabaseTests {
             Schema schema = createSchema("sales");
             database.addSchema(schema);
 
-            ExecutorService executor =
-                    Executors.newFixedThreadPool(2);
+            ExecutorService executor = Executors.newFixedThreadPool(2);
 
             try {
-                Future<Schema> firstResult =
-                        executor.submit(() -> database.getSchema("sales"));
+                Future<Schema> firstResult = executor.submit(() -> database.getSchema("sales"));
 
-                Future<Schema> secondResult =
-                        executor.submit(() -> database.getSchema("sales"));
+                Future<Schema> secondResult = executor.submit(() -> database.getSchema("sales"));
 
                 assertSame(schema, firstResult.get());
                 assertSame(schema, secondResult.get());
@@ -723,8 +692,7 @@ class DatabaseTests {
         void concurrentSchemaCreation_ShouldPreventDuplicateSchema()
                 throws Exception {
 
-            ExecutorService executor =
-                    Executors.newFixedThreadPool(2);
+            ExecutorService executor = Executors.newFixedThreadPool(2);
 
             CountDownLatch startLatch = new CountDownLatch(1);
 
@@ -797,13 +765,11 @@ class DatabaseTests {
 
             Table table = new Table(
                     "orders",
-                    schema.getId()
-            );
+                    schema.getId());
 
             ColumnMetadata idColumn = new ColumnMetadata(
                     "id",
-                    DataType.INTEGER
-            );
+                    DataType.INTEGER);
 
             idColumn.setNullable(false);
             idColumn.setPosition(0);

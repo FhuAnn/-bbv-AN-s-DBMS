@@ -45,7 +45,9 @@ public class Database extends AbstractMetadataComponent {
          */
         this.state = new ClosedDatabaseState();
     }
-
+    public DatabaseStateType getState() {
+        return state.getType();
+    }
     public void open() {
         state.open(this);
     }

@@ -3,7 +3,7 @@ package builder;
 import java.util.List;
 import java.util.UUID;
 
-import classes.metadata.ConstraintDefinition;
+import classes.metadata.definition.ConstraintDefinition;
 import enums.ConstraintType;
 
 public class ConstraintDefinitionBuilder {
