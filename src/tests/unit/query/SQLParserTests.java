@@ -189,8 +189,6 @@ class ParserTests {
         String astText = result.root.toString().toUpperCase();
 
         assertTrue(
-                astText.contains(expectedToken.toUpperCase()),
-                () -> "AST should contain token: " + expectedToken
-                        + ", but was: " + astText);
+                astText.contains(expectedToken.toUpperCase()));
     }
 }
