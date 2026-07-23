@@ -4,12 +4,14 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import strategy.IPageReplacementStrategy;
+
 public class BufferPool {
     private final int capacity;
     private final DiskManager diskManager;
     private final LinkedHashMap<Long, byte[]> frames;
     private final Map<Long, Boolean> dirtyPages;
-
+    private IPageReplacementStrategy replacementStrategy;
     public BufferPool(int capacity, DiskManager diskManager) {
         if (capacity <= 0) {
             throw new IllegalArgumentException("Capacity must be positive");

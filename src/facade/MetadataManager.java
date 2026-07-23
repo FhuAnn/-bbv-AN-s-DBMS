@@ -9,7 +9,6 @@ import classes.metadata.Catalog;
 import classes.metadata.ColumnMetadata;
 import classes.metadata.Schema;
 import classes.metadata.Table;
-import classes.metadata.definition.ColumnDefinition;
 import classes.metadata.definition.ConstraintDefinition;
 import factories.ConstraintFactory;
 
