@@ -1,7 +1,7 @@
 package factories;
 
 import classes.abstraction.Constraint;
-import classes.metadata.ConstraintDefinition;
+import classes.metadata.definition.ConstraintDefinition;
 
 public class DefaultConstraintFactory implements ConstraintFactory {
     @Override

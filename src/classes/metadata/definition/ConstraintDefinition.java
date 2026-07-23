@@ -1,4 +1,4 @@
-package classes.metadata;
+package classes.metadata.definition;
 
 import java.util.ArrayList;
 import java.util.Collections;

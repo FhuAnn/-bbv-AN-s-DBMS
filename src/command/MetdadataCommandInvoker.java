@@ -38,4 +38,5 @@ public class MetdadataCommandInvoker {
 
     public void clearHistory() {
         // TODO: Implem
+    }
 }
