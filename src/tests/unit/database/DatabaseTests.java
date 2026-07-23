@@ -656,7 +656,9 @@ class DatabaseTests {
 
                 assertEquals(
                         DatabaseStateType.OPEN,
+
                         database.getState());
+
             } finally {
                 executor.shutdownNow();
             }
