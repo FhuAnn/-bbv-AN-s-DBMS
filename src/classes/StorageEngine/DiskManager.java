@@ -1,13 +1,27 @@
 package classes.storageengine;
+
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import factories.PageFactory;
 
 public class DiskManager {
 
     private final Map<Long, byte[]> diskPages = new LinkedHashMap<>();
     private boolean open;
     private long nextPageId = 1L;
+    private PageFactory pageFactory;
+
+    public DiskManager() {
+        // TODO: implement
+    }
+
+    public DiskManager(
+            FileManager fileManager,
+            PageFactory pageFactory) {
+        // TODO: Implement
+    }
 
     public void open() {
         open = true;
