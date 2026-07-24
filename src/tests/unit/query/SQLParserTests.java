@@ -189,6 +189,8 @@ class ParserTests {
         String astText = result.root.toString().toUpperCase();
 
         assertTrue(
+
                 astText.contains(expectedToken.toUpperCase()));
+
     }
 }
