@@ -1,5 +1,6 @@
 package command;
 
+import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
 
@@ -7,9 +8,9 @@ public class MetdadataCommandInvoker {
     private Deque<IMetadataCommand> executedCommands;
     private Deque<IMetadataCommand> undoneCommands;
 
-    public MetadataCommandInvoker() {
-        //ToDO: Implement
-        
+    public MetdadataCommandInvoker() {
+        executedCommands = new ArrayDeque<>();
+        undoneCommands = new ArrayDeque<>();
     }
 
     public void execute(IMetadataCommand command) {
