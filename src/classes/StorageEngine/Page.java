@@ -1,11 +1,21 @@
 package classes.storageengine;
 
-public class Page {
+import enums.PageType;
+
+public abstract class Page {
     private int pageId;
     private byte[] data;
     private PageHeader header;
     private boolean isDirty;
     private int pinCount;
+
+    protected Page(
+            int pageId,
+            int pageSize) {
+        // TODO: Implement
+    }
+
+    public abstract PageType getPageType();
 
     public Page(int pageId) {
         this.pageId = pageId;

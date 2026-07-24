@@ -16,11 +16,6 @@ import interfaces.MetadataComponent;
 
 public class Index extends AbstractMetadataComponent {
 
-    public enum IndexType {
-        HASH,
-        BTREE
-    }
-
     private UUID id;
     private String name;
     private IndexType type;
