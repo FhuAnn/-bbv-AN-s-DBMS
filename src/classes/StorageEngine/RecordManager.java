@@ -1,7 +1,16 @@
 package classes.storageengine;
 
+import chain.ConstraintValidationChain;
+
 public class RecordManager {
+    private ConstraintValidationChain constraintValidationChain;
+
     public RecordManager() {
+    }
+
+    public RecordManager(
+            ConstraintValidationChain constraintValidationChain) {
+        // TODO: Implement
     }
 
     public RecordId insert(Record record, String tableFile) {

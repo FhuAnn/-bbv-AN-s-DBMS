@@ -11,6 +11,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 
 import classes.abstraction.AbstractMetadataComponent;
+import enums.IndexType;
 import enums.MetadataType;
 import interfaces.MetadataComponent;
 

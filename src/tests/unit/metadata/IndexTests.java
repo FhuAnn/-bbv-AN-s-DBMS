@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import classes.metadata.Index;
+import enums.IndexType;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -36,7 +37,7 @@ class IndexTests {
                 "idx_users_email",
                 tableId,
                 List.of("email"),
-                Index.IndexType.HASH,
+               IndexType.HASH,
                 false
         );
     }
@@ -61,7 +62,7 @@ class IndexTests {
                     "idx_users_name",
                     tableId,
                     List.of("name"),
-                    Index.IndexType.BTREE,
+                   IndexType.BTREE,
                     false
             );
 
@@ -73,7 +74,7 @@ class IndexTests {
             assertEquals("idx_users_email", index.getName());
             assertEquals(tableId, index.getTableId());
             assertEquals(List.of("email"), index.getColumnNames());
-            assertEquals(Index.IndexType.HASH, index.getType());
+            assertEquals(IndexType.HASH, index.getType());
             assertFalse(index.isUnique());
         }
 
@@ -97,7 +98,7 @@ class IndexTests {
                             null,
                             tableId,
                             List.of("email"),
-                            Index.IndexType.HASH,
+                           IndexType.HASH,
                             false
                     )
             );
@@ -111,7 +112,7 @@ class IndexTests {
                             "idx",
                             null,
                             List.of("email"),
-                            Index.IndexType.HASH,
+                           IndexType.HASH,
                             false
                     )
             );
@@ -125,7 +126,7 @@ class IndexTests {
                             "idx",
                             tableId,
                             List.of(),
-                            Index.IndexType.HASH,
+                            IndexType.HASH,
                             false
                     )
             );
@@ -327,7 +328,7 @@ class IndexTests {
                     "uq_users_email",
                     tableId,
                     List.of("email"),
-                    Index.IndexType.HASH,
+                   IndexType.HASH,
                     true
             );
 

@@ -1,6 +1,6 @@
 package interfaces;
 
-public interface ExecutionOperator {
+public interface IExecutionOperator {
     void init();
 
     Object next();
