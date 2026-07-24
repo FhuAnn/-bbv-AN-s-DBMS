@@ -6,6 +6,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import interfaces.IExecutionOperator;
+
 public class Executor {
         private final Map<String, List<Map<String, Object>>> tables = new LinkedHashMap<>();
 
@@ -20,7 +22,7 @@ public class Executor {
         }
 
         protected QueryResult consume(
-                        ExecutionOperator root) {
+                        IExecutionOperator root) {
                 return null;
         }
 
