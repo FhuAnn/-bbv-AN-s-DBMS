@@ -1,0 +1,6715 @@
+# -bbv-AN-s-DBMS
+# Mindmap main
+```mermaid
+flowchart LR
+    %% =====================================================
+    %% NODE DECLARATIONS
+    %% Each node is declared exactly once
+    %% =====================================================
+
+    DBMS["Implement An's DBMS<br/>(main)"]:::rootStyle
+
+    %% =====================================================
+    %% LEFT-SIDE MAIN BRANCHES
+    %% =====================================================
+
+    BackupRestoreLogging["**Backup & Restore & Logging**"]:::highlightBackup
+    UserAccessSecurity["**User Access & Security**"]:::highlightSecurity
+    QueryProcessor["**Query Processor**"]:::highlightQuery
+    ConnectionNetwork["**Connection & Network**"]:::highlightNetwork
+
+    %% -----------------------------------------------------
+    %% Backup & Restore & Logging
+    %% -----------------------------------------------------
+
+    BackupManagement["Backup Management"]:::leafBackup
+    RestoreManagement["Restore Management"]:::leafBackup
+    RecoveryManagement["Recovery Management"]:::leafBackup
+    CheckPointManagement["CheckPoint Management"]:::leafBackup
+    Logging["Logging"]:::leafBackup
+
+    %% -----------------------------------------------------
+    %% User Access & Security
+    %% -----------------------------------------------------
+
+    Authentication["Authentication"]:::securitySubBranch
+    Authorization["Authorization"]:::securitySubBranch
+    AccessControl["Access Control"]:::securitySubBranch
+
+    Login["Login"]:::leafSecurity
+    Logout["Logout"]:::leafSecurity
+    ResetForgotPassword["Reset / Forgot Password"]:::leafSecurity
+    UserManagement["User Management"]:::leafSecurity
+
+    %% -----------------------------------------------------
+    %% Query Processor
+    %% -----------------------------------------------------
+
+    SQLParser["SQL Parser"]:::leafQuery
+    QueryExecutor["Query Executor"]:::leafQuery
+    QueryValidation["Query Validation"]:::leafQuery
+    QueryOptimization["Query Optimization"]:::leafQuery
+    ExecutionPlanning["Execution Planning"]:::leafQuery
+    ResultProcessing["Result Processing"]:::leafQuery
+
+    %% -----------------------------------------------------
+    %% Connection & Network
+    %% -----------------------------------------------------
+
+    NetworkIOLayer["Network I/O Layer"]:::leafNetwork
+    WorkerAllocationStrategy["Worker Allocation Strategy"]:::leafNetwork
+    SessionClientState["Session & Client State"]:::leafNetwork
+
+    %% =====================================================
+    %% RIGHT-SIDE MAIN BRANCHES
+    %% =====================================================
+
+    DatabaseMetadata["**Database & Metadata**"]:::highlightDatabase
+    AdministrationMonitoring["**Administration & Monitoring**"]:::highlightAdmin
+    TransactionManagement["**Transaction Management**"]:::highlightTransaction
+    StorageEngine["**Storage Engine**"]:::highlightStorage
+
+    %% -----------------------------------------------------
+    %% Database & Metadata
+    %% -----------------------------------------------------
+
+    SchemaManagement["Schema Management"]:::leafDatabase
+    DatabaseManagement["Database Management"]:::leafDatabase
+    TableMetadataManagement["Table Metadata Management"]:::leafDatabase
+    ColumnMetadataManagement["Column Metadata Management"]:::leafDatabase
+    DataTypeManagement["Data Type Management"]:::leafDatabase
+    IndexManagement["Index Management"]:::leafDatabase
+    RelationshipManagement["Relationship Management"]:::leafDatabase
+    ConstraintManagement["Constraint Management"]:::leafDatabase
+    ProgrammableObjects["Programmable Objects"]:::leafDatabase
+
+    %% -----------------------------------------------------
+    %% Administration & Monitoring
+    %% -----------------------------------------------------
+
+    MonitoringLogging["Monitoring & Logging"]:::leafAdmin
+    ConfigurationManagement["Configuration Management"]:::leafAdmin
+    ImportExport["Import & Export"]:::leafAdmin
+
+    %% -----------------------------------------------------
+    %% Transaction Management
+    %% -----------------------------------------------------
+
+    TransactionLifeCycle["Transaction LifeCycle"]:::leafTransaction
+    LockManagement["Lock Management"]:::leafTransaction
+    ConcurrencyControl["Concurrency Control"]:::leafTransaction
+    DeadlockManagement["Deadlock Management"]:::leafTransaction
+    IsolationManagement["Isolation Management"]:::leafTransaction
+
+    %% -----------------------------------------------------
+    %% Storage Engine
+    %% -----------------------------------------------------
+
+    DataFileManagement["Data File Management"]:::leafStorage
+    PageManagement["Page Management"]:::leafStorage
+    RecordManagement["Record Management"]:::leafStorage
+    BufferPoolCacheManagement["Buffer Pool + Cache Management"]:::leafStorage
+    LogFileManagement["Log File Management"]:::leafStorage
+    StorageAllocation["Storage Allocation"]:::leafStorage
+
+    %% =====================================================
+    %% CONNECTIONS
+    %% Connections contain node IDs only
+    %% =====================================================
+
+    %% -----------------------------------------------------
+    %% Left-side branches point toward DBMS
+    %% -----------------------------------------------------
+
+    BackupRestoreLogging --> DBMS
+    UserAccessSecurity --> DBMS
+    QueryProcessor --> DBMS
+    ConnectionNetwork --> DBMS
+
+    %% Backup & Restore & Logging
+
+    BackupManagement --> BackupRestoreLogging
+    RestoreManagement --> BackupRestoreLogging
+    RecoveryManagement --> BackupRestoreLogging
+    CheckPointManagement --> BackupRestoreLogging
+    Logging --> BackupRestoreLogging
+
+    %% User Access & Security
+
+    Authentication --> UserAccessSecurity
+    Authorization --> UserAccessSecurity
+    AccessControl --> UserAccessSecurity
+
+    Login --> Authentication
+    Logout --> Authentication
+    ResetForgotPassword --> Authentication
+    UserManagement --> Authentication
+
+    %% Query Processor
+
+    SQLParser --> QueryProcessor
+    QueryExecutor --> QueryProcessor
+    QueryValidation --> QueryProcessor
+    QueryOptimization --> QueryProcessor
+    ExecutionPlanning --> QueryProcessor
+    ResultProcessing --> QueryProcessor
+
+    %% Connection & Network
+
+    NetworkIOLayer --> ConnectionNetwork
+    WorkerAllocationStrategy --> ConnectionNetwork
+    SessionClientState --> ConnectionNetwork
+
+    %% -----------------------------------------------------
+    %% Right-side branches point outward from DBMS
+    %% -----------------------------------------------------
+
+    DBMS --> DatabaseMetadata
+    DBMS --> AdministrationMonitoring
+    DBMS --> TransactionManagement
+    DBMS --> StorageEngine
+
+    %% Database & Metadata
+
+    DatabaseMetadata --> SchemaManagement
+    DatabaseMetadata --> DatabaseManagement
+    DatabaseMetadata --> TableMetadataManagement
+    DatabaseMetadata --> ColumnMetadataManagement
+    DatabaseMetadata --> DataTypeManagement
+    DatabaseMetadata --> IndexManagement
+    DatabaseMetadata --> RelationshipManagement
+    DatabaseMetadata --> ConstraintManagement
+    DatabaseMetadata --> ProgrammableObjects
+
+    %% Administration & Monitoring
+
+    AdministrationMonitoring --> MonitoringLogging
+    AdministrationMonitoring --> ConfigurationManagement
+    AdministrationMonitoring --> ImportExport
+
+    %% Transaction Management
+
+    TransactionManagement --> TransactionLifeCycle
+    TransactionManagement --> LockManagement
+    TransactionManagement --> ConcurrencyControl
+    TransactionManagement --> DeadlockManagement
+    TransactionManagement --> IsolationManagement
+
+    %% Storage Engine
+
+    StorageEngine --> DataFileManagement
+    StorageEngine --> PageManagement
+    StorageEngine --> RecordManagement
+    StorageEngine --> BufferPoolCacheManagement
+    StorageEngine --> LogFileManagement
+    StorageEngine --> StorageAllocation
+
+    %% =====================================================
+    %% STYLE DEFINITIONS
+    %% =====================================================
+
+    classDef rootStyle fill:#1d3557,stroke:#457b9d,stroke-width:4px,color:#ffffff,font-weight:bold,font-size:17px;
+
+    %% Main left-side branches
+
+    classDef highlightBackup fill:#31c83b,stroke:#149b24,stroke-width:4px,color:#ffffff,font-weight:bold,font-size:15px;
+    classDef highlightSecurity fill:#86d800,stroke:#62a800,stroke-width:4px,color:#ffffff,font-weight:bold,font-size:15px;
+    classDef highlightQuery fill:#ffc51b,stroke:#e5a900,stroke-width:4px,color:#ffffff,font-weight:bold,font-size:15px;
+    classDef highlightNetwork fill:#ffa000,stroke:#e48600,stroke-width:4px,color:#ffffff,font-weight:bold,font-size:15px;
+
+    %% Main right-side branches
+
+    classDef highlightDatabase fill:#4169e1,stroke:#234fcb,stroke-width:4px,color:#ffffff,font-weight:bold,font-size:15px;
+    classDef highlightAdmin fill:#9569e8,stroke:#7146c7,stroke-width:4px,color:#ffffff,font-weight:bold,font-size:15px;
+    classDef highlightTransaction fill:#ff4f87,stroke:#d92d68,stroke-width:4px,color:#ffffff,font-weight:bold,font-size:15px;
+    classDef highlightStorage fill:#ff3d14,stroke:#d92806,stroke-width:4px,color:#ffffff,font-weight:bold,font-size:15px;
+
+    %% Left-side leaf styles
+
+    classDef leafBackup fill:#ffffff,stroke:#31c83b,stroke-width:2px,color:#37474f;
+    classDef leafSecurity fill:#ffffff,stroke:#86d800,stroke-width:2px,color:#37474f;
+    classDef leafQuery fill:#ffffff,stroke:#ffc51b,stroke-width:2px,color:#37474f;
+    classDef leafNetwork fill:#ffffff,stroke:#ffa000,stroke-width:2px,color:#37474f;
+
+    classDef securitySubBranch fill:#f4ffe0,stroke:#86d800,stroke-width:2px,color:#37474f,font-weight:bold;
+
+    %% Right-side leaf styles
+
+    classDef leafDatabase fill:#ffffff,stroke:#4169e1,stroke-width:2px,color:#37474f;
+    classDef leafAdmin fill:#ffffff,stroke:#9569e8,stroke-width:2px,color:#37474f;
+    classDef leafTransaction fill:#ffffff,stroke:#ff4f87,stroke-width:2px,color:#37474f;
+    classDef leafStorage fill:#ffffff,stroke:#ff3d14,stroke-width:2px,color:#37474f;
+```
+
+# DBMS Entity Diagram
+
+```mermaid
+classDiagram
+direction LR
+
+%% Core
+
+class SecurityException {
+    ~SecurityException(String message)
+}
+
+class Database {
+    -String name
+    -UUID id
+    -Catalog catalog
+    -StorageEngine storage
+    -TransactionManager txManager
+    -SecurityManager security
+    +Database(String name)
+    +setReadOnly(boolean readOnly) void
+    +open():void
+    +close():void
+    +addSchema(Schema schema) void
+    +removeSchema(String name) Schema
+    +rename(String newName) void
+    +changeState(DatabaseState state) void
+    +doAddSchema(Schema schema) void
+    +doRemoveSchema(String name) Schema
+    +doRename(String newName) void
+    +getName() String
+    +getCatalog() Catalog
+    +getStorage() StorageEngine
+}
+
+
+class DatabaseState {
+    <<interface>>
+
+    +open(Database database) void
+    +close(Database database) void
+    +setReadOnly(Database database, boolean readOnly) void
+    +addSchema(Database database, Schema schema) void
+    +removeSchema(Database database, String name) Schema
+    +rename(Database database, String newName) void
+    +getType() DatabaseStateType
+}
+
+class ClosedDatabaseState
+class OpenDatabaseState
+class ReadOnlyDatabaseState
+
+class DatabaseStateType {
+    <<enumeration>>
+    CLOSED
+    OPEN
+    READ_ONLY
+}
+
+ClosedDatabaseState ..|> DatabaseState
+OpenDatabaseState ..|> DatabaseState
+ReadOnlyDatabaseState ..|> DatabaseState
+
+Database --> DatabaseState : current state
+DatabaseState --> DatabaseStateType
+DatabaseState ..> Schema
+
+%% Authentication
+class ASTNodeType {
+    <<enumeration>>
+}
+
+class AuthService{
+    +hashPassword(String rawPassword) String
+    +verifyPassword(String raw, String hashed) boolean
+    +register(String username, String email, String rawPassword) User
+    +login(String username, String password) TokenSet
+    +logout(String authToken) void
+    +forgotPassword(String email) String
+    +resetPassword(String resetToken, String newPassword) void
+    +generateAuthAndRefreshToken(String userId) TokenSet
+    +verifyToken(TokenSet authToken) boolean
+    +validateRefreshToken(String refreshToken) String
+    +getEmailService() EmailService
+}
+
+class SessionMgr {
+    -String latestAuthToken
+    +createSession(String userId, String ip, String device) TokenSet
+    +validateSession(String authToken) boolean
+    +refreshSession(String refreshToken) TokenSet
+    +validateRefreshToken(String refreshToken) String
+    +revokeSession(String authToken) void
+    +revokeSessionsByUserId(String userId) void
+    +latestAuthToken() String
+}
+
+class SecurityManager {
+    +authenticate(Credentials cred) UserSession
+    +authorize(UserSession session, Permission perm) boolean
+}
+
+class EmailService {
+    <<interface>>
+    +sendVerificationEmail(String userId, String email) void
+}
+
+class InMemoryEmailService {
+    +sendVerificationEmail(String userId, String email) void
+    +hasVerificationEmailFor(String email) boolean
+    +getVerificationEmailForUserId(String userId) VerificationEmail
+}
+
+class User {
+    +String userID
+    +String username
+    +String email
+    +String hashedPassword
+    +createNewUser(String username, String email, String rawPassword) User
+    +getUserData(String username) User
+    +checkUserExist(String username) Boolean
+    +updateUserInfo() Boolean
+    +updateUserInfo(Map updatedFields) Boolean
+}
+
+class Role {
+    ~String id
+    ~String roleName
+    ~List~Permission~ permissions
+    ~Role(String id, String roleName, List~Permission~ permissions)
+}
+
+class Permission {
+    +String permId
+    +String permissionName
+    +String resource
+    +String action
+    +String description
+    +Permission(String permId, String permissionName, String resource, String action, String description)
+    +createPermission(String name, String description, List~Permission~ permissions) boolean
+    +editPermission(String permId, Permission updates) boolean
+    +assignPermission(String roleId, String permId) boolean
+    +getResource() String
+    +getAction() String
+}
+
+class TokenSet {
+    +String sessionId
+    +String userId
+    +String authToken
+    +String refreshToken
+    +Instant createdAt
+    +Instant expiresAt
+    +TokenSet(String sessionId, String userId, String authToken, String refreshToken, Instant createdAt, Instant expiresAt)
+}
+
+class UserSession {
+    +UUID userId
+    +Instant expiry
+}
+
+class Credentials {
+    +String username
+    +String password
+    +Credentials(String username, String password)
+}
+
+%% Metadata
+class Catalog {
+    +getTable(String name) TableMetadata
+    +registerTable(TableMetadata meta) void
+    +getTables() Map
+    +setTables(Map tables) void
+    +getSchemas() Map
+    +setSchemas(Map schemas) void
+    +Catalog()
+    +putTable(TableMetadata table) void
+    +putSchema(Schema schema) void
+}
+
+class Schema {
+    -UUID id
+    -String name
+    -UUID databaseId
+    -UUID ownerId
+    +Schema(String name, UUID databaseId, UUID ownerId)
+    +Schema()
+    +getId() UUID
+    +setId(UUID id) void
+    +getName() String
+    +setName(String name) void
+    +getDatabaseId() UUID
+    +setDatabaseId(UUID databaseId) void
+    +getOwnerId() UUID
+    +setOwnerId(UUID ownerId) void
+    +getTables() List~TableMetadata~
+    +setTables(List~TableMetadata~ tables) void
+    +copy() Schema
+}
+
+class TableMetadata {
+    -UUID id
+    -String name
+    -UUID schemaId
+    -StorageInfo storageInfo
+    -TableStats stats
+    +TableMetadata(String name, UUID schemaId)
+    +TableMetadata()
+    +getId() UUID
+    +setId(UUID id) void
+    +getName() String
+    +setName(String name) void
+    +getSchemaId() UUID
+    +setSchemaId(UUID schemaId) void
+    +getStorageInfo() StorageInfo
+    +setStorageInfo(StorageInfo storageInfo) void
+    +getStats() TableStats
+    +setStats(TableStats stats) void
+    +getColumns() List~ColumnMetadata~
+    +setColumns(List~ColumnMetadata~ columns) void
+    +getIndexes() List~Index~
+    +setIndexes(List~Index~ indexes) void
+    +getConstraints() List~Constraint~
+    +setConstraints(List~Constraint~ constraints) void
+    +addConstraint(Constraint constraint) void
+    +removeConstraint(String name) Constraint
+    +copy() TableMetadata
+}
+class ForeignKeyConstraint {
+    -UUID id
+    -String name
+    -UUID tableId
+    -List~UUID~ columnIds
+    -UUID referencedTableId
+    -List~UUID~ referencedColumnIds
+    +getId() UUID
+    +getName() String
+    +getType() ConstraintType
+    +validateDefinition() boolean
+}
+class NotNullConstraint {
+    -UUID id
+    -String name
+    -UUID tableId
+    -UUID columnId
+    +getId() UUID
+    +getName() String
+    +getType() ConstraintType
+    +validateDefinition() boolean
+}
+class PrimaryKeyConstraint{
+    -UUID id
+    -String name
+    -UUID tableId
+    -List~UUID~ columnIds
+    +getId() UUID
+    +getName() String
+    +getType() ConstraintType
+    +validateDefinition() boolean
+}
+class CheckConstraint {
+    -UUID id
+    -String name
+    -UUID tableId
+    -String expression
+    +getId() UUID
+    +getName() String
+    +getType() ConstraintType
+    +validateDefinition() boolean
+}
+class UniqueConstraint {
+    -UUID id
+    -String name
+    -UUID tableId
+    -List~UUID~ columnIds
+    +getId() UUID
+    +getName() String
+    +getType() ConstraintType
+    +validateDefinition() boolean
+}
+
+class Constraint {
+    <<abstract>>
+    + getTableId(): abstract UUID
+    + getColumnIds(): abstract List<UUID>
+    + getMetadataType(): MetadataType
+    + getChildren(): List<MetadataComponent>
+    + validateDefinition(): abstract boolean
+    + getType(): ConstraintType
+    + copyAs(): Table
+    }
+
+class MetadataType {
+    <<enumeration>>
+    DATABASE
+    SCHEMA
+    TABLE
+    COLUMN
+    INDEX
+    CONSTRAINT
+    VIEW
+    TRIGGER
+    FUNCTION
+}
+
+Constraint --> MetadataType
+ForeignKeyConstraint ..|> Constraint
+NotNullConstraint ..|> Constraint
+PrimaryKeyConstraint ..|>Constraint
+CheckConstraint ..|> Constraint
+UniqueConstraint ..|> Constraint
+
+class MetadataPrototype{
+    <<interface>>
+    + copyAs(): T
+}
+
+Constraint ..|> MetadataPrototype: implements
+
+class MetadataComponent{
+    <<interface>>
+    - getId(): UUID
+    - getName(): String
+    - getMetadataType(): MetadataType
+    - getChildren(): List<MetadataComponent>
+    - addChild(Metadata): boid
+    - removeChild(child: UUID): MetadataComponent
+    - isLeaf(): boolean
+}
+
+class AbstractMetadataComponent {
+    <<abstract>>
+    - id: UUID
+    - name: String
+    + getId(): UUID
+    + getName(): String
+    + rename(String): void
+    # validateName(String):String
+}
+AbstractMetadataComponent ..|> MetadataComponent
+Constraint --|> AbstractMetadataComponent
+
+class ColumnMetadata {
+    -UUID id
+    -String name
+    -DataType dataType
+    -boolean nullable
+    -Object defaultValue
+    -int position
+    -Integer length
+    -Integer precision
+    -Integer scale
+    -boolean identity
+    -long nextIdentityValue
+
+    +ColumnMetadata(String name, DataType dataType)
+    +getId() UUID
+    +getName() String
+    +getDataType() DataType
+    +isNullable() boolean
+    +getDefaultValue() Object
+    +getPosition() int
+    +getLength() Integer
+    +getPrecision() Integer
+    +getScale() Integer
+    +isIdentity() boolean
+
+    +setNullable(boolean nullable) void
+    +setDefaultValue(Object value) void
+    +setPosition(int position) void
+    +setLength(Integer length) void
+    +setPrecision(Integer precision) void
+    +setScale(Integer scale) void
+    +setIdentity(boolean identity) void
+    +setNextIdentityValue(long value) void
+    +isValidDefinition() boolean
+    +copy() ColumnMetadata
+}
+
+class Index {
+    +UUID id
+    +String name
+    +IndexType type
+    +Index()
+    +insert(Object key, Object pointer) void
+    +search(Object key) Object
+    +copy() IndexMetadata
+}
+
+class TableStats {
+    -long rowCount
+    -long pageCount
+    -long deadTuples
+    +getRowCount() long
+    +setRowCount(long rowCount) void
+    +getPageCount() long
+    +setPageCount(long pageCount) void
+    +getDeadTuples() long
+    +setDeadTuples(long deadTuples) void
+}
+
+class StorageInfo {
+    +StorageType storageType
+    +String location
+    +long pageSize
+    +StorageInfo(StorageType storageType, String location, long pageSize)
+}
+
+%% Query processor
+class ExecutionService {
+    +ExecutionService()
+    +execute(String sql, String authToken) QueryResult
+    +getParser() ParserService
+    +getCatalogManager() CatalogManager
+    +getQueryOptimizer() QueryOptimizer
+    +getResultFormatter() ResultFormatter
+}
+
+class ParserService {
+    +parserSQL(String sql) ASTBuildResult
+}
+
+class QueryOptimizer {
+    -Object catalogManager
+    -Object costModel
+    -Object cardinalityEstimator
+    +QueryOptimizer(Object catalogManager, Object costModel, Object cardinalityEstimator)
+    +generateLogicalPlan(ASTBuildResult ast) Object
+    +optimizeLogicalPlan(Object logicalPlan) Object
+    +optimizePhysicalPlan(Object logicalPlan) Object
+}
+
+class QueryProcessor {
+    +process(String sql) QueryResult
+}
+
+class ResultFormatter {
+    +formatAsJSON(QueryResult result) String
+    +formatAsCSV(QueryResult result) String
+}
+
+class CatalogManager {
+    +registerTable(String tableName) void
+    +getTableSchema(String tableName) Object
+    +getTableStatistics(String tableName) Object
+    +getBufferPoolManager() Object
+}
+
+class QueryResult{
+    -List<Row> rows
+    +Schema schema
+    +addRow(Row row) void
+}
+
+class Parser{
+    -ASTBuilder astBuilder
+    +parse(String sql) ASTBuildResult
+}
+
+class Executor {
+    +execute(Object plan) QueryResult
+}
+Executor --> QueryResult
+
+class PhysicalPlan{
+    -ExecutionOperator root
+    +getRoot() ExecutionOperator
+} 
+Executor --> PhysicalPlan
+PhysicalPlan --> ExecutionPLan: root
+
+class ASTBuildResult {
+    +boolean success
+    +ASTNode root
+    +String errorMessage
+    +ASTBuildResult(boolean success, ASTNode root, String errorMessage)
+}
+
+class SyntaxErrorException {
+    ~SyntaxErrorException(String message)
+}
+
+%% Storage engine
+class StorageEngine {
+    -BufferPool bufferPool
+    -StorageAllocator storageAllocator
+    +readPage(int pageId) Page
+    +writePage(Page page) void
+      +setPageReplacementStrategy(PageReplacementStrategy strategy) void
+    +setStorageAllocationStrategy(StorageAllocationStrategy strategy) void
+}
+
+class BufferPool {
+    -Map~PageId, BufferFrame~ frames
+    -PageReplacementStrategy replacementStrategy
+
+    +getPage(int pageId) Page
+    +evictPage() void
+    +flushDirtyPages() void
+    +getPoolSize() int
+    +setPoolSize(int poolSize) void
+    +getCache() Map
+    +setCache(Map cache) void
+}
+
+
+class PageReplacementStrategy {
+    <<interface>>
+
+    +onPageLoaded(BufferFrame frame) void
+    +onPageAccessed(BufferFrame frame) void
+    +onPageRemoved(BufferFrame frame) void
+    +selectVictim(Collection~BufferFrame~ frames) BufferFrame
+}
+
+class LRUReplacementStrategy {
+    +onPageLoaded(BufferFrame frame) void
+    +onPageAccessed(BufferFrame frame) void
+    +onPageRemoved(BufferFrame frame) void
+    +selectVictim(Collection~BufferFrame~ frames) BufferFrame
+}
+
+class FIFOReplacementStrategy {
+    +onPageLoaded(BufferFrame frame) void
+    +onPageAccessed(BufferFrame frame) void
+    +onPageRemoved(BufferFrame frame) void
+    +selectVictim(Collection~BufferFrame~ frames) BufferFrame
+}
+
+class ClockReplacementStrategy {
+    +onPageLoaded(BufferFrame frame) void
+    +onPageAccessed(BufferFrame frame) void
+    +onPageRemoved(BufferFrame frame) void
+    +selectVictim(Collection~BufferFrame~ frames) BufferFrame
+}
+
+class StorageAllocator {
+    -List~StorageBlock~ blocks
+    -StorageAllocationStrategy allocationStrategy
+
+    +allocate(int requiredSize) StorageBlock
+    +release(StorageBlock block) void
+    +setAllocationStrategy(StorageAllocationStrategy strategy) void
+}
+
+class StorageAllocationStrategy {
+    <<interface>>
+
+    +selectBlock(List~StorageBlock~ blocks, int requiredSize) StorageBlock
+}
+
+class FirstFitAllocationStrategy {
+    +selectBlock(List~StorageBlock~ blocks, int requiredSize) StorageBlock
+}
+
+class BestFitAllocationStrategy {
+    +selectBlock(List~StorageBlock~ blocks, int requiredSize) StorageBlock
+}
+
+class NextFitAllocationStrategy {
+    +selectBlock(List~StorageBlock~ blocks, int requiredSize) StorageBlock
+}
+
+
+PageReplacementStrategy <|.. LRUReplacementStrategy
+PageReplacementStrategy <|.. FIFOReplacementStrategy
+PageReplacementStrategy <|.. ClockReplacementStrategy
+
+StorageAllocationStrategy <|.. FirstFitAllocationStrategy
+StorageAllocationStrategy <|.. BestFitAllocationStrategy
+StorageAllocationStrategy <|.. NextFitAllocationStrategy
+
+StorageEngine --> BufferPool
+StorageEngine --> StorageAllocator
+
+BufferPool --> PageReplacementStrategy : delegates
+BufferPool o-- BufferFrame
+
+StorageAllocator --> StorageAllocationStrategy : delegates
+class BufferFrame {
+    -Page page
+    -boolean pinned
+    -boolean dirty
+    -long lastAccessTime
+    -boolean referenceBit
+}
+
+
+class DiskManager {
+    -FileManager fileManager
+    +DiskManager()
+    +DiskManager(FileManager fileManager)
+    +writePage(String fileName, int pageId, Page page) void
+    +readPage(String fileName, int pageId) Page
+    +allocateNewPage(String fileName) int
+}
+
+class FileManager {
+    -String baseDataDir
+    +FileManager()
+    +FileManager(String baseDataDir)
+    +openFile(String fileName) RandomAccessFile
+    +closeFile(String fileName) void
+    +createFile(String fileName) void
+    +deleteFile(String fileName) void
+}
+
+class Page {
+    -int pageId
+    -byte[] data
+    -PageHeader header
+    -boolean isDirty
+    -int pinCount
+    +Page(int pageId)
+    +Page(int pageId, byte[] data)
+    +Page()
+    +getPageId() int
+    +setPageId(int pageId) int
+    +getData() byte[]
+    +getHeader() PageHeader
+    +isDirty() boolean
+    +markDirty() void
+    +unmarkDirty() void
+    +pin() void
+    +unpin() void
+}
+
+class PageHeader {
+    -int pageId
+    -int freeSpacePointer
+    -int slotCount
+    -int checksum
+    +PageHeader(int pageId)
+    +getPageId() int
+    +getFreeSpacePointer() int
+    +setFreeSpacePointer(int freeSpacePointer) void
+    +getSlotCount() int
+    +incrementSlotCount() void
+    +getChecksum() int
+    +updateChecksum() void
+}
+
+class RecordManager {
+    +RecordManager()
+    +insert(Record record, String tableFile) RecordId
+    +getRecord(RecordId recordId, String tableFile) Record
+    +update(RecordId recordId, Record newRecord, String tableFile) void
+    +delete(RecordId recordId, String tableFile) void
+}
+
+class Record {
+    -RecordId recordId
+    -byte[] data
+    -boolean isDeleted
+    +Record(RecordId recordId, byte[] data)
+    +getRecordId() RecordId
+    +getData() byte[]
+    +setData(byte[] data) void
+    +isDeleted() boolean
+    +markDeleted() void
+    +getSize() int
+}
+
+class RecordId {
+    +int pageId
+    +int slotId
+    +RecordId(int pageId, int slotId)
+}
+
+class LogManager {
+    +writeLog(Object record) void
+    +flush() void
+}
+
+%% Transaction control
+class TransactionManager {
+    +begin() Transaction
+    +commit(Transaction tx) void
+    +rollback(Transaction tx) void
+}
+
+class Transaction {
+}
+
+class LockManager {
+    +acquire(LockMode mode, Resource resource, Transaction tx) Lock
+}
+
+class MVCC {
+    +getVersion() VersionChain
+}
+
+class Lock {
+    +LockMode mode
+    +Resource resource
+    +Transaction transaction
+}
+
+class Resource {
+    +String resourceId
+    +Resource(String resourceId)
+}
+
+class VersionChain {
+}
+
+%% Shared contracts
+class ASTNode["interfaces.ASTNode"] {
+    <<interface>>
+    +getType() ASTNodeType
+    ~toString() String
+}
+
+class ASTVisitor["interfaces.ASTVisitor"] {
+    <<interface>>
+    +visit(ASTNode node) T
+}
+
+class ExecutionOperator ["interfaces.ExecutionOperator"] {
+    <<interface>>
+    +init() void
+    +next() Row
+    +close() void
+}
+class AbstractExecutionOperator {
+    <<abstract>>
+    Boolean initialized
+    Boolean closed
+    +init() void
+    +next() Row
+    +close() void
+    +isInitialized() Boolean
+    +isClosed() Boolean
+}
+
+AbstractExecutionOperator ..|> ExecutionOperator
+
+class TableScanOperator {
+    -StorageEngine storageEngine
+    -TableMetadata table
+    -Page currentPage
+    -int currentPageId
+    -int currentSlot
+    +init() void
+    +next() Row
+    +close() void
+}
+
+class FilterOperator{
+    -ExecutionOperator child
+    +init() void
+    +next() Row
+    +close() void
+}
+
+class ProjectionOperator{
+    -ExecutionOperator child
+    -List<ColumnReference> columns
+    +init() void
+    +next() Row
+    +close() void
+}
+
+class JoinOperator {
+    -ExecutionOperator leftChild
+    -ExecutionOperator rightChild
+    +init() void
+    +next() Row
+    +close() void
+}
+
+class LimitOperator{
+    -ExecutionOperator child
+    -long limit
+    -long returnedCount
+    +init() void
+    +next() Row
+    +close() void
+}
+
+TableScanOperator --|> AbstractExecutionOperator
+FilterOperator --|> AbstractExecutionOperator
+ProjectionOperator --|> AbstractExecutionOperator
+JoinOperator --|> AbstractExecutionOperator
+LimitOperator --|> AbstractExecutionOperator
+
+FilterOperator --> ExecutionOperator: returns
+ProjectionOperator --> ExecutionOperator: child
+JoinOperator --> ExecutionOperator : left/right children
+LimitOperator --> ExecutionOperator: child
+
+class IQueryValidation["interfaces.IQueryValidation"] {
+    <<interface>>
+    +validateQuery(ASTBuildResult astBuild, String userID) Void
+}
+
+class ISyntaxError["interfaces.ISyntaxError"] {
+    <<interface>>
+    +handleError(Object errorTokens, String rawSql) SyntaxErrorException
+    ~formatErrorMessage(int line, int col) String
+}
+
+%% Enums
+class DataType["enums.DataType"] {
+    <<enumeration>>
+}
+
+class IndexType["enums.IndexType"] {
+    <<enumeration>>
+}
+
+class JoinType["enums.JoinType"] {
+    <<enumeration>>
+}
+
+class LockMode["enums.LockMode"] {
+    <<enumeration>>
+}
+
+class StorageType["enums.StorageType"] {
+    <<enumeration>>
+}
+
+%% Relations
+Database ..> SecurityManager
+Database ..> Catalog
+Database ..> QueryResult
+Database ..> StorageEngine
+Database ..> TransactionManager
+
+AuthService ..> EmailService
+AuthService ..> SessionMgr
+AuthService ..> TokenSet
+AuthService ..> User
+SessionMgr ..> TokenSet
+SecurityManager ..> Credentials
+SecurityManager ..> Permission
+SecurityManager ..> UserSession
+Role ..> Permission
+EmailService <|.. InMemoryEmailService
+
+Catalog ..> Schema
+Catalog ..> TableMetadata
+Schema ..> TableMetadata
+TableMetadata ..> ColumnMetadata
+TableMetadata ..> Index
+TableMetadata ..> TableStats
+TableMetadata ..> StorageInfo
+ColumnMetadata ..> DataType
+Index ..> IndexType
+StorageInfo ..> StorageType
+
+ExecutionService ..> ParserService
+ExecutionService ..> QueryOptimizer
+ExecutionService ..> QueryProcessor
+ExecutionService ..> ResultFormatter
+ExecutionService ..> QueryResult
+ParserService ..> ASTBuildResult
+QueryOptimizer ..> ASTBuildResult
+QueryProcessor ..> Executor
+QueryProcessor ..> Parser
+QueryProcessor ..> QueryResult
+ResultFormatter ..> QueryResult
+QueryResult ..> Schema
+Parser ..> ASTBuildResult
+Executor ..> QueryResult
+ASTBuildResult ..> ASTNode
+SyntaxErrorException ..> ISyntaxError
+
+StorageEngine ..> BufferPool
+StorageEngine ..> DiskManager
+StorageEngine ..> LogManager
+StorageEngine ..> Page
+StorageEngine ..> RecordManager
+BufferPool ..> Page
+DiskManager ..> FileManager
+DiskManager ..> Page
+Page ..> PageHeader
+RecordManager ..> Record
+RecordManager ..> RecordId
+
+LockManager ..> Lock
+LockManager ..> Resource
+LockManager ..> Transaction
+LockManager ..> LockMode
+MVCC ..> VersionChain
+TransactionManager ..> LockManager
+TransactionManager ..> Transaction
+Lock ..> Resource
+Lock ..> Transaction
+Lock ..> LockMode
+
+ASTNode ..> ASTNodeType
+ASTNode ..> ASTVisitor
+ASTVisitor ..> ASTNode
+ExecutionOperator ..> QueryResult
+IQueryValidation ..> ASTBuildResult
+ISyntaxError ..> SyntaxErrorException
+
+
+class ColumnMetadataBuilder {
+    -String name
+    -DataType dataType
+    -boolean nullable
+    -Object defaultValue
+    -int position
+    -Integer length
+    -Integer precision
+    -Integer scale
+    -boolean identity
+    -long nextIdentityValue
+
+    -ColumnMetadataBuilder()
+    +builder() ColumnMetadataBuilder
+    +name(String name) ColumnMetadataBuilder
+    +dataType(DataType type) ColumnMetadataBuilder
+    +nullable(boolean nullable) ColumnMetadataBuilder
+    +defaultValue(Object value) ColumnMetadataBuilder
+    +position(int position) ColumnMetadataBuilder
+    +length(Integer length) ColumnMetadataBuilder
+    +precision(Integer precision) ColumnMetadataBuilder
+    +scale(Integer scale) ColumnMetadataBuilder
+    +identity(boolean identity) ColumnMetadataBuilder
+    +nextIdentityValue(long value) ColumnMetadataBuilder
+    +build() ColumnMetadata
+    -validateRequiredFields() void
+    -validateConfiguration() void
+}
+
+class DataType {
+    <<enumeration>>
+    INTEGER
+    VARCHAR
+    BOOLEAN
+    DECIMAL
+    DATE
+    TIMESTAMP
+}
+
+ColumnMetadataBuilder ..> ColumnMetadata : builds
+ColumnMetadata --> DataType : uses
+ColumnMetadataBuilder --> DataType : configures
+
+AbstractMetadataComponent <|-- Database
+AbstractMetadataComponent <|-- Schema
+AbstractMetadataComponent <|-- Table
+AbstractMetadataComponent <|-- ColumnMetadata
+AbstractMetadataComponent <|-- Index
+AbstractMetadataComponent <|-- Constraint
+
+class ConstraintDefinitionBuilder {
+    -String name
+    -ConstraintType type
+    -UUID tableId
+    -List~UUID~ columnIds
+    -UUID referencedTableId
+    -List~UUID~ referencedColumnIds
+    -String expression
+
+    +ConstraintDefinitionBuilder()
+    +builder()$ ConstraintDefinitionBuilder
+    +name(String name) ConstraintDefinitionBuilder
+    +type(ConstraintType type) ConstraintDefinitionBuilder
+    +tableId(UUID tableId) ConstraintDefinitionBuilder
+    +columnIds(List~UUID~ columnIds) ConstraintDefinitionBuilder
+    +referencedTableId(UUID referencedTableId) ConstraintDefinitionBuilder
+    +referencedColumnIds(List~UUID~ referencedColumnIds) ConstraintDefinitionBuilder
+    +expression(String expression) ConstraintDefinitionBuilder
+    +build() ConstraintDefinition
+    -validateRequiredFields() void
+    -validateConfiguration() void
+}
+
+class ConstraintDefinition {
+    -String name
+    -ConstraintType type
+    -UUID tableId
+    -List~UUID~ columnIds
+    -UUID referencedTableId
+    -List~UUID~ referencedColumnIds
+    -String expression
+}
+
+class ConstraintType {
+    <<enumeration>>
+    PRIMARY_KEY
+    UNIQUE
+    NOT_NULL
+    FOREIGN_KEY
+    CHECK
+}
+
+ConstraintDefinitionBuilder ..> ConstraintDefinition : builds
+ConstraintDefinitionBuilder ..> ConstraintType:uses
+ConstraintDefinition ..> ConstraintType:has
+
+class ConstraintFactory {
+    <<interface>>
+   +create(ConstraintDefinition definition): IConstraint 
+}
+
+class DefaultConstraintFactory {
+    <<interface>>
+   - create(): IConstraint 
+   - createPrimaryKey(): IConstraint
+   - createForeignKey(): IConstraint
+    - createUnique(): IConstraint
+   - createCheck(): IConstraint
+   - createNotNull(): IConstraint
+}
+DefaultConstraintFactory ..|> ConstraintFactory: implements
+ConstraintFactory -->Constraint: creates
+%% prototype
+MetadataPrototype~Schema~ <|.. Schema
+MetadataPrototype~TableMetadata~ <|.. TableMetadata
+MetadataPrototype~ColumnMetadata~ <|.. ColumnMetadata
+MetadataPrototype~IndexMetadata~ <|.. IndexMetadata
+
+Schema "1" *-- "*" TableMetadata
+TableMetadata "1" *-- "*" ColumnMetadata
+TableMetadata "1" *-- "*" Constraint
+TableMetadata "1" *-- "*" IndexMetadata
+
+
+
+class MetadataCommand {
+    <<interface>>
+    +execute() void
+    +undo() void
+    +getName() String
+    +canUndo() boolean
+}
+
+class MetadataCommandInvoker {
+    -Deque~MetadataCommand~ executedCommands
+    -Deque~MetadataCommand~ undoneCommands
+
+    +execute(MetadataCommand command) void
+    +undoLast() void
+    +redoLast() void
+    +getHistory() List~MetadataCommand~
+    +canUndo() boolean
+    +canRedo() boolean
+    +clearHistory() void
+}
+
+class AddSchemaCommand {
+    -Database database
+    -Schema schema
+
+    +execute() void
+    +undo() void
+    +getName() String
+    +canUndo() boolean
+}
+
+class RemoveTableCommand {
+    -Schema schema
+    -String tableName
+    -TableMetadata removedTable
+
+    +execute() void
+    +undo() void
+    +getName() String
+    +canUndo() boolean
+}
+
+class RenameColumnCommand {
+    -ColumnMetadata column
+    -String newName
+    -String previousName
+
+    +execute() void
+    +undo() void
+    +getName() String
+    +canUndo() boolean
+}
+
+class AddConstraintCommand {
+    -TableMetadata table
+    -Constraint constraint
+
+    +execute() void
+    +undo() void
+    +getName() String
+    +canUndo() boolean
+}
+
+AddSchemaCommand ..|> MetadataCommand
+RemoveTableCommand ..|> MetadataCommand
+RenameColumnCommand ..|> MetadataCommand
+AddConstraintCommand ..|> MetadataCommand
+
+MetadataCommandInvoker --> MetadataCommand : executes
+
+AddSchemaCommand --> Database : receiver
+AddSchemaCommand --> Schema : argument
+
+RemoveTableCommand --> Schema : receiver
+RemoveTableCommand --> TableMetadata : stores removed object
+
+RenameColumnCommand --> ColumnMetadata : receiver
+
+AddConstraintCommand --> TableMetadata : receiver
+AddConstraintCommand --> Constraint : argument
+
+class MetadataManager {
+    -Database database
+    -Catalog catalog
+    -ConstraintFactory constraintFactory
+
+    +createSchema(String name, UUID ownerId) Schema
+    +findSchema(UUID schemaId) Schema
+
+    +createTable(UUID schemaId, String name) TableMetadata
+    +findTable(UUID tableId) TableMetadata
+    +removeTable(UUID schemaId, String tableName) TableMetadata
+
+    +newColumnBuilder() ColumnMetadataBuilder
+    +addColumn(UUID tableId, ColumnMetadataBuilder builder) ColumnMetadata
+    +renameColumn(UUID tableId, String columnName, String newName) void
+
+    +addConstraint(UUID tableId, ConstraintDefinition definition) Constraint
+    +findConstraint(UUID tableId, String name) Constraint
+    +removeConstraint(UUID tableId, String name) Constraint
+}
+
+
+MetadataManager --> Database : coordinates
+MetadataManager --> Catalog : updates
+MetadataManager --> ConstraintFactory : uses
+MetadataManager ..> ColumnMetadataBuilder : provides
+
+Database --> Schema
+Schema --> TableMetadata
+TableMetadata --> ColumnMetadata
+TableMetadata --> Constraint
+
+class ConstraintValidationHandler {
+    <<interface>>
+    +setNext(ConstraintValidationHandler next) ConstraintValidationHandler
+    +validate(ConstraintValidationContext context) ConstraintValidationResult
+}
+
+class IConstraintValidationChain {
+    - ConstraintValidationHandler firstHandler
+    +validate(ConstraintValidationContext context) ConstraintValidationResult
+}
+
+ConstraintValidationChain --> ConstraintValidationHandler: uses
+class AbstractConstraintValidationHandler {
+    <<abstract>>
+    -ConstraintValidationHandler next
+    +setNext(ConstraintValidationHandler next) ConstraintValidationHandler
+    +validate(ConstraintValidationContext context) ConstraintValidationResult
+    #doValidate(ConstraintValidationContext context) ConstraintValidationResult*
+    #validateNext(ConstraintValidationContext context) ConstraintValidationResult
+}
+
+
+class NotNullConstraintHandler {
+    #doValidate(ConstraintValidationContext context) ConstraintValidationResult
+}
+
+class CheckConstraintHandler {
+    #doValidate(ConstraintValidationContext context) ConstraintValidationResult
+}
+
+class PrimaryKeyConstraintHandler {
+    #doValidate(ConstraintValidationContext context) ConstraintValidationResult
+}
+
+class UniqueConstraintHandler {
+    #doValidate(ConstraintValidationContext context) ConstraintValidationResult
+}
+
+class ForeignKeyConstraintHandler {
+    #doValidate(ConstraintValidationContext context) ConstraintValidationResult
+}
+
+class ConstraintValidationChain {
+    -ConstraintValidationHandler firstHandler
+    +validate(ConstraintValidationContext context) ConstraintValidationResult
+}
+
+class ConstraintValidationContext {
+    -Row row
+    -TableMetadata table
+    -ConstraintValidationData validationData
+}
+
+class ConstraintValidationResult {
+    -boolean valid
+    -Constraint violation
+    +success()$ ConstraintValidationResult
+    +failure(Constraint violation)$ ConstraintValidationResult
+    +isValid() boolean
+}
+
+class RecordManager {
+    -ConstraintValidationChain constraintValidationChain
+    +insert(Record record, String tableFile) RecordId
+    +update(RecordId id, Record record, String tableFile) void
+}
+ConstraintValidationHandler <|.. AbstractConstraintValidationHandler
+
+AbstractConstraintValidationHandler <|-- NotNullConstraintHandler
+AbstractConstraintValidationHandler <|-- CheckConstraintHandler
+AbstractConstraintValidationHandler <|-- PrimaryKeyConstraintHandler
+AbstractConstraintValidationHandler <|-- UniqueConstraintHandler
+AbstractConstraintValidationHandler <|-- ForeignKeyConstraintHandler
+
+AbstractConstraintValidationHandler --> ConstraintValidationHandler : next
+ConstraintValidationChain --> ConstraintValidationHandler : starts
+RecordManager --> ConstraintValidationChain : validates before write
+
+class ASTBuilder {
+    -ASTNode root
+    -List~ASTNode~ nodes
+    +select(List~String~ columns) ASTBuilder
+    +from(String tableName) ASTBuilder
+    +where(Expression condition) ASTBuilder
+    +join(JoinNode join) ASTBuilder
+    +groupBy(List~String~ columns) ASTBuilder
+    +orderBy(List~OrderItem~ items) ASTBuilder
+    +limit(int limit) ASTBuilder
+    +build() ASTBuildResult
+}
+
+class LogicalPlanBuilder {
+    -LogicalPlanNode root
+    +tableScan(TableMetadata table) LogicalPlanBuilder
+    +filter(Expression predicate) LogicalPlanBuilder
+    +project(List~ColumnReference~ columns) LogicalPlanBuilder
+    +join(LogicalPlanNode right, JoinCondition condition) LogicalPlanBuilder
+    +limit(long limit) LogicalPlanBuilder
+    +build() LogicalPlan
+}
+
+class PhysicalPlanBuilder {
+    -ExecutionOperator root
+    +tableScan(TableMetadata table) PhysicalPlanBuilder
+    +filter(RowPredicate predicate) PhysicalPlanBuilder
+    +project(List~ColumnReference~ columns) PhysicalPlanBuilder
+    +nestedLoopJoin(ExecutionOperator right, JoinCondition condition) PhysicalPlanBuilder
+    +hashJoin(ExecutionOperator right, JoinCondition condition) PhysicalPlanBuilder
+    +limit(long limit) PhysicalPlanBuilder
+    +build() PhysicalPlan
+}
+
+Parser --> ASTBuilder
+ASTBuilder ..> ASTBuildResult : builds
+LogicalPlanBuilder ..> LogicalPlan : builds
+PhysicalPlanBuilder ..> PhysicalPlan : builds
+
+```
+
+
+# Design pattern Application
+
+| Order | Main Feature                    | Applied Design Pattern                                                   |
+| -------------: | ---------------------------------- | ------------------------------------------------------------------------ |
+|              1 | **Database & Metadata Management** | Composite, Builder, Factory Method, Repository, Prototype, Observer      |
+|              2 | **Storage Engine**                 | Facade, Strategy, Factory Method, Object Pool, Adapter, Bridge           |
+|              3 | **Query Processor**                | Builder, Composite, Visitor, Chain of Responsibility, Strategy, Iterator |
+|              4 | **Transaction Management**         | State, Command, Strategy, Observer, Mediator, Memento                    |
+
+# Detail Application
+
+| Feature                        | Application                                                                                                       | Design Pattern            | Reason for choosing                                                                                                                                                                       |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Database & Metadata Management | Scan and show `Database → Schema → Table → Column`                                                                | Composite ✅               | These objects form a natural tree hierarchy and can be processed uniformly through a common metadata component interface.                                                                 |
+| Database & Metadata Management | Build `ColumnMetadata`                                                                                            | Builder ✅                 | `ColumnMetadata` has many optional properties such as length, precision, scale, nullable, identity and default value, so Builder avoids long constructors and improves readability.       |
+| Database & Metadata Management | Create `PrimaryKeyConstraint`, `ForeignKeyConstraint`, `UniqueConstraint`, `NotNullConstraint`, `CheckConstraint` | Factory Method ✅          | All constraint types share a common abstraction, but each type requires different fields and validation rules. Factory centralizes the creation logic.                                    |
+| Database & Metadata Management | Copy schema or table definition                                                                                   | Prototype ✅               | Schema and table definitions may contain many nested metadata objects. Prototype allows an existing definition to be duplicated without rebuilding every property manually.               |
+| Database & Metadata Management | Update catalog and statistics when metadata changes                                                               | Observer ✅                | A metadata change may affect multiple components. Observer allows Catalog, Statistics, Cache and Audit services to react automatically without tightly coupling them to metadata classes. |
+| Database & Metadata Management | Control `OPEN`, `CLOSED`, `READ_ONLY` database behavior                                                           | State ✅                   | Database operations depend on the current state; State prevents invalid operations such as modifying metadata while closed or read-only.                                                  |
+| Database & Metadata Management | Represent `AddSchema`, `RemoveTable`, `RenameColumn`, `AddConstraint` as commands                                 | **Command** ✅             | Metadata operations can be logged, audited, queued, retried or reversed consistently.                                                                                                     |
+| Database & Metadata Management | Validate names, ownership, duplicates, constraints and metadata relationships                                     | **Specification**         | Validation rules can be combined and reused instead of placing many conditions inside `Database`, `Schema` and `TableMetadata`.                                                           |
+| Database & Metadata Management | Provide `MetadataManager` as one entry point for Builder and Factory                                              | **Facade** ✅              | Client code should not need to coordinate repositories, factories, updates and validation manually.                                                                                       |
+| Storage Engine                 | `StorageEngine` hides `BufferPool`, `DiskManager`, `FileManager`, `RecordManager`                                 | Facade                    | Storage operations involve several complex subsystems. Facade provides one simple entry point and hides internal coordination from higher layers.                                         |
+| Storage Engine                 | Page replacement and storage allocation                                                                           | Strategy ✅                | Algorithms such as LRU, FIFO, Clock or different allocation policies can be changed independently without modifying the storage engine.                                                   |
+| Storage Engine                 | Buffer Pool and Frame Pool                                                                                        | Object Pool               | Pages and frames are expensive and frequently reused. Object Pool reduces repeated allocation and controls the number of objects held in memory.                                          |
+| Storage Engine                 | Create `Page`, `Record`, `Index`, `LogRecord`                                                                     | Factory Method ✅          | Each storage object can have multiple concrete formats or implementations. Factory hides constructor details and returns the correct object type.                                         |
+| Constraint Management          | Not Null → Check → Primary Key → Unique → Foreign Key validation                                                  | Chain of Responsibility ✅ | A row may need to satisfy several constraints in sequence. Each handler delegates to the concrete constraint and stops at the first violation.                                            |
+| Query Processor                | Build AST, Logical Plan and Physical Plan                                                                         | Builder ✅                  | Query plans are complex objects constructed step by step from many nodes, operators and conditions. Builder supports incremental construction clearly.                                    |
+| Query Processor                | AST Tree and Execution Tree                                                                                       | Composite                 | AST nodes and execution operators naturally form tree structures where leaf and composite nodes should be processed through the same interface.                                           |
+| Query Processor                | Validation, plan generation and cost estimation                                                                   | Visitor ✅                 | Several operations must traverse the same AST without placing all processing logic inside AST node classes. Visitor separates operations from the tree structure.                         |
+| Query Processor                | Schema → Table → Column → Type → Permission validation                                                            | Chain of Responsibility   | Query validation consists of sequential, independent checks. Each validator handles one responsibility and passes the request to the next validator.                                      |
+| Query Processor                | Scan, join and optimization strategy                                                                              | Strategy                  | Different execution algorithms can be selected based on query cost, available indexes and data statistics without changing the query processor.                                           |
+| Query Processor                | `init()`, `next()`, `close()` for execution operators                                                             | Iterator ✅                | Query operators return rows incrementally. Iterator provides a consistent pull-based interface and avoids loading the entire result into memory.                                          |
+| Transaction Management         | `ACTIVE`, `COMMITTED`, `ABORTED`                                                                                  | State                     | Transaction behavior depends strongly on its current state. State prevents invalid operations and keeps state-specific behavior organized.                                                |
+| Transaction Management         | `BEGIN`, `COMMIT`, `ROLLBACK`, `SAVEPOINT`                                                                        | Command                   | Transaction operations can be represented as objects, making them easier to execute, log, queue, audit or extend.                                                                         |
+| Transaction Management         | MVCC, optimistic and pessimistic concurrency                                                                      | Strategy                  | Different concurrency-control mechanisms may be selected depending on workload and isolation requirements without modifying transaction management logic.                                 |
+| Transaction Management         | Transaction commit and rollback events                                                                            | Observer                  | Commit and rollback may trigger logging, lock release, cache invalidation, replication and auditing. Observer allows these components to react independently.                             |
+| Database & Metadata Management | Store and retrieve `Schema`, `TableMetadata`, `IndexMetadata`, `Constraint` | Repository     | Separates metadata retrieval logic from domain objects and allows switching between in-memory, file-based or persistent storage. |
+| Storage Engine                 | Convert external `Page`, `Record` or file formats into internal interfaces  | Adapter        | Allows Storage Engine to use many different storage formats or libraries without modifying client code.           |
+
+
+
+## Apply Dessign Pattern
+
+### 1. Composite: Database → Schema → Table → Column
+```mermaid
+classDiagram
+    class MetadataComponent {
+        <<interface>>
+        +getId() UUID
+        +getName() String
+        +getMetadataType() MetadataType
+        +getChildren() List
+    }
+
+    class AbstractMetadataComponent {
+        <<abstract>>
+        -UUID id
+        -String name
+        +getId() UUID
+        +getName() String
+        +rename(String)
+        #validateName(String)
+    }
+
+
+
+    MetadataComponent <|.. AbstractMetadataComponent
+
+    AbstractMetadataComponent <|-- Database
+    AbstractMetadataComponent <|-- Schema
+    AbstractMetadataComponent <|-- TableMetadata
+    AbstractMetadataComponent <|-- ColumnMetadata
+    AbstractMetadataComponent <|-- Index
+    AbstractMetadataComponent <|-- Constraint
+```
+
+#### Reason to use Composite Pattern
+- In database structure, objects have a tree relationship 
+```text
+    Database
+    └── Schema
+        ├── Table
+        │   ├── Column
+        │   ├── Index
+        │   └── Constraint
+        └── View
+```
+- Advantages: 
+    - Process all metadata by an interface (easy to scan and show all tree component in one method).
+    - It is easy to scale if needing to add metadata object.
+    - Distinguishing Composite and Leaf clearly (Composite has childs and Leaf hasn't childs).
+    Example: 
+                
+```java
+    private void printTree(MetadataComponent component) {
+    System.out.println(component.getName());
+
+    for (MetadataComponent child : component.getChildren()) {
+        printTree(child);
+        }
+    }
+```      
+- Sequences
+```mermaid
+sequenceDiagram
+    actor Client
+    participant Database as Database
+    participant Schema as Schema
+    participant Table as TableMetadata
+    participant Column as ColumnMetadata
+
+    Client->>Database: registerSchema(schema)
+    Database->>Database: store schema as child node
+
+    Client->>Schema: registerTable(table)
+    Schema->>Schema: store table as child node
+
+    Client->>Table: registerColumn(column)
+    Table->>Table: store column as child node
+
+    Client->>Database: getChildren()
+    Database-->>Client: schemas
+
+    Client->>Schema: getChildren()
+    Schema-->>Client: tables
+
+    Client->>Table: getChildren()
+    Table-->>Client: columns
+```
+### 2. Builder: Build Schema
+
+#### Reason to use Builder Pattern
+- Some constructors have long parameters that contains optional parameters such as nullable, length, defaultValue.
+- "Telescoping constructor": many parameters, many null values, easy to pass wrongly.
+- Example:
+```java
+public ColumnMetadata(
+            String name,
+            DataType dataType,
+            boolean nullable,
+            Object defaultValue,
+            int position,
+            Integer length,
+            Integer precision,
+            Integer scale,
+            boolean identity,
+            long nextIdentityValue,
+            ...) {
+
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Column name must not be null or blank");
+        }
+
+        ...
+
+        this.id = UUID.randomUUID();
+        this.name = name;
+        this.dataType = dataType;
+        this.nullable = nullable;
+        this.defaultValue = defaultValue;
+        this.position = position;
+        this.length = length;
+       ...
+    }
+```
+Following normal code method, we maybe implement following ways:
+
+```java
+    Column newCol = new ColumnMetadata ("email", 
+    DataType.VARCHAR, false, null,1,
+    255,null,null,false,1L)
+```
+
+But when applying Builder Pattern, our code should look like:
+```java
+    Column newCol = ColumnMetadataBuilder.builder()
+    .name("email")
+    .dataType(DataType.VARCHAR)
+    .nullable(false)
+    .length(255)
+    .position(1)
+    .build();
+```
+
+#### Class design for buid ColumnMetadata: 
+```mermaid
+classDiagram
+direction LR
+
+class ColumnMetadata {
+    -UUID id
+    -String name
+    -DataType dataType
+    -boolean nullable
+    -Object defaultValue
+    -int position
+    -Integer length
+    -Integer precision
+    -Integer scale
+    -boolean identity
+    -long nextIdentityValue
+
+    +ColumnMetadata(String name, DataType dataType)
+    +getId() UUID
+    +getName() String
+    +getDataType() DataType
+    +isNullable() boolean
+    +getDefaultValue() Object
+    +getPosition() int
+    +getLength() Integer
+    +getPrecision() Integer
+    +getScale() Integer
+    +isIdentity() boolean
+    +rename(String newName) void
+    +setNullable(boolean nullable) void
+    +setDefaultValue(Object value) void
+    +setPosition(int position) void
+    +setLength(Integer length) void
+    +setPrecision(Integer precision) void
+    +setScale(Integer scale) void
+    +setIdentity(boolean identity) void
+    +setNextIdentityValue(long value) void
+    +isValidDefinition() boolean
+}
+
+class ColumnMetadataBuilder {
+    -String name
+    -DataType dataType
+    -boolean nullable
+    -Object defaultValue
+    -int position
+    -Integer length
+    -Integer precision
+    -Integer scale
+    -boolean identity
+    -long nextIdentityValue
+
+    -ColumnMetadataBuilder()
+    +builder() ColumnMetadataBuilder
+    +name(String name) ColumnMetadataBuilder
+    +dataType(DataType type) ColumnMetadataBuilder
+    +nullable(boolean nullable) ColumnMetadataBuilder
+    +defaultValue(Object value) ColumnMetadataBuilder
+    +position(int position) ColumnMetadataBuilder
+    +length(Integer length) ColumnMetadataBuilder
+    +precision(Integer precision) ColumnMetadataBuilder
+    +scale(Integer scale) ColumnMetadataBuilder
+    +identity(boolean identity) ColumnMetadataBuilder
+    +nextIdentityValue(long value) ColumnMetadataBuilder
+    +build() ColumnMetadata
+    -validateRequiredFields() void
+    -validateConfiguration() void
+}
+
+class DataType {
+    <<enumeration>>
+    INTEGER
+    VARCHAR
+    BOOLEAN
+    DECIMAL
+    DATE
+    TIMESTAMP
+}
+
+ColumnMetadataBuilder ..> ColumnMetadata : builds
+ColumnMetadata --> DataType : uses
+ColumnMetadataBuilder --> DataType : configures
+```
+
+#### Build ColumnMetadata
+```mermaid
+sequenceDiagram
+    actor Client
+    participant Builder as ColumnMetadataBuilder
+    participant Column as ColumnMetadata
+
+    Client->>Builder: builder()
+    Builder-->>Client: ColumnMetadataBuilder
+
+    Client->>Builder: name("email")
+    Builder-->>Client: this
+
+    Client->>Builder: dataType(VARCHAR)
+    Builder-->>Client: this
+
+    Client->>Builder: nullable(false)
+    Builder-->>Client: this
+
+    Client->>Builder: length(255)
+    Builder-->>Client: this
+
+    Client->>Builder: position(1)
+    Builder-->>Client: this
+
+    Client->>Builder: build()
+
+    Builder->>Builder: validateRequiredFields()
+    Builder->>Builder: validateConfiguration()
+
+    alt Invalid configuration
+        Builder-->>Client: throw IllegalStateException
+    else Valid configuration
+        Builder->>Column: new ColumnMetadata("email", VARCHAR)
+        Column-->>Builder: column
+
+        Builder->>Column: setNullable(false)
+        Builder->>Column: setPosition(1)
+        Builder->>Column: setLength(255)
+        Builder->>Column: isValidDefinition()
+        Column-->>Builder: true
+
+        Builder-->>Client: ColumnMetadata
+    end
+```
+### 3. Factory: Create  Constraint, Trigger, Function
+
+```mermaid
+sequenceDiagram
+    actor Client
+    participant Factory as ConstraintFactory
+    participant Definition as ConstraintDefinition
+    participant Constraint
+
+    Client->>Factory: create(definition)
+    Factory->>Definition: getType()
+    Definition-->>Factory: ConstraintType
+
+    Factory->>Factory: validateCommonFields()
+
+    alt PRIMARY_KEY
+        Factory->>Factory: validate columnIds
+        Factory->>Constraint: new PrimaryKeyConstraint(...)
+    else FOREIGN_KEY
+        Factory->>Factory: validate source and referenced columns
+        Factory->>Constraint: new ForeignKeyConstraint(...)
+    else UNIQUE
+        Factory->>Factory: validate columnIds
+        Factory->>Constraint: new UniqueConstraint(...)
+    else CHECK
+        Factory->>Factory: validate expression
+        Factory->>Constraint: new CheckConstraint(...)
+    else NOT_NULL
+        Factory->>Factory: validate single columnId
+        Factory->>Constraint: new NotNullConstraint(...)
+    end
+
+    Constraint-->>Factory: constraint
+    Factory-->>Client: Constraint
+```
+Factory is suitable because objects like Index, Constraint, Trigger and Function have different initialization methods.
+### 4. Prototype: Copy Schema, Copy Table
+```mermaid
+sequenceDiagram
+    actor Client
+    participant Original as TableMetadata
+    participant Column as ColumnMetadata
+    participant Constraint
+    participant Index as IndexMetadata
+    participant Copy as TableMetadata Copy
+
+    Client->>Original: copy("users_backup")
+
+    Original->>Copy: new TableMetadata()
+    Copy-->>Original: tableCopy
+
+    loop Each column
+        Original->>Column: copy()
+        Column-->>Original: columnCopy
+        Original->>Copy: addColumn(columnCopy)
+    end
+
+    loop Each constraint
+        Original->>Constraint: copy()
+        Constraint-->>Original: constraintCopy
+        Original->>Copy: addConstraint(constraintCopy)
+    end
+
+    loop Each index
+        Original->>Index: copy()
+        Index-->>Original: indexCopy
+        Original->>Copy: addIndex(indexCopy)
+    end
+
+    Original-->>Client: tableCopy
+```
+```mermaid
+sequenceDiagram
+    actor Client
+    participant Original as Schema
+    participant Table as TableMetadata
+    participant Copy as Schema Copy
+
+    Client->>Original: copy("archive")
+
+    Original->>Copy: new Schema()
+    Copy-->>Original: schemaCopy
+
+    loop Each table definition
+        Original->>Table: copy()
+        Table-->>Original: tableCopy
+        Original->>Copy: addTable(tableCopy)
+    end
+
+    Original-->>Client: schemaCopy
+```
+### 5. Observer: Update auditlog, catalog and statistic metadata changing
+#### Add column dn update Statistic:
+```mermaid
+sequenceDiagram
+    actor Client
+
+    participant Table as TableMetadata
+    participant Event as MetadataChangedEvent
+    participant StatisticsObserver
+    participant Statistics as StatisticsManager
+
+    Client->>Table: addColumn(emailColumn)
+    Table->>Table: modify column collection
+
+    Table->>Event: new MetadataChangedEvent(COLUMN_ADDED)
+    Event-->>Table: event
+
+    Table->>StatisticsObserver: onMetadataChanged(event)
+    StatisticsObserver->>Event: getMetadataId()
+    Event-->>StatisticsObserver: tableId
+
+    StatisticsObserver->>Statistics: invalidateStatistics(tableId)
+    Statistics-->>StatisticsObserver: invalidated
+
+    StatisticsObserver->>Statistics: refreshStatistics(tableId)
+    Statistics-->>StatisticsObserver: refreshed
+
+    StatisticsObserver-->>Table: completed
+    Table-->>Client: success
+```
+### 6. State Design Pattern
+- When we use ? - When object state changing lead to its behavior changing. Therefor, Database is suitable because there is changing in database state (Close, readonly, open).
+- I revised and designed class diagram for this pattern aplying. 
+```mermaid
+classDiagram
+direction LR
+
+class Database {
+    -UUID id
+    -String name
+    -Catalog catalog
+    -List~Schema~ schemas
+    -DatabaseState state
+
+    +open() void
+    +close() void
+    +setReadOnly(boolean readOnly) void
+    +addSchema(Schema schema) void
+    +removeSchema(String name) Schema
+    +rename(String newName) void
+
+    +changeState(DatabaseState state) void
+    +doAddSchema(Schema schema) void
+    +doRemoveSchema(String name) Schema
+    +doRename(String newName) void
+}
+
+class DatabaseState {
+    <<interface>>
+
+    +open(Database database) void
+    +close(Database database) void
+    +setReadOnly(Database database, boolean readOnly) void
+    +addSchema(Database database, Schema schema) void
+    +removeSchema(Database database, String name) Schema
+    +rename(Database database, String newName) void
+    +getType() DatabaseStateType
+}
+
+class ClosedDatabaseState
+class OpenDatabaseState
+class ReadOnlyDatabaseState
+
+class DatabaseStateType {
+    <<enumeration>>
+    CLOSED
+    OPEN
+    READ_ONLY
+}
+
+ClosedDatabaseState ..|> DatabaseState
+OpenDatabaseState ..|> DatabaseState
+ReadOnlyDatabaseState ..|> DatabaseState
+
+Database --> DatabaseState : current state
+DatabaseState --> DatabaseStateType
+DatabaseState ..> Schema
+```
+1. Sequence — Open database
+```mermaid
+sequenceDiagram
+    actor Client
+    participant DB as Database
+    participant Closed as ClosedDatabaseState
+    participant Open as OpenDatabaseState
+
+    Client->>DB: open()
+    DB->>Closed: open(database)
+
+    Closed->>Open: new OpenDatabaseState()
+    Open-->>Closed: openState
+
+    Closed->>DB: changeState(openState)
+    DB-->>Closed: state changed
+
+    Closed-->>DB: completed
+    DB-->>Client: database opened
+```
+2. Sequence — Add schema when database is OPEN
+
+```mermaid
+sequenceDiagram
+    actor Client
+    participant DB as Database
+    participant State as OpenDatabaseState
+    participant Schema
+    participant Catalog
+
+    Client->>DB: addSchema(schema)
+    DB->>State: addSchema(database, schema)
+
+    State->>Schema: getDatabaseId()
+    Schema-->>State: databaseId
+
+    State->>DB: doAddSchema(schema)
+    DB->>DB: store schema
+    DB->>Catalog: putSchema(schema)
+    Catalog-->>DB: updated
+
+    DB-->>State: schema added
+    State-->>DB: completed
+    DB-->>Client: success
+```
+
+3. Sequence — Reject modification when database is READ_ONLY
+```mermaid
+sequenceDiagram
+    actor Client
+    participant DB as Database
+    participant State as ReadOnlyDatabaseState
+    participant Schema
+
+    Client->>DB: addSchema(schema)
+    DB->>State: addSchema(database, schema)
+
+    State-->>DB: throw IllegalStateException
+    DB-->>Client: modification rejected
+```
+### 7. Command Pattern - Encapsulate changing metadata behaviors to independence objects.
+- Class diagram 
+```mermaid
+classDiagram
+direction LR
+
+class MetadataCommand {
+    <<interface>>
+    +execute() void
+    +undo() void
+    +getName() String
+    +canUndo() boolean
+}
+
+class MetadataCommandInvoker {
+    -Deque~MetadataCommand~ executedCommands
+    -Deque~MetadataCommand~ undoneCommands
+
+    +execute(MetadataCommand command) void
+    +undoLast() void
+    +redoLast() void
+    +getHistory() List~MetadataCommand~
+    +canUndo() boolean
+    +canRedo() boolean
+    +clearHistory() void
+}
+
+class AddSchemaCommand {
+    -Database database
+    -Schema schema
+
+    +execute() void
+    +undo() void
+    +getName() String
+    +canUndo() boolean
+}
+
+class RemoveTableCommand {
+    -Schema schema
+    -String tableName
+    -TableMetadata removedTable
+
+    +execute() void
+    +undo() void
+    +getName() String
+    +canUndo() boolean
+}
+
+class RenameColumnCommand {
+    -ColumnMetadata column
+    -String newName
+    -String previousName
+
+    +execute() void
+    +undo() void
+    +getName() String
+    +canUndo() boolean
+}
+
+class AddConstraintCommand {
+    -TableMetadata table
+    -Constraint constraint
+
+    +execute() void
+    +undo() void
+    +getName() String
+    +canUndo() boolean
+}
+
+AddSchemaCommand ..|> MetadataCommand
+RemoveTableCommand ..|> MetadataCommand
+RenameColumnCommand ..|> MetadataCommand
+AddConstraintCommand ..|> MetadataCommand
+
+MetadataCommandInvoker --> MetadataCommand : executes
+
+AddSchemaCommand --> Database : receiver
+AddSchemaCommand --> Schema : argument
+
+RemoveTableCommand --> Schema : receiver
+RemoveTableCommand --> TableMetadata : stores removed object
+
+RenameColumnCommand --> ColumnMetadata : receiver
+
+AddConstraintCommand --> TableMetadata : receiver
+AddConstraintCommand --> Constraint : argument
+```
+
+
+- Sequence - Execute AddSchemaCommand
+```mermaid
+sequenceDiagram
+    actor Client
+    participant Command as AddSchemaCommand
+    participant Invoker as MetadataCommandInvoker
+    participant DB as Database
+    participant Schema
+
+    Client->>Command: new AddSchemaCommand(database, schema)
+    Command-->>Client: command
+
+    Client->>Invoker: execute(command)
+    Invoker->>Command: execute()
+
+    Command->>DB: addSchema(schema)
+    DB->>Schema: getDatabaseId()
+    Schema-->>DB: databaseId
+
+    DB->>DB: validate schema
+    DB->>DB: add schema to collection
+    DB->>DB: update catalog
+
+    DB-->>Command: completed
+    Command-->>Invoker: completed
+
+    Invoker->>Invoker: store command in history
+    Invoker-->>Client: success
+```
+- Sequence - Undo RemoveTable Command
+```mermaid
+classDiagram
+direction LR
+
+class MetadataManager {
+    -Database database
+    -Catalog catalog
+    -ConstraintFactory constraintFactory
+
+    +createSchema(SchemaDefinition definition) Schema
+    +createTable(UUID schemaId, TableDefinition definition) TableMetadata
+    +createColumn(ColumnDefinition definition) ColumnMetadata
+    +addConstraint(UUID tableId, ConstraintDefinition definition) Constraint
+    +removeTable(UUID schemaId, String tableName) TableMetadata
+    +renameColumn(UUID tableId, String columnName, String newName) void
+    +findSchema(UUID schemaId) Schema
+    +findTable(UUID tableId) TableMetadata
+}
+
+class SchemaBuilder {
+    +builder() SchemaBuilder
+    +name(String name) SchemaBuilder
+    +databaseId(UUID databaseId) SchemaBuilder
+    +ownerId(UUID ownerId) SchemaBuilder
+    +build() Schema
+}
+
+class TableMetadataBuilder {
+    +builder() TableMetadataBuilder
+    +name(String name) TableMetadataBuilder
+    +schemaId(UUID schemaId) TableMetadataBuilder
+    +addColumn(ColumnMetadata column) TableMetadataBuilder
+    +build() TableMetadata
+}
+
+class ColumnMetadataBuilder {
+    +builder() ColumnMetadataBuilder
+    +name(String name) ColumnMetadataBuilder
+    +dataType(DataType type) ColumnMetadataBuilder
+    +nullable(boolean nullable) ColumnMetadataBuilder
+    +length(Integer length) ColumnMetadataBuilder
+    +build() ColumnMetadata
+}
+
+class ConstraintFactory {
+    <<interface>>
+    +create(ConstraintDefinition definition) Constraint
+}
+
+class DefaultConstraintFactory {
+    +create(ConstraintDefinition definition) Constraint
+}
+
+class Database {
+    +addSchema(Schema schema) void
+    +getSchema(String name) Schema
+}
+
+class Catalog {
+    +putSchema(Schema schema) void
+    +putTable(TableMetadata table) void
+    +getTable(String name) TableMetadata
+}
+
+class Schema {
+    +addTable(TableMetadata table) void
+    +removeTable(String name) TableMetadata
+}
+
+class TableMetadata {
+    +addColumn(ColumnMetadata column) void
+    +addConstraint(Constraint constraint) void
+    +getColumn(String name) ColumnMetadata
+}
+
+class ColumnMetadata {
+    +rename(String newName) void
+}
+
+class Constraint
+class SchemaDefinition
+class TableDefinition
+class ColumnDefinition
+class ConstraintDefinition
+
+DefaultConstraintFactory ..|> ConstraintFactory
+
+MetadataManager --> Database : coordinates
+MetadataManager --> Catalog : updates
+MetadataManager --> ConstraintFactory : uses
+MetadataManager ..> SchemaBuilder : uses
+MetadataManager ..> TableMetadataBuilder : uses
+MetadataManager ..> ColumnMetadataBuilder : uses
+
+MetadataManager ..> SchemaDefinition
+MetadataManager ..> TableDefinition
+MetadataManager ..> ColumnDefinition
+MetadataManager ..> ConstraintDefinition
+
+Database --> Schema
+Schema --> TableMetadata
+TableMetadata --> ColumnMetadata
+TableMetadata --> Constraint
+```
+- Sequence - Execute and undo RenameColumnCommand
+```mermaid
+sequenceDiagram
+    actor Client
+    participant Invoker as MetadataCommandInvoker
+    participant Command as RenameColumnCommand
+    participant Column as ColumnMetadata
+
+    Client->>Command: new RenameColumnCommand(column, "email_address")
+    Command-->>Client: command
+
+    Client->>Invoker: execute(command)
+    Invoker->>Command: execute()
+
+    Command->>Column: getName()
+    Column-->>Command: "email"
+
+    Command->>Command: store previousName
+    Command->>Column: rename("email_address")
+    Column-->>Command: renamed
+
+    Command-->>Invoker: completed
+    Invoker->>Invoker: store command in history
+    Invoker-->>Client: success
+
+    Client->>Invoker: undoLast()
+    Invoker->>Command: undo()
+
+    Command->>Column: rename("email")
+    Column-->>Command: restored
+
+    Command-->>Invoker: undone
+    Invoker-->>Client: success
+```
+- Sequence - Execute AddConstraintCommand
+```mermaid
+sequenceDiagram
+    actor Client
+    participant Invoker as MetadataCommandInvoker
+    participant Command as AddConstraintCommand
+    participant Table as TableMetadata
+    participant Constraint
+
+    Client->>Command: new AddConstraintCommand(table, constraint)
+    Command-->>Client: command
+
+    Client->>Invoker: execute(command)
+    Invoker->>Command: execute()
+
+    Command->>Constraint: validateDefinition()
+    Constraint-->>Command: true
+
+    Command->>Table: addConstraint(constraint)
+    Table->>Constraint: getName()
+    Constraint-->>Table: constraintName
+
+    Table->>Table: check duplicate
+    Table->>Table: add to collection
+    Table-->>Command: completed
+
+    Command-->>Invoker: completed
+    Invoker->>Invoker: add command to history
+    Invoker-->>Client: success
+```
+
+- how to use?
+```java
+    MetadataCommandInvoker invoker =
+            new MetadataCommandInvoker();
+
+    MetadataCommand addSchema =
+            new AddSchemaCommand(
+                    database,
+                    schema
+            );
+
+    invoker.execute(addSchema);
+    invoker.undoLast();
+    invoker.redoLast();
+```
+### 8. Facade Pattern 
+- Class diagram
+
+```mermaid
+classDiagram
+direction LR
+
+class MetadataManager {
+    -Database database
+    -Catalog catalog
+    -ConstraintFactory constraintFactory
+
+    +createSchema(String name, UUID ownerId) Schema
+    +findSchema(UUID schemaId) Schema
+
+    +createTable(UUID schemaId, String name) TableMetadata
+    +findTable(UUID tableId) TableMetadata
+    +removeTable(UUID schemaId, String tableName) TableMetadata
+
+    +newColumnBuilder() ColumnMetadataBuilder
+    +addColumn(UUID tableId, ColumnMetadataBuilder builder) ColumnMetadata
+    +renameColumn(UUID tableId, String columnName, String newName) void
+
+    +addConstraint(UUID tableId, ConstraintDefinition definition) Constraint
+    +findConstraint(UUID tableId, String name) Constraint
+    +removeConstraint(UUID tableId, String name) Constraint
+}
+
+class ColumnMetadataBuilder {
+    +builder() ColumnMetadataBuilder
+    +name(String name) ColumnMetadataBuilder
+    +dataType(DataType type) ColumnMetadataBuilder
+    +nullable(boolean nullable) ColumnMetadataBuilder
+    +length(Integer length) ColumnMetadataBuilder
+    +position(int position) ColumnMetadataBuilder
+    +build() ColumnMetadata
+}
+
+class ConstraintFactory {
+    <<interface>>
+    +create(ConstraintDefinition definition) Constraint
+}
+
+class DefaultConstraintFactory {
+    +create(ConstraintDefinition definition) Constraint
+}
+
+class ConstraintDefinition {
+    -String name
+    -ConstraintType type
+    -UUID tableId
+    -List~UUID~ columnIds
+    -UUID referencedTableId
+    -List~UUID~ referencedColumnIds
+    -String expression
+}
+
+class Constraint {
+    <<interface>>
+    +getId() UUID
+    +getName() String
+    +getType() ConstraintType
+    +validateDefinition() boolean
+}
+
+class Database
+class Schema
+class TableMetadata {
+    +addColumn(ColumnMetadata column) void
+    +addConstraint(Constraint constraint) void
+    +getConstraint(String name) Constraint
+    +removeConstraint(String name) Constraint
+}
+
+class ColumnMetadata
+class Catalog
+
+DefaultConstraintFactory ..|> ConstraintFactory
+
+MetadataManager --> Database : coordinates
+MetadataManager --> Catalog : updates
+MetadataManager --> ConstraintFactory : uses
+MetadataManager ..> ColumnMetadataBuilder : provides
+
+ColumnMetadataBuilder ..> ColumnMetadata : builds
+ConstraintFactory ..> ConstraintDefinition : reads
+ConstraintFactory ..> Constraint : creates
+
+Database --> Schema
+Schema --> TableMetadata
+TableMetadata --> ColumnMetadata
+TableMetadata --> Constraint
+```
+
+- Sequence 1 - Facade creates Schema 
+```mermaid
+sequenceDiagram
+    actor Client
+    participant Facade as MetadataManager
+    participant Schema
+    participant DB as Database
+    participant Catalog
+
+    Client->>Facade: createSchema("public", ownerId)
+
+    Facade->>Schema: new Schema("public", database.id, ownerId)
+    Schema-->>Facade: schema
+
+    Facade->>DB: addSchema(schema)
+    DB-->>Facade: added
+
+    Facade->>Catalog: putSchema(schema)
+    Catalog-->>Facade: updated
+
+    Facade-->>Client: Schema
+```
+- Sequence 2 — Creates table directly
+```mermaid
+sequenceDiagram
+    actor Client
+    participant Facade as MetadataManager
+    participant Schema
+    participant Table as TableMetadata
+    participant Catalog
+
+    Client->>Facade: createTable(schemaId, "users")
+
+    Facade->>Facade: findSchema(schemaId)
+    Facade-->>Facade: schema
+
+    Facade->>Table: new TableMetadata("users", schemaId)
+    Table-->>Facade: table
+
+    Facade->>Schema: addTable(table)
+    Schema-->>Facade: added
+
+    Facade->>Catalog: putTable(table)
+    Catalog-->>Facade: updated
+
+    Facade-->>Client: TableMetadata
+
+```
+- Sequence 3 - Facade creates Column and adds to Table
+```mermaid
+sequenceDiagram
+    actor Client
+    participant Facade as MetadataManager
+    participant Builder as ColumnMetadataBuilder
+    participant Column as ColumnMetadata
+    participant Table as TableMetadata
+    participant Catalog
+
+    Client->>Facade: newColumnBuilder()
+    Facade->>Builder: builder()
+    Builder-->>Facade: builder
+    Facade-->>Client: builder
+
+    Client->>Builder: name("email")
+    Client->>Builder: dataType(VARCHAR)
+    Client->>Builder: nullable(false)
+    Client->>Builder: length(255)
+    Client->>Builder: position(1)
+
+    Client->>Facade: addColumn(tableId, builder)
+
+    Facade->>Facade: findTable(tableId)
+    Facade-->>Facade: table
+
+    Facade->>Builder: build()
+    Builder->>Column: new ColumnMetadata(...)
+    Column-->>Builder: column
+    Builder-->>Facade: column
+
+    Facade->>Table: addColumn(column)
+    Table-->>Facade: added
+
+    Facade->>Catalog: putTable(table)
+    Catalog-->>Facade: updated
+
+    Facade-->>Client: ColumnMetadata
+```
+
+- Sequence 4 — Facade creates and adds Constraint
+
+```mermaid
+sequenceDiagram
+    actor Client
+    participant Facade as MetadataManager
+    participant Factory as ConstraintFactory
+    participant Definition as ConstraintDefinition
+    participant Constraint
+    participant Table as TableMetadata
+    participant Catalog
+
+    Client->>Facade: addConstraint(tableId, definition)
+
+    Facade->>Facade: findTable(tableId)
+    Facade-->>Facade: table
+
+    Facade->>Factory: create(definition)
+    Factory->>Definition: getType()
+    Definition-->>Factory: ConstraintType
+
+    Factory->>Factory: validate definition
+    Factory->>Constraint: create concrete constraint
+    Constraint-->>Factory: constraint
+    Factory-->>Facade: Constraint
+
+    Facade->>Table: addConstraint(constraint)
+    Table-->>Facade: added
+
+    Facade->>Catalog: putTable(table)
+    Catalog-->>Facade: updated
+
+    Facade-->>Client: Constraint
+```
+### 9. Strategy Pattern
+- Sequence — BufferPool uses LRU
+```mermaid
+sequenceDiagram
+    actor Client
+    participant Engine as StorageEngine
+    participant Pool as BufferPool
+    participant LRU as LRUReplacementStrategy
+    participant Disk as DiskManager
+
+    Client->>Engine: readPage(pageId)
+    Engine->>Pool: getPage(pageId)
+
+    alt Page exists in buffer
+        Pool->>LRU: onPageAccessed(frame)
+        LRU-->>Pool: access recorded
+        Pool-->>Engine: page
+    else Page does not exist
+        Pool->>Pool: isFull()
+
+        alt Buffer is full
+            Pool->>LRU: selectVictim(frames)
+            LRU->>LRU: find least recently used frame
+            LRU-->>Pool: victimFrame
+            Pool->>LRU: onPageRemoved(victimFrame)
+        end
+
+        Pool->>Disk: readPage(pageId)
+        Disk-->>Pool: page
+
+        Pool->>Pool: create BufferFrame
+        Pool->>LRU: onPageLoaded(frame)
+        Pool-->>Engine: page
+    end
+
+    Engine-->>Client: Page
+```
+
+- Sequence — change from LRU to Clock
+```mermaid
+sequenceDiagram
+    actor Admin
+    participant Engine as StorageEngine
+    participant Pool as BufferPool
+    participant Clock as ClockReplacementStrategy
+
+    Admin->>Clock: new ClockReplacementStrategy()
+    Clock-->>Admin: strategy
+
+    Admin->>Engine: setPageReplacementStrategy(strategy)
+    Engine->>Pool: setReplacementStrategy(strategy)
+    Pool-->>Engine: strategy changed
+    Engine-->>Admin: completed
+
+    Note over Pool,Clock: Các lần eviction tiếp theo sử dụng Clock
+```
+
+- Sequence - allocate by Best Fit
+```mermaid
+sequenceDiagram
+    actor Client
+    participant Engine as StorageEngine
+    participant Allocator as StorageAllocator
+    participant Strategy as BestFitAllocationStrategy
+    participant Block as StorageBlock
+
+    Client->>Engine: allocate(4096)
+    Engine->>Allocator: allocate(4096)
+
+    Allocator->>Strategy: selectBlock(blocks, 4096)
+    Strategy->>Strategy: find smallest sufficient block
+    Strategy-->>Allocator: selectedBlock
+
+    alt Suitable block exists
+        Allocator->>Block: reserve(4096)
+        Block-->>Allocator: reserved
+        Allocator-->>Engine: allocatedBlock
+        Engine-->>Client: StorageBlock
+    else No suitable block
+        Allocator-->>Engine: allocation failure
+        Engine-->>Client: exception
+    end
+```
+
+### 10. Visitor Pattern
+```mermaid
+classDiagram
+direction LR
+
+class ASTNode {
+    <<interface>>
+    +accept(ASTVisitor visitor) Object
+    +getType() ASTNodeType
+}
+
+class ASTVisitor {
+    <<interface>>
+    +visitSelect(SelectNode node) Object
+    +visitInsert(InsertNode node) Object
+    +visitUpdate(UpdateNode node) Object
+    +visitDelete(DeleteNode node) Object
+    +visitTable(TableNode node) Object
+    +visitColumn(ColumnNode node) Object
+    +visitJoin(JoinNode node) Object
+    +visitExpression(ExpressionNode node) Object
+}
+
+class SelectNode {
+    -List~ColumnNode~ columns
+    -TableNode from
+    -ExpressionNode where
+    -List~JoinNode~ joins
+    +accept(ASTVisitor visitor) Object
+}
+
+class InsertNode {
+    -TableNode table
+    -List~ColumnNode~ columns
+    -List~ExpressionNode~ values
+    +accept(ASTVisitor visitor) Object
+}
+
+class UpdateNode {
+    -TableNode table
+    -Map~ColumnNode, ExpressionNode~ assignments
+    -ExpressionNode where
+    +accept(ASTVisitor visitor) Object
+}
+
+class DeleteNode {
+    -TableNode table
+    -ExpressionNode where
+    +accept(ASTVisitor visitor) Object
+}
+
+class TableNode {
+    -String tableName
+    -String alias
+    +accept(ASTVisitor visitor) Object
+}
+
+class ColumnNode {
+    -String tableAlias
+    -String columnName
+    +accept(ASTVisitor visitor) Object
+}
+
+class JoinNode {
+    -JoinType joinType
+    -TableNode table
+    -ExpressionNode condition
+    +accept(ASTVisitor visitor) Object
+}
+
+class ExpressionNode {
+    -Object value
+    -String operator
+    -ExpressionNode left
+    -ExpressionNode right
+    +accept(ASTVisitor visitor) Object
+}
+
+class QueryValidationVisitor {
+    -Catalog catalog
+    -UserSession session
+    -List~ValidationError~ errors
+    +visitSelect(SelectNode node) Object
+    +visitInsert(InsertNode node) Object
+    +visitUpdate(UpdateNode node) Object
+    +visitDelete(DeleteNode node) Object
+    +visitTable(TableNode node) Object
+    +visitColumn(ColumnNode node) Object
+    +visitJoin(JoinNode node) Object
+    +visitExpression(ExpressionNode node) Object
+    +getResult() ValidationResult
+}
+
+class LogicalPlanVisitor {
+    -Catalog catalog
+    -LogicalPlan logicalPlan
+    +visitSelect(SelectNode node) Object
+    +visitInsert(InsertNode node) Object
+    +visitUpdate(UpdateNode node) Object
+    +visitDelete(DeleteNode node) Object
+    +visitTable(TableNode node) Object
+    +visitColumn(ColumnNode node) Object
+    +visitJoin(JoinNode node) Object
+    +visitExpression(ExpressionNode node) Object
+    +getPlan() LogicalPlan
+}
+
+class CostEstimationVisitor {
+    -Catalog catalog
+    -CostModel costModel
+    -double estimatedCost
+    +visitSelect(SelectNode node) Object
+    +visitInsert(InsertNode node) Object
+    +visitUpdate(UpdateNode node) Object
+    +visitDelete(DeleteNode node) Object
+    +visitTable(TableNode node) Object
+    +visitColumn(ColumnNode node) Object
+    +visitJoin(JoinNode node) Object
+    +visitExpression(ExpressionNode node) Object
+    +getEstimatedCost() double
+}
+
+ASTNode <|.. SelectNode
+ASTNode <|.. InsertNode
+ASTNode <|.. UpdateNode
+ASTNode <|.. DeleteNode
+ASTNode <|.. TableNode
+ASTNode <|.. ColumnNode
+ASTNode <|.. JoinNode
+ASTNode <|.. ExpressionNode
+
+ASTVisitor <|.. QueryValidationVisitor
+ASTVisitor <|.. LogicalPlanVisitor
+ASTVisitor <|.. CostEstimationVisitor
+
+SelectNode --> TableNode
+SelectNode --> ColumnNode
+SelectNode --> JoinNode
+SelectNode --> ExpressionNode
+
+InsertNode --> TableNode
+InsertNode --> ColumnNode
+InsertNode --> ExpressionNode
+
+UpdateNode --> TableNode
+UpdateNode --> ColumnNode
+UpdateNode --> ExpressionNode
+
+DeleteNode --> TableNode
+DeleteNode --> ExpressionNode
+
+JoinNode --> TableNode
+JoinNode --> ExpressionNode
+ExpressionNode --> ExpressionNode
+
+QueryValidationVisitor --> Catalog
+LogicalPlanVisitor --> Catalog
+CostEstimationVisitor --> Catalog
+CostEstimationVisitor --> CostMode
+```
+
+
+### 11. Create Page, Log, Index - Fatory Method
+- Class diagram - Page: 
+```mermaid
+    classDiagram
+    direction LR
+
+    class Page {
+        <<abstract>>
+
+        -int pageId
+        -byte[] data
+        -PageHeader header
+        -boolean dirty
+        -int pinCount
+
+        +Page(int pageId, int pageSize)
+        +getPageId() int
+        +getData() byte[]
+        +getHeader() PageHeader
+        +getPageType() PageType*
+        +markDirty() void
+        +unmarkDirty() void
+        +pin() void
+        +unpin() void
+    }
+
+    class DataPage {
+        +DataPage(int pageId, int pageSize)
+        +getPageType() PageType
+    }
+
+    class IndexPage {
+        +IndexPage(int pageId, int pageSize)
+        +getPageType() PageType
+    }
+
+    class LogPage {
+        +LogPage(int pageId, int pageSize)
+        +getPageType() PageType
+    }
+
+    class PageFactory {
+        <<interface>>
+        +createPage(int pageId, int pageSize) Page
+    }
+
+    class DataPageFactory {
+        +createPage(int pageId, int pageSize) Page
+    }
+
+    class IndexPageFactory {
+        +createPage(int pageId, int pageSize) Page
+    }
+
+    class LogPageFactory {
+        +createPage(int pageId, int pageSize) Page
+    }
+
+    class PageHeader {
+        -int pageId
+        -int freeSpacePointer
+        -int slotCount
+        -int checksum
+    }
+
+    class PageType {
+        <<enumeration>>
+        DATA
+        INDEX
+        LOG
+    }
+
+    Page <|-- DataPage
+    Page <|-- IndexPage
+    Page <|-- LogPage
+
+    PageFactory <|.. DataPageFactory
+    PageFactory <|.. IndexPageFactory
+    PageFactory <|.. LogPageFactory
+
+    DataPageFactory ..> DataPage : creates
+    IndexPageFactory ..> IndexPage : creates
+    LogPageFactory ..> LogPage : creates
+
+    Page --> PageHeader
+    Page --> PageType
+```
+
+- Sequence - Create DataPage
+```mermaid
+    sequenceDiagram
+    actor Client
+    participant Factory as DataPageFactory
+    participant Page as DataPage
+    participant Header as PageHeader
+
+    Client->>Factory: createPage(pageId, pageSize)
+
+    Factory->>Page: new DataPage(pageId, pageSize)
+
+    Page->>Header: new PageHeader(pageId)
+    Header-->>Page: pageHeader
+
+    Page-->>Factory: dataPage
+    Factory-->>Client: Page
+```
+- DiskManager allocates Page
+
+```mermaid
+    sequenceDiagram
+    actor Engine as StorageEngine
+    participant Disk as DiskManager
+    participant File as FileManager
+    participant Factory as PageFactory
+    participant Page
+
+    Engine->>Disk: allocateNewPage(fileName, pageSize)
+
+    Disk->>File: findNextPageId(fileName)
+    File-->>Disk: pageId
+
+    Disk->>Factory: createPage(pageId, pageSize)
+    Factory->>Page: create concrete Page
+    Page-->>Factory: page
+    Factory-->>Disk: page
+
+    Disk->>Disk: writePage(fileName, pageId, page)
+    Disk-->>Engine: Page
+```
+
+- Sequences - Log manager creates Log Page
+```mermaid
+    sequenceDiagram
+    actor LogManager
+    participant Factory as LogPageFactory
+    participant Page as LogPage
+    participant Header as PageHeader
+
+    LogManager->>Factory: createPage(pageId, pageSize)
+
+    Factory->>Page: new LogPage(pageId, pageSize)
+    Page->>Header: new PageHeader(pageId)
+    Header-->>Page: header
+
+    Page->>Page: initialize LSN metadata
+    Page->>Page: initialize write position
+
+    Page-->>Factory: logPage
+    Factory-->>LogManager: Page
+```
+
+- Class diagram - Index Factory
+```mermaid
+    classDiagram
+    direction LR
+
+    class Index {
+        <<interface>>
+        +getId() UUID
+        +getName() String
+        +getType() IndexType
+        +insert(Object key, RecordId recordId) void
+        +search(Object key) List~RecordId~
+        +delete(Object key, RecordId recordId) void
+    }
+
+    class BTreeIndex {
+        -UUID id
+        -String name
+        -UUID tableId
+        -List~UUID~ columnIds
+        +getId() UUID
+        +getName() String
+        +getType() IndexType
+        +insert(Object key, RecordId recordId) void
+        +search(Object key) List~RecordId~
+        +delete(Object key, RecordId recordId) void
+    }
+
+    class HashIndex {
+        -UUID id
+        -String name
+        -UUID tableId
+        -List~UUID~ columnIds
+        +getId() UUID
+        +getName() String
+        +getType() IndexType
+        +insert(Object key, RecordId recordId) void
+        +search(Object key) List~RecordId~
+        +delete(Object key, RecordId recordId) void
+    }
+
+    class BitmapIndex {
+        -UUID id
+        -String name
+        -UUID tableId
+        -List~UUID~ columnIds
+        +getId() UUID
+        +getName() String
+        +getType() IndexType
+        +insert(Object key, RecordId recordId) void
+        +search(Object key) List~RecordId~
+        +delete(Object key, RecordId recordId) void
+    }
+
+    class IndexFactory {
+        <<interface>>
+        +createIndex(IndexDefinition definition) Index
+    }
+
+    class BTreeIndexFactory {
+        +createIndex(IndexDefinition definition) Index
+    }
+
+    class HashIndexFactory {
+        +createIndex(IndexDefinition definition) Index
+    }
+
+    class BitmapIndexFactory {
+        +createIndex(IndexDefinition definition) Index
+    }
+
+    class IndexDefinition {
+        -String name
+        -UUID tableId
+        -List~UUID~ columnIds
+        -boolean unique
+    }
+
+    class IndexType {
+        <<enumeration>>
+        BTREE
+        HASH
+        BITMAP
+    }
+
+    Index <|.. BTreeIndex
+    Index <|.. HashIndex
+    Index <|.. BitmapIndex
+
+    IndexFactory <|.. BTreeIndexFactory
+    IndexFactory <|.. HashIndexFactory
+    IndexFactory <|.. BitmapIndexFactory
+
+    BTreeIndexFactory ..> BTreeIndex : creates
+    HashIndexFactory ..> HashIndex : creates
+    BitmapIndexFactory ..> BitmapIndex : creates
+
+    Index --> IndexType
+    IndexFactory --> IndexDefinition
+```
+- MetadataManager uses IndexFactory
+```mermaid
+sequenceDiagram
+    actor Client
+    participant Metadata as MetadataManager
+    participant Factory as IndexFactory
+    participant Definition as IndexDefinition
+    participant Index as HashIndex
+    participant Table as TableMetadata
+    participant Catalog
+
+    Client->>Metadata: createIndex(tableId, definition)
+
+    Metadata->>Metadata: findTable(tableId)
+    Metadata-->>Metadata: table
+
+    Metadata->>Factory: createIndex(definition)
+
+    Factory->>Definition: getName()
+    Definition-->>Factory: indexName
+
+    Factory->>Definition: getColumnIds()
+    Definition-->>Factory: columnIds
+
+    Factory->>Index: new HashIndex(...)
+    Index-->>Factory: hashIndex
+
+    Factory-->>Metadata: Index
+
+    Metadata->>Table: addIndex(index)
+    Table-->>Metadata: added
+
+    Metadata->>Catalog: putTable(table)
+    Catalog-->>Metadata: updated
+
+    Metadata-->>Client: Index
+```
+- Class diagram - Log Factory
+```text
+LogRecord
+├── InsertLogRecord
+├── UpdateLogRecord
+├── DeleteLogRecord
+├── CommitLogRecord
+└── RollbackLogRecord
+```
+```mermaid
+classDiagram
+direction LR
+
+class LogRecord {
+    <<abstract>>
+    -long lsn
+    -UUID transactionId
+    -Instant createdAt
+    +getLsn() long
+    +getTransactionId() UUID
+    +getCreatedAt() Instant
+    +getType() LogRecordType*
+}
+
+class InsertLogRecord {
+    -String fileName
+    -RecordId recordId
+    -byte[] afterImage
+    +getType() LogRecordType
+}
+
+class UpdateLogRecord {
+    -String fileName
+    -RecordId recordId
+    -byte[] beforeImage
+    -byte[] afterImage
+    +getType() LogRecordType
+}
+
+class DeleteLogRecord {
+    -String fileName
+    -RecordId recordId
+    -byte[] beforeImage
+    +getType() LogRecordType
+}
+
+class CommitLogRecord {
+    +getType() LogRecordType
+}
+
+class RollbackLogRecord {
+    +getType() LogRecordType
+}
+
+class LogRecordFactory {
+    <<interface>>
+    +createLogRecord(LogRecordDefinition definition) LogRecord
+}
+
+class InsertLogRecordFactory {
+    +createLogRecord(LogRecordDefinition definition) LogRecord
+}
+
+class UpdateLogRecordFactory {
+    +createLogRecord(LogRecordDefinition definition) LogRecord
+}
+
+class DeleteLogRecordFactory {
+    +createLogRecord(LogRecordDefinition definition) LogRecord
+}
+
+class TransactionLogRecordFactory {
+    +createLogRecord(LogRecordDefinition definition) LogRecord
+}
+
+class LogRecordDefinition {
+    -long lsn
+    -UUID transactionId
+    -LogRecordType type
+    -String fileName
+    -RecordId recordId
+    -byte[] beforeImage
+    -byte[] afterImage
+}
+
+class LogRecordType {
+    <<enumeration>>
+    INSERT
+    UPDATE
+    DELETE
+    COMMIT
+    ROLLBACK
+}
+
+LogRecord <|-- InsertLogRecord
+LogRecord <|-- UpdateLogRecord
+LogRecord <|-- DeleteLogRecord
+LogRecord <|-- CommitLogRecord
+LogRecord <|-- RollbackLogRecord
+
+LogRecordFactory <|.. InsertLogRecordFactory
+LogRecordFactory <|.. UpdateLogRecordFactory
+LogRecordFactory <|.. DeleteLogRecordFactory
+LogRecordFactory <|.. TransactionLogRecordFactory
+
+InsertLogRecordFactory ..> InsertLogRecord : creates
+UpdateLogRecordFactory ..> UpdateLogRecord : creates
+DeleteLogRecordFactory ..> DeleteLogRecord : creates
+TransactionLogRecordFactory ..> CommitLogRecord : creates
+TransactionLogRecordFactory ..> RollbackLogRecord : creates
+
+LogRecord --> LogRecordType
+LogRecordFactory --> LogRecordDefinition
+```
+- LogManager uses LogRecordFactory
+```mermaid
+sequenceDiagram
+    actor Engine as StorageEngine
+    participant LogManager
+    participant Factory as LogRecordFactory
+    participant Definition as LogRecordDefinition
+    participant Log as UpdateLogRecord
+
+    Engine->>LogManager: logUpdate(definition)
+
+    LogManager->>Factory: createLogRecord(definition)
+
+    Factory->>Definition: getTransactionId()
+    Definition-->>Factory: transactionId
+
+    Factory->>Definition: getRecordId()
+    Definition-->>Factory: recordId
+
+    Factory->>Definition: getBeforeImage()
+    Definition-->>Factory: beforeImage
+
+    Factory->>Definition: getAfterImage()
+    Definition-->>Factory: afterImage
+
+    Factory->>Log: new UpdateLogRecord(...)
+    Log-->>Factory: updateLogRecord
+
+    Factory-->>LogManager: LogRecord
+
+    LogManager->>LogManager: append(logRecord)
+    LogManager->>LogManager: flushIfRequired()
+
+    LogManager-->>Engine: completed
+```
+
+## General Class Diagram
+```mermaid
+    classDiagram
+        direction LR
+
+        class StorageEngine {
+            -DiskManager diskManager
+            -LogManager logManager
+            +allocatePage(PageType type, int pageSize) Page
+            +writeLog(LogRecordDefinition definition) void
+        }
+
+        class DiskManager {
+            -PageFactory pageFactory
+            +allocatePage(PageType type, int pageSize) Page
+        }
+
+        class MetadataManager {
+            -IndexFactory indexFactory
+            -Catalog catalog
+            +createIndex(UUID tableId, IndexDefinition definition) Index
+        }
+
+        class LogManager {
+            -LogRecordFactory logRecordFactory
+            +log(LogRecordDefinition definition) void
+        }
+
+        class PageFactory {
+            <<interface>>
+            +createPage(int pageId, int pageSize) Page
+        }
+
+        class IndexFactory {
+            <<interface>>
+            +createIndex(IndexDefinition definition) Index
+        }
+
+        class LogRecordFactory {
+            <<interface>>
+            +createLogRecord(LogRecordDefinition definition) LogRecord
+        }
+
+        class Page
+        class Index
+        class LogRecord
+        class Catalog
+        class TableMetadata
+
+        StorageEngine --> DiskManager
+        StorageEngine --> LogManager
+
+        DiskManager --> PageFactory : uses
+        MetadataManager --> IndexFactory : uses
+        MetadataManager --> Catalog : updates
+        MetadataManager --> TableMetadata : modifies
+        LogManager --> LogRecordFactory : uses
+
+        PageFactory ..> Page : creates
+        IndexFactory ..> Index : creates
+        LogRecordFactory ..> LogRecord : creates
+```
+### 12. Execution select a table
+```mermaid
+classDiagram
+direction LR
+
+class Executor {
+    +execute(PhysicalPlan plan) QueryResult
+}
+
+class PhysicalPlan {
+    -ExecutionOperator root
+    +getRoot() ExecutionOperator
+}
+
+class ExecutionOperator {
+    <<interface>>
+    +init() void
+    +next() Row
+    +close() void
+}
+
+class TableScanOperator
+class FilterOperator
+class ProjectionOperator
+class JoinOperator
+class LimitOperator
+
+class Row
+class StorageEngine
+
+ExecutionOperator <|.. TableScanOperator
+ExecutionOperator <|.. FilterOperator
+ExecutionOperator <|.. ProjectionOperator
+ExecutionOperator <|.. JoinOperator
+ExecutionOperator <|.. LimitOperator
+
+Executor --> PhysicalPlan
+PhysicalPlan --> ExecutionOperator : root
+Executor --> ExecutionOperator : iterates
+
+FilterOperator --> ExecutionOperator : child
+ProjectionOperator --> ExecutionOperator : child
+LimitOperator --> ExecutionOperator : child
+JoinOperator --> ExecutionOperator : children
+
+TableScanOperator --> StorageEngine
+ExecutionOperator ..> Row : returns
+```
+- Sequence a SELECT execution
+```mermaid
+    sequenceDiagram
+    actor Client
+    participant Executor
+    participant Limit as LimitOperator
+    participant Project as ProjectionOperator
+    participant Filter as FilterOperator
+    participant Scan as TableScanOperator
+    participant Storage as StorageEngine
+
+    Client->>Executor: execute(physicalPlan)
+
+    Executor->>Limit: init()
+    Limit->>Project: init()
+    Project->>Filter: init()
+    Filter->>Scan: init()
+    Scan->>Storage: prepare table scan
+    Storage-->>Scan: ready
+
+    loop Until next() returns null
+        Executor->>Limit: next()
+
+        Limit->>Project: next()
+        Project->>Filter: next()
+
+        loop Until matching row
+            Filter->>Scan: next()
+            Scan->>Storage: read next record
+            Storage-->>Scan: Row
+            Scan-->>Filter: Row
+            Filter->>Filter: predicate.test(row)
+        end
+
+        Filter-->>Project: matching Row
+        Project->>Project: select requested columns
+        Project-->>Limit: projected Row
+
+        Limit->>Limit: increment returnedCount
+        Limit-->>Executor: Row
+
+        Executor->>Executor: addRow(row)
+    end
+
+    Executor->>Limit: close()
+    Limit->>Project: close()
+    Project->>Filter: close()
+    Filter->>Scan: close()
+    Scan->>Storage: release scan resources
+
+    Executor-->>Client: QueryResult
+```
+
+- Sequence focused only next()
+```mermaid
+sequenceDiagram
+    participant Executor
+    participant Projection
+    participant Filter
+    participant Scan
+    participant Storage
+
+    Executor->>Projection: next()
+    Projection->>Filter: next()
+
+    Filter->>Scan: next()
+    Scan->>Storage: read next row
+    Storage-->>Scan: Row 1
+    Scan-->>Filter: Row 1
+
+    Filter->>Filter: test(Row 1)
+
+    alt Row 1 matches
+        Filter-->>Projection: Row 1
+    else Row 1 does not match
+        Filter->>Scan: next()
+        Scan->>Storage: read next row
+        Storage-->>Scan: Row 2
+        Scan-->>Filter: Row 2
+        Filter->>Filter: test(Row 2)
+        Filter-->>Projection: Row 2
+    end
+
+    Projection->>Projection: project selected columns
+    Projection-->>Executor: projected Row
+```
+### 13. Constraint Check - Chain of responsitoties
+- class diagram 
+```mermaid
+classDiagram
+direction LR
+
+class ConstraintValidationHandler {
+    <<interface>>
+    +setNext(ConstraintValidationHandler next) ConstraintValidationHandler
+    +validate(ConstraintValidationContext context) ConstraintValidationResult
+}
+
+class AbstractConstraintValidationHandler {
+    <<abstract>>
+    -ConstraintValidationHandler next
+    +setNext(ConstraintValidationHandler next) ConstraintValidationHandler
+    +validate(ConstraintValidationContext context) ConstraintValidationResult
+    #doValidate(ConstraintValidationContext context) ConstraintValidationResult*
+    #validateNext(ConstraintValidationContext context) ConstraintValidationResult
+}
+
+class NotNullConstraintHandler {
+    #doValidate(ConstraintValidationContext context) ConstraintValidationResult
+}
+
+class CheckConstraintHandler {
+    #doValidate(ConstraintValidationContext context) ConstraintValidationResult
+}
+
+class PrimaryKeyConstraintHandler {
+    #doValidate(ConstraintValidationContext context) ConstraintValidationResult
+}
+
+class UniqueConstraintHandler {
+    #doValidate(ConstraintValidationContext context) ConstraintValidationResult
+}
+
+class ForeignKeyConstraintHandler {
+    #doValidate(ConstraintValidationContext context) ConstraintValidationResult
+}
+
+class ConstraintValidationChain {
+    -ConstraintValidationHandler firstHandler
+    +validate(ConstraintValidationContext context) ConstraintValidationResult
+}
+
+class ConstraintValidationContext {
+    -Row row
+    -TableMetadata table
+    -ConstraintValidationData validationData
+}
+
+class ConstraintValidationResult {
+    -boolean valid
+    -Constraint violation
+    +success()$ ConstraintValidationResult
+    +failure(Constraint violation)$ ConstraintValidationResult
+    +isValid() boolean
+}
+
+class RecordManager {
+    -ConstraintValidationChain constraintValidationChain
+    +insert(Record record, String tableFile) RecordId
+    +update(RecordId id, Record record, String tableFile) void
+}
+
+class TableMetadata
+class Row
+class Constraint
+class NotNullConstraint
+class CheckConstraint
+class PrimaryKeyConstraint
+class UniqueConstraint
+class ForeignKeyConstraint
+
+ConstraintValidationHandler <|.. AbstractConstraintValidationHandler
+
+AbstractConstraintValidationHandler <|-- NotNullConstraintHandler
+AbstractConstraintValidationHandler <|-- CheckConstraintHandler
+AbstractConstraintValidationHandler <|-- PrimaryKeyConstraintHandler
+AbstractConstraintValidationHandler <|-- UniqueConstraintHandler
+AbstractConstraintValidationHandler <|-- ForeignKeyConstraintHandler
+
+AbstractConstraintValidationHandler --> ConstraintValidationHandler : next
+ConstraintValidationChain --> ConstraintValidationHandler : starts
+RecordManager --> ConstraintValidationChain : validates before write
+
+ConstraintValidationContext --> Row
+ConstraintValidationContext --> TableMetadata
+TableMetadata --> Constraint
+
+Constraint <|-- NotNullConstraint
+Constraint <|-- CheckConstraint
+Constraint <|-- PrimaryKeyConstraint
+Constraint <|-- UniqueConstraint
+Constraint <|-- ForeignKeyConstraint
+
+NotNullConstraintHandler ..> NotNullConstraint : delegates
+CheckConstraintHandler ..> CheckConstraint : delegates
+PrimaryKeyConstraintHandler ..> PrimaryKeyConstraint : delegates
+UniqueConstraintHandler ..> UniqueConstraint : delegates
+ForeignKeyConstraintHandler ..> ForeignKeyConstraint : delegates
+```
+- Sequence - constraint check
+```mermaid
+    sequenceDiagram
+    actor Manager as RecordManager
+    participant Chain as ConstraintValidationChain
+    participant NN as NotNullConstraintHandler
+    participant Check as CheckConstraintHandler
+    participant PK as PrimaryKeyConstraintHandler
+    participant UQ as UniqueConstraintHandler
+    participant FK as ForeignKeyConstraintHandler
+
+    Manager->>Chain: validate(context)
+    Chain->>NN: validate(context)
+
+    NN->>NN: delegate to NotNullConstraint
+    NN->>Check: validate(context)
+
+    Check->>Check: delegate to CheckConstraint
+    Check->>PK: validate(context)
+
+    PK->>PK: delegate to PrimaryKeyConstraint
+    PK->>UQ: validate(context)
+
+    UQ->>UQ: delegate to UniqueConstraint
+    UQ->>FK: validate(context)
+
+    FK->>FK: delegate to ForeignKeyConstraint
+    FK-->>UQ: success
+    UQ-->>PK: success
+    PK-->>Check: success
+    Check-->>NN: success
+    NN-->>Chain: success
+    Chain-->>Manager: valid
+``` 
+
+### 14. Build AST, Logical Plan, Physical Plan with Builder Pattern
+
+```text
+Query Processor
+├── ASTBuilder
+├── LogicalPlanBuilder
+└── PhysicalPlanBuilder
+```
+- Synctax example:
+
+```java 
+    LogicalPlan logicalPlan = LogicalPlanBuilder.builder()
+        .tableScan(usersTable)
+        .filter(ageGreaterThan18)
+        .project(List.of(nameColumn))
+        .limit(10)
+        .build();
+```
+- Class diagram:
+
+```mermaid
+classDiagram
+direction LR
+
+class Parser {
+    -ASTBuilder astBuilder
+    +parse(String sql) ASTBuildResult
+}
+
+class ASTBuilder {
+    -ASTNode root
+    -List~ASTNode~ nodes
+    +select(List~String~ columns) ASTBuilder
+    +from(String tableName) ASTBuilder
+    +where(Expression condition) ASTBuilder
+    +join(JoinNode join) ASTBuilder
+    +groupBy(List~String~ columns) ASTBuilder
+    +orderBy(List~OrderItem~ items) ASTBuilder
+    +limit(int limit) ASTBuilder
+    +build() ASTBuildResult
+}
+
+class LogicalPlanBuilder {
+    -LogicalPlanNode root
+    +tableScan(TableMetadata table) LogicalPlanBuilder
+    +filter(Expression predicate) LogicalPlanBuilder
+    +project(List~ColumnReference~ columns) LogicalPlanBuilder
+    +join(LogicalPlanNode right, JoinCondition condition) LogicalPlanBuilder
+    +limit(long limit) LogicalPlanBuilder
+    +build() LogicalPlan
+}
+
+class PhysicalPlanBuilder {
+    -ExecutionOperator root
+    +tableScan(TableMetadata table) PhysicalPlanBuilder
+    +filter(RowPredicate predicate) PhysicalPlanBuilder
+    +project(List~ColumnReference~ columns) PhysicalPlanBuilder
+    +nestedLoopJoin(ExecutionOperator right, JoinCondition condition) PhysicalPlanBuilder
+    +hashJoin(ExecutionOperator right, JoinCondition condition) PhysicalPlanBuilder
+    +limit(long limit) PhysicalPlanBuilder
+    +build() PhysicalPlan
+}
+
+class ASTBuildResult
+class ASTNode
+class LogicalPlan
+class LogicalPlanNode
+class PhysicalPlan
+class ExecutionOperator
+class QueryOptimizer
+class Executor
+
+Parser --> ASTBuilder
+ASTBuilder ..> ASTBuildResult : builds
+ASTBuildResult --> ASTNode
+
+LogicalPlanBuilder ..> LogicalPlan : builds
+LogicalPlan --> LogicalPlanNode
+
+QueryOptimizer --> LogicalPlan
+QueryOptimizer --> PhysicalPlanBuilder
+
+PhysicalPlanBuilder ..> PhysicalPlan : builds
+PhysicalPlan --> ExecutionOperator
+
+Executor --> PhysicalPlan
+```
+SQL:
+```text
+SELECT name
+FROM users
+WHERE age > 18
+LIMIT 10;
+```
+
+Builder tạo plan theo từng bước:
+```java
+LogicalPlan logicalPlan = LogicalPlanBuilder.builder()
+        .tableScan(usersTable)
+        .filter(ageGreaterThan18)
+        .project(List.of(nameColumn))
+        .limit(10)
+        .build();
+```
+### 15. Store and retrieve SchemaMetadata and TableMetadata
+- Class diagram:
+
+```mermaid
+classDiagram
+direction LR
+
+class MetadataRepository~T~ {
+    <<interface>>
+
+    +save(T entity) T
+    +findById(UUID id) Optional~T~
+    +findByName(String name) Optional~T~
+    +findAll() List~T~
+    +existsById(UUID id) boolean
+    +existsByName(String name) boolean
+    +deleteById(UUID id) void
+    +count() long
+    +clear() void
+}
+
+class SchemaRepository {
+    <<interface>>
+
+    +findByDatabaseId(UUID databaseId) List~Schema~
+    +findByDatabaseIdAndName(UUID databaseId, String name) Optional~Schema~
+}
+
+class TableMetadataRepository {
+    <<interface>>
+
+    +findBySchemaId(UUID schemaId) List~TableMetadata~
+    +findBySchemaIdAndName(UUID schemaId, String name) Optional~TableMetadata~
+}
+
+class IndexMetadataRepository {
+    <<interface>>
+
+    +findByTableId(UUID tableId) List~IndexMetadata~
+    +findByTableIdAndName(UUID tableId, String name) Optional~IndexMetadata~
+}
+
+class ConstraintRepository {
+    <<interface>>
+
+    +findByTableId(UUID tableId) List~Constraint~
+    +findByTableIdAndName(UUID tableId, String name) Optional~Constraint~
+    +findByType(ConstraintType type) List~Constraint~
+}
+
+class AbstractInMemoryMetadataRepository~T~ {
+    <<abstract>>
+
+    -Map~UUID,T~ storage
+
+    +save(T entity) T
+    +findById(UUID id) Optional~T~
+    +findByName(String name) Optional~T~
+    +findAll() List~T~
+    +existsById(UUID id) boolean
+    +existsByName(String name) boolean
+    +deleteById(UUID id) void
+    +count() long
+    +clear() void
+
+    #getStorage() Map~UUID,T~
+    #isSameNamespace(T first, T second) boolean
+}
+
+class InMemorySchemaRepository
+class InMemoryTableMetadataRepository
+class InMemoryIndexMetadataRepository
+class InMemoryConstraintRepository
+
+class MetadataManager {
+    -SchemaRepository schemaRepository
+    -TableMetadataRepository tableRepository
+    -IndexMetadataRepository indexRepository
+    -ConstraintRepository constraintRepository
+
+    +saveSchema(Schema schema) Schema
+    +findSchema(UUID databaseId, String name) Optional~Schema~
+
+    +saveTable(TableMetadata table) TableMetadata
+    +findTable(UUID schemaId, String name) Optional~TableMetadata~
+
+    +saveIndex(IndexMetadata index) IndexMetadata
+    +findIndexes(UUID tableId) List~IndexMetadata~
+
+    +saveConstraint(Constraint constraint) Constraint
+    +findConstraints(UUID tableId) List~Constraint~
+}
+
+MetadataRepository <|-- SchemaRepository
+MetadataRepository <|-- TableMetadataRepository
+MetadataRepository <|-- IndexMetadataRepository
+MetadataRepository <|-- ConstraintRepository
+
+MetadataRepository <|.. AbstractInMemoryMetadataRepository
+
+AbstractInMemoryMetadataRepository <|-- InMemorySchemaRepository
+AbstractInMemoryMetadataRepository <|-- InMemoryTableMetadataRepository
+AbstractInMemoryMetadataRepository <|-- InMemoryIndexMetadataRepository
+AbstractInMemoryMetadataRepository <|-- InMemoryConstraintRepository
+
+SchemaRepository <|.. InMemorySchemaRepository
+TableMetadataRepository <|.. InMemoryTableMetadataRepository
+IndexMetadataRepository <|.. InMemoryIndexMetadataRepository
+ConstraintRepository <|.. InMemoryConstraintRepository
+
+MetadataManager --> SchemaRepository
+MetadataManager --> TableMetadataRepository
+MetadataManager --> IndexMetadataRepository
+MetadataManager --> ConstraintRepository
+
+SchemaRepository ..> Schema
+TableMetadataRepository ..> TableMetadata
+IndexMetadataRepository ..> IndexMetadata
+ConstraintRepository ..> Constraint
+```
+
+
+
+# 🧪 Testing Status
+
+# DBMS Testing Documentation
+
+## Unit Tests
+
+| Module | Test Suites |
+| --- | --- |
+| Database | DatabaseTests |
+| Metadata | CatalogTests, SchemaTests, TableMetadataTests, ColumnMetadataTests, ViewTests, RowTests, ConstraintTests, IndexTests |
+| Query Processor | ParserTests, OptimizerTests, ExecutorTests |
+| Storage Engine | StorageEngineTests, DiskManagerTests, BufferPoolTests, FileManagerTests, PageTests, PageHeaderTests, RecordManagerTests |
+| Storage Strategies | LRUReplacementStrategyTests, FIFOReplacementStrategyTests, ClockReplacementStrategyTests, StorageAllocationStrategyTests |
+| Storage Integration | BufferPoolStrategyIntegrationTests |
+| Transaction | TransactionManagerTests, LockManagerTests |
+| Security | AuthServiceTests, SecurityManagerTests |
+
+## Overall Test Progress
+
+**Implemented:** 438 / 875 planned tests
+
+`██████████░░░░░░░░░░ 51%`
+
+| Metric | Result |
+| --- | ---: |
+| Planned tests | 1014 |
+| Implemented tests | 438 |
+| Passed | 364 |
+| Failed | 0 |
+| Skipped | 0 |
+| Not run / result not recorded | 74 |
+| Test implementation progress | 50.05% |
+| Result coverage | 83.11% |
+| Pass rate of executed tests | 100% |
+
+> Test implementation progress: `438 / 857 × 100 = 51.11%`
+>
+> Result coverage: `364 / 438 × 100 = 83.11%`
+>
+> Pass rate of executed tests: `364 / 364 × 100 = 100%`
+
+## Test Progress by Module
+
+| Module | Test Class | Implemented / Planned | Passed | Failed | Progress | Status |
+| --- | --- | ---: | ---: | ---: | ---: | --- |
+| [Database](#database-testing) | `DatabaseTests` | 53 / 53 | 53 | 0 | 100% | ✅ Completed |
+| [Schema](#schema-testing) | `SchemaTests` | 59 / 68 | 59 | 0 | 87% | 🟡 In progress |
+| [View](#view-testing) | `ViewTests` | 45 / 45 | 45 | 0 | 100% | ✅ Completed |
+| [Table Metadata](#table-testing) | `TableMetadataTests` | 53 / 53 | 53 | 0 | 100% | ✅ Completed |
+| [Row](#row-testing) | `RowTests` | 51 / 58 | 51 | 0 | 88% | 🟡 In progress |
+| [Column Metadata](#column-testing) | `ColumnMetadataTests` | 54 / 54 | 54 | 0 | 100% | ✅ Completed |
+| [Constraint](#constraint-testing) | `ConstraintTests` | 65 / 65 | 0 | 0 | 100% | 🟠 Implemented, not run |
+| [Index](#index-testing) | `IndexTests` | 49 / 49 | 49 | 0 | 100% | ✅ Completed |
+| [Storage Engine](#storage-engine-testing) | `StorageEngineTests` | 0 / 25 | 0 | 0 | 0% | ⚪ Not started |
+| [Disk Manager](#disk-manager-testing) | `DiskManagerTests` | 0 / 26 | 0 | 0 | 0% | ⚪ Not started |
+| [Buffer Pool](#buffer-pool-testing) | `BufferPoolTests` | 0 / 29 | 0 | 0 | 0% | ⚪ Not started |
+| [Parser](#parser-testing) | `ParserTests` | 9 / 21 | 0 | 0 | 43% | 🟡 In progress |
+| [Query Optimizer](#optimizer-testing) | `OptimizerTests` | 0 / 19 | 0 | 0 | 0% | ⚪ Not started |
+| [Executor](#executor-testing) | `ExecutorTests` | 0 / 24 | 0 | 0 | 0% | ⚪ Not started |
+| [Transaction Manager](#transaction-manager-testing) | `TransactionManagerTests` | 0 / 18 | 0 | 0 | 0% | ⚪ Not started |
+| [Lock Manager](#lock-manager-testing) | `LockManagerTests` | 0 / 19 | 0 | 0 | 0% | ⚪ Not started |
+| [Auth Service](#auth-service-testing) | `AuthServiceTests` | 0 / 19 | 0 | 0 | 0% | ⚪ Not started |
+| [Security Manager](#security-manager-testing) | `SecurityManagerTests` | 0 / 20 | 0 | 0 | 0% | ⚪ Not started |
+| [Catalog](#catalog-testing) | `CatalogTests` | 0 / 24 | 0 | 0 | 0% | ⚪ Not started |
+| [File Manager](#file-manager-testing) | `FileManagerTests` | 0 / 24 | 0 | 0 | 0% | ⚪ Not started |
+| [Page](#page-testing) | `PageTests` | 0 / 25 | 0 | 0 | 0% | ⚪ Not started |
+| [Page Header](#page-header-testing) | `PageHeaderTests` | 0 / 20 | 0 | 0 | 0% | ⚪ Not started |
+| [Record Manager](#record-manager-testing) | `RecordManagerTests` | 0 / 26 | 0 | 0 | 0% | ⚪ Not started |
+| [LRU Replacement Strategy](#lru-replacement-strategy-testing) | `LRUReplacementStrategyTests` | 0 / 5 | 0 | 0 | 0% | ⚪ Not started |
+| [FIFO Replacement Strategy](#fifo-replacement-strategy-testing) | `FIFOReplacementStrategyTests` | 0 / 4 | 0 | 0 | 0% | ⚪ Not started |
+| [Clock Replacement Strategy](#clock-replacement-strategy-testing) | `ClockReplacementStrategyTests` | 0 / 5 | 0 | 0 | 0% | ⚪ Not started |
+| [Storage Allocation Strategy](#storage-allocation-strategy-testing) | `StorageAllocationStrategyTests` | 0 / 5 | 0 | 0 | 0% | ⚪ Not started |
+| [Buffer Pool Strategy Integration](#bufferpool-strategy-testing) | `BufferPoolStrategyIntegrationTests` | 0 / 4 | 0 | 0 | 0% | ⚪ Not started |
+| [Query Validation Visitor](#query-validation-visitor-testing) | `QueryValidationVisitorTests` | 0 / 9 | 0 | 0 | 0% | ⚪ Not started |
+| [Logical Plan Visitor](#logical-plan-visitor-testing) | `LogicalPlanVisitorTests` | 0 / 7 | 0 | 0 | 0% | ⚪ Not started |
+| [Cost Estimation Visitor](#cost-estimation-visitor-testing) | `CostEstimationVisitorTests` | 0 / 6 | 0 | 0 | 0% | ⚪ Not started |
+| [Table Scan Operator](#37-tablescanoperatortests) | `TableScanOperatorTests` | 0 / 7 | 0 | 0 | 0% | ⚪ Not started |
+| [Filter Operator](#38-filteroperatortests) | `FilterOperatorTests` | 0 / 6 | 0 | 0 | 0% | ⚪ Not started |
+| [Projection Operator](#39-projectionoperatortests) | `ProjectionOperatorTests` | 0 / 5 | 0 | 0 | 0% | ⚪ Not started |
+| [Limit Operator](#40-limitoperatortests) | `LimitOperatorTests` | 0 / 5 | 0 | 0 | 0% | ⚪ Not started |
+| [Execution Pipeline](#41-executiontests) | `ExecutionTests` | 0 / 5 | 0 | 0 | 0% | ⚪ Not started |
+| [Constraint Validation Chain](#constraint-validation-chain-testing) | `ConstraintValidationChainTests` | 0 / 18 | 0 | 0 | 0% | ⚪ Not started |
+| [Schema Repository](#schema-repository-testing) | `SchemaRepositoryTests` | 0 /29  | 0 | 0 | 0% | ⚪ Not started |
+| [Table Metadata Repository](#tablemetadata-repository-testing) | `TableMetadataRepositoryTests` | 0 / 29 | 0 | 0 | 0% | ⚪ Not started |
+| [Index Metadata Repository](#index-metadata-repository-testing) | `IndexMetadataRepositoryTests` | 0 / 29 | 0 | 0 | 0% | ⚪ Not started |
+| [Constraint Repository](#constraint-repository-testing) | `ConstraintRepositoryTests` | 0 / 32 | 0 | 0 | 0% | ⚪ Not started |
+| [Metadata Manager Repository](#metadata-manager-repository-testing) | `MetadataManagerRepositoryTests` | 0 / 38 | 0 | 0 | 0% | ⚪ Not started |
+
+## Module Progress
+
+```text
+Database                        ████████████████████ 100%
+Schema                          █████████████████░░░  87%
+View                            ████████████████████ 100%
+Table Metadata                  ████████████████████ 100%
+Row                             ██████████████████░░  88%
+Column Metadata                 ████████████████████ 100%
+Constraint                      ████████████████████ 100%
+Index                           ████████████████████ 100%
+Storage Engine                  ░░░░░░░░░░░░░░░░░░░░   0%
+Disk Manager                    ░░░░░░░░░░░░░░░░░░░░   0%
+Buffer Pool                     ░░░░░░░░░░░░░░░░░░░░   0%
+Parser                          █████████░░░░░░░░░░░  43%
+Query Optimizer                 ░░░░░░░░░░░░░░░░░░░░   0%
+Executor                        ░░░░░░░░░░░░░░░░░░░░   0%
+Transaction Manager             ░░░░░░░░░░░░░░░░░░░░   0%
+Lock Manager                    ░░░░░░░░░░░░░░░░░░░░   0%
+Auth Service                    ░░░░░░░░░░░░░░░░░░░░   0%
+Security Manager                ░░░░░░░░░░░░░░░░░░░░   0%
+Catalog                         ░░░░░░░░░░░░░░░░░░░░   0%
+FileManager                     ░░░░░░░░░░░░░░░░░░░░   0%
+Page                            ░░░░░░░░░░░░░░░░░░░░   0%
+PageHeader                      ░░░░░░░░░░░░░░░░░░░░   0%
+RecordManager                   ░░░░░░░░░░░░░░░░░░░░   0%
+LRU Replacement Strategy        ░░░░░░░░░░░░░░░░░░░░   0%
+FIFO Replacement Strategy       ░░░░░░░░░░░░░░░░░░░░   0%
+Clock Replacement Strategy      ░░░░░░░░░░░░░░░░░░░░   0%
+Storage Allocation Strategy     ░░░░░░░░░░░░░░░░░░░░   0%
+BufferPool Strategy Integration ░░░░░░░░░░░░░░░░░░░░   0%
+Query Validation Visitor        ░░░░░░░░░░░░░░░░░░░░   0%
+Logical Plan Visitor            ░░░░░░░░░░░░░░░░░░░░   0%
+Cost Estimation Visitor         ░░░░░░░░░░░░░░░░░░░░   0%
+
+```
+
+### Status Legend
+
+| Symbol | Meaning |
+| --- | --- |
+| ✅ | Completed |
+| 🟡 | In progress / tests not run |
+| ❌ | Tests failing |
+| ⚪ | Not started |
+| ⏸️ | Temporarily postponed |
+---
+
+# 1. DatabaseServer Testing Roadmap ⚪
+
+```mermaid
+graph LR
+
+DS[DatabaseServer Testing]
+
+DS --> Design
+DS --> Constructor
+DS --> Lifecycle
+DS --> DatabaseManagement
+DS --> Recovery
+DS --> Validation
+DS --> Exception
+DS --> Concurrency
+DS --> Performance
+DS --> Integration
+
+%% ==================================================
+%% Test Class Design
+%% ==================================================
+
+Design --> TestClass
+Design --> TestFixture
+Design --> TestBuilder
+Design --> MockObjects
+Design --> TestData
+
+TestClass --> DatabaseServerTests
+
+MockObjects --> MockDatabaseManager
+MockObjects --> MockStorageEngine
+MockObjects --> MockTransactionManager
+MockObjects --> MockCatalogManager
+MockObjects --> MockBufferPool
+MockObjects --> MockRecoveryManager
+MockObjects --> MockWALManager
+MockObjects --> MockSecurityManager
+MockObjects --> MockConfigurationManager
+MockObjects --> MockMonitoringManager
+
+%% ==================================================
+%% Constructor Tests
+%% ==================================================
+
+Constructor --> CreateDatabaseServer
+Constructor --> GenerateServerId
+Constructor --> InitializeConfiguration
+Constructor --> InitializeManagers
+Constructor --> InitializeServices
+Constructor --> InitializeStorage
+Constructor --> InitializeCatalog
+Constructor --> InitializeTransactionSubsystem
+Constructor --> InitializeSecuritySubsystem
+Constructor --> InitializeMonitoringSubsystem
+
+%% ==================================================
+%% Lifecycle Tests
+%% ==================================================
+
+Lifecycle --> StartServer
+Lifecycle --> StopServer
+Lifecycle --> RestartServer
+Lifecycle --> ShutdownGracefully
+Lifecycle --> ReloadConfiguration
+Lifecycle --> ReloadMetadata
+
+%% ==================================================
+%% Database Management
+%% ==================================================
+
+DatabaseManagement --> CreateDatabase
+DatabaseManagement --> DropDatabase
+DatabaseManagement --> OpenDatabase
+DatabaseManagement --> CloseDatabase
+DatabaseManagement --> AttachDatabase
+DatabaseManagement --> DetachDatabase
+DatabaseManagement --> ListDatabases
+DatabaseManagement --> DatabaseExists
+
+%% ==================================================
+%% Recovery Tests
+%% ==================================================
+
+Recovery --> CrashRecovery
+Recovery --> ReplayWAL
+Recovery --> RestoreCheckpoint
+Recovery --> RecoverTransactions
+Recovery --> RecoverBufferPool
+Recovery --> RecoverCatalog
+
+%% ==================================================
+%% Validation Tests
+%% ==================================================
+
+Validation --> ValidateConfiguration
+Validation --> ValidateServerState
+Validation --> ValidateStartupSequence
+Validation --> ValidateShutdownSequence
+Validation --> ValidateRecoveryState
+Validation --> ValidateStorage
+Validation --> ValidateManagers
+Validation --> ValidateServices
+
+%% ==================================================
+%% Exception Tests
+%% ==================================================
+
+Exception --> InvalidConfiguration
+Exception --> DuplicateDatabase
+Exception --> StartupFailure
+Exception --> ShutdownFailure
+Exception --> StorageFailure
+Exception --> RecoveryFailure
+Exception --> CatalogFailure
+Exception --> SecurityFailure
+Exception --> TransactionFailure
+Exception --> ConfigurationFailure
+
+%% ==================================================
+%% Concurrency Tests
+%% ==================================================
+
+Concurrency --> ConcurrentStartup
+Concurrency --> ConcurrentShutdown
+Concurrency --> ConcurrentRestart
+Concurrency --> ConcurrentCreateDatabase
+Concurrency --> ConcurrentDropDatabase
+Concurrency --> ConcurrentRecovery
+Concurrency --> ConcurrentConnections
+
+%% ==================================================
+%% Performance Tests
+%% ==================================================
+
+Performance --> StartupPerformance
+Performance --> ShutdownPerformance
+Performance --> RecoveryPerformance
+Performance --> DatabaseCreationPerformance
+Performance --> MetadataLoadingPerformance
+Performance --> ResourceConsumption
+
+%% ==================================================
+%% Integration Tests
+%% ==================================================
+
+Integration --> DatabaseManager
+Integration --> StorageEngine
+Integration --> BufferPool
+Integration --> CatalogManager
+Integration --> TransactionManager
+Integration --> WALManager
+Integration --> RecoveryManager
+Integration --> SecurityManager
+Integration --> ConfigurationManager
+Integration --> MonitoringManager
+
+```
+
+# 2. Database Manager Testing ⚪
+```mermaid
+graph LR
+
+DM[DatabaseManager Testing]
+
+DM --> Design
+DM --> Constructor
+DM --> Functional
+DM --> Validation
+DM --> Exception
+DM --> Concurrency
+DM --> Performance
+DM --> Integration
+
+Design --> DatabaseManagerTests
+Design --> TestFixture
+Design --> MockObjects
+
+Constructor --> CreateManager
+Constructor --> InitializeCatalog
+
+Functional --> CreateDatabase
+Functional --> DropDatabase
+Functional --> RenameDatabase
+Functional --> AttachDatabase
+Functional --> DetachDatabase
+Functional --> BackupDatabase
+Functional --> RestoreDatabase
+Functional --> ListDatabases
+
+Validation --> DatabaseName
+Validation --> DuplicateDatabase
+Validation --> DatabaseExists
+
+Exception --> CatalogFailure
+Exception --> StorageFailure
+Exception --> BackupFailure
+
+Concurrency --> ConcurrentCreate
+Concurrency --> ConcurrentDrop
+Concurrency --> ConcurrentBackup
+
+Performance --> CreatePerformance
+Performance --> BackupPerformance
+
+Integration --> Database
+Integration --> CatalogManager
+Integration --> StorageEngine
+Integration --> BackupManager
+```
+<a name="database-testing"></a>
+
+# 3. Database Testing Roadmap ✅ (53 test)
+
+```mermaid
+graph LR
+
+DB["Database Testing - 53 tests"]
+
+DB --> Constructor
+DB --> Lifecycle
+DB --> SchemaManagement
+DB --> ReadOnly
+DB --> Rename
+DB --> CollectionSafety
+DB --> CatalogConsistency
+DB --> Concurrency
+DB --> Integration
+DB --> Design
+
+%% ==========================================
+%% Test Class Design
+%% ==========================================
+
+Design --> DatabaseTests
+Design --> TestFixture
+Design --> TestBuilder
+Design --> MockObjects
+Design --> TestData
+
+%% ==========================================
+%% Constructor Tests — 12
+%% ==========================================
+
+Constructor --> C1["1. Constructor_ShouldCreateDatabase✅"]
+Constructor --> C2["2. Constructor_ShouldGenerateDatabaseId✅"]
+Constructor --> C3["3. Constructor_ShouldGenerateUniqueDatabaseId✅"]
+Constructor --> C4["4. Constructor_ShouldInitializeCatalog✅"]
+Constructor --> C5["5. Constructor_ShouldInitializeSchemaCollection✅"]
+Constructor --> C6["6. Constructor_ShouldInitializeClosedState✅"]
+Constructor --> C7["7. Constructor_ShouldInitializeWritableMode✅"]
+Constructor --> C8["8. Constructor_ShouldRejectNullName✅"]
+Constructor --> C9["9. Constructor_ShouldRejectEmptyName✅"]
+Constructor --> C10["10. Constructor_ShouldRejectBlankName✅"]
+Constructor --> C11["11. Constructor_ShouldRejectTooLongName✅"]
+Constructor --> C12["12. Constructor_ShouldAcceptMaximumLengthName✅"]
+
+%% ==========================================
+%% Lifecycle Tests — 5
+%% ==========================================
+
+Lifecycle --> L1["13. Open_ShouldChangeDatabaseStateToOpen✅"]
+Lifecycle --> L2["14. Open_ShouldBeIdempotent✅"]
+Lifecycle --> L3["15. Close_ShouldChangeDatabaseStateToClosed✅"]
+Lifecycle --> L4["16. Close_ShouldBeIdempotent✅"]
+Lifecycle --> L5["17. Open_ShouldReopenClosedDatabase✅"]
+
+%% ==========================================
+%% Schema Management Tests — 16
+%% ==========================================
+
+SchemaManagement --> A1["18. AddSchema_ShouldRegisterSchema✅"]
+SchemaManagement --> A2["19. AddSchema_ShouldIncreaseSchemaCount✅"]
+SchemaManagement --> A3["20. AddSchema_ShouldRegisterMultipleSchemas✅"]
+SchemaManagement --> A4["21. AddSchema_ShouldRejectNullSchema✅"]
+SchemaManagement --> A5["22. AddSchema_ShouldRejectDuplicateSchemaName✅"]
+SchemaManagement --> A6["23. AddSchema_ShouldRejectSchemaFromAnotherDatabase✅"]
+
+SchemaManagement --> A7["24. GetSchema_ShouldReturnExistingSchema✅"]
+SchemaManagement --> A8["25. GetSchema_ShouldThrowWhenSchemaDoesNotExist✅"]
+
+SchemaManagement --> A9["26. ContainsSchema_ShouldReturnTrueForExistingSchema✅"]
+SchemaManagement --> A10["27. ContainsSchema_ShouldReturnFalseForMissingSchema✅"]
+
+SchemaManagement --> A11["28. RemoveSchema_ShouldRemoveExistingSchema✅"]
+SchemaManagement --> A12["29. RemoveSchema_ShouldDecreaseSchemaCount✅"]
+SchemaManagement --> A13["30. RemoveSchema_ShouldThrowWhenSchemaNotFound✅"]
+SchemaManagement --> A14["31. RemoveSchema_ShouldRejectNullName✅"]
+SchemaManagement --> A15["32. RemoveSchema_ShouldRejectBlankName✅"]
+SchemaManagement --> A16["33. RemoveSchema_ShouldRejectNonEmptySchema✅"]
+
+%% ==========================================
+%% Read-only Tests — 5
+%% ==========================================
+
+ReadOnly --> R1["34. SetReadOnly_ShouldChangeDatabaseMode✅"]
+ReadOnly --> R2["35. SetReadOnlyFalse_ShouldRestoreWritableMode✅"]
+ReadOnly --> R3["36. AddSchema_ShouldRejectWhenDatabaseIsReadOnly✅"]
+ReadOnly --> R4["37. RemoveSchema_ShouldRejectWhenDatabaseIsReadOnly✅"]
+ReadOnly --> R5["38. WritableDatabase_ShouldAllowSchemaModification✅"]
+
+%% ==========================================
+%% Rename Tests — 5
+%% ==========================================
+
+Rename --> N1["39. Rename_ShouldChangeDatabaseName✅"]
+Rename --> N2["40. Rename_ShouldRejectNullName✅"]
+Rename --> N3["41. Rename_ShouldRejectBlankName✅"]
+Rename --> N4["42. Rename_ShouldRejectTooLongName✅"]
+Rename --> N5["43. Rename_ShouldRejectWhenDatabaseIsReadOnly✅"]
+
+%% ==========================================
+%% Collection Safety Tests — 2
+%% ==========================================
+
+CollectionSafety --> Co1["44. GetSchemas_ShouldReturnUnmodifiableCollection✅"]
+CollectionSafety --> Co2["45. GetSchemas_ShouldProtectInternalCollection✅"]
+
+%% ==========================================
+%% Catalog Consistency Tests — 3
+%% ==========================================
+
+CatalogConsistency --> K1["46. Catalog_ShouldRemainConsistentAfterAddingSchema✅"]
+CatalogConsistency --> K2["47. Catalog_ShouldRemainConsistentAfterRemovingSchema✅"]
+CatalogConsistency --> K3["48. Catalog_ShouldHaveSameSchemaCountAsDatabase✅"]
+
+%% ==========================================
+%% Concurrency Tests — 3
+%% ==========================================
+
+Concurrency --> Con1["49. ConcurrentOpen_ShouldMaintainDatabaseState✅"]
+Concurrency --> Con2["50. ConcurrentSchemaReads_ShouldReturnConsistentResult✅"]
+Concurrency --> Con3["51. ConcurrentSchemaCreation_ShouldPreventDuplicateSchema✅"]
+
+%% ==========================================
+%% Integration Tests — 2
+%% ==========================================
+
+Integration --> I1["52. DatabaseSchemaIntegration_ShouldMaintainRelationship✅"]
+Integration --> I2["53. DatabaseSchemaTableIntegration_ShouldBuildMetadataHierarchy✅"]
+```
+<a name="schema-testing"></a>
+
+# 4. Schema Testing Roadmap (68 test cases) ⚪
+
+```mermaid
+graph LR
+
+SC["Schema Testing"]
+
+SC --> Design
+SC --> Constructor
+SC --> Functional
+SC --> Validation
+SC --> Exception
+SC --> Concurrency
+SC --> Integration
+
+%% ==========================================
+%% Test Class Design
+%% ==========================================
+
+Design --> D1["SchemaTests"]
+Design --> D2["TestFixture"]
+Design --> D3["Mockito Test Doubles"]
+Design --> D4["Reusable UUID Test Data"]
+Design --> D5["Nested Test Groups"]
+
+%% ==========================================
+%% Constructor Tests
+%% ==========================================
+
+Constructor --> C1["1. Constructor_ShouldCreateSchema"]
+Constructor --> C2["2. Constructor_ShouldGenerateSchemaId"]
+Constructor --> C3["3. Constructor_ShouldGenerateUniqueSchemaIds"]
+Constructor --> C4["4. Constructor_ShouldInitializeDatabaseId"]
+Constructor --> C5["5. Constructor_ShouldInitializeOwnerId"]
+Constructor --> C6["6. Constructor_ShouldInitializeEmptyTableCollection"]
+Constructor --> C7["7. Constructor_ShouldInitializeEmptyViewCollection"]
+Constructor --> C8["8. Constructor_ShouldRejectNullName"]
+Constructor --> C9["9. Constructor_ShouldRejectEmptyName"]
+Constructor --> C10["10. Constructor_ShouldRejectBlankName"]
+Constructor --> C11["11. Constructor_ShouldRejectNullDatabaseId"]
+Constructor --> C12["12. Constructor_ShouldRejectNullOwnerId"]
+
+%% ==========================================
+%% Functional Tests
+%% Functional remains the main category.
+%% ==========================================
+
+Functional --> Name
+Functional --> TableManagement
+Functional --> ViewManagement
+Functional --> State
+Functional --> Metadata
+
+%% ==========================================
+%% Functional - Name Tests
+%% ==========================================
+
+Name --> N1["13. GetName_ShouldReturnSchemaName"]
+Name --> N2["14. Rename_ShouldChangeSchemaName"]
+Name --> N3["15. Rename_ShouldRejectNullName"]
+Name --> N4["16. Rename_ShouldRejectEmptyName"]
+Name --> N5["17. Rename_ShouldRejectBlankName"]
+
+%% ==========================================
+%% Functional - Table Management Tests
+%% ==========================================
+
+TableManagement --> T1["18. AddTable_ShouldRegisterTable"]
+TableManagement --> T2["19. AddTable_ShouldIncreaseTableCount"]
+TableManagement --> T3["20. AddTable_ShouldRegisterMultipleTables"]
+TableManagement --> T4["21. AddTable_ShouldRejectNullTable"]
+TableManagement --> T5["22. AddTable_ShouldRejectDuplicateTableName"]
+TableManagement --> T6["23. GetTable_ShouldReturnExistingTable"]
+TableManagement --> T7["24. GetTable_ShouldReturnNullForMissingTable"]
+TableManagement --> T8["25. ContainsTable_ShouldReturnTrueForExistingTable"]
+TableManagement --> T9["26. ContainsTable_ShouldReturnFalseForMissingTable"]
+TableManagement --> T10["27. RemoveTable_ShouldRemoveExistingTable"]
+TableManagement --> T11["28. RemoveTable_ShouldDecreaseTableCount"]
+TableManagement --> T12["29. RemoveTable_ShouldReturnNullForMissingTable"]
+TableManagement --> T13["30. GetTables_ShouldReturnUnmodifiableCollection"]
+TableManagement --> T14["31. GetTables_ShouldProtectInternalCollection"]
+
+%% ==========================================
+%% Functional - View Management Tests
+%% ==========================================
+
+ViewManagement --> V1["32. AddView_ShouldRegisterView"]
+ViewManagement --> V2["33. AddView_ShouldIncreaseViewCount"]
+ViewManagement --> V3["34. AddView_ShouldRegisterMultipleViews"]
+ViewManagement --> V4["35. AddView_ShouldRejectNullView"]
+ViewManagement --> V5["36. AddView_ShouldRejectDuplicateViewName"]
+ViewManagement --> V6["37. GetView_ShouldReturnExistingView"]
+ViewManagement --> V7["38. GetView_ShouldReturnNullForMissingView"]
+ViewManagement --> V8["39. ContainsView_ShouldReturnTrueForExistingView"]
+ViewManagement --> V9["40. ContainsView_ShouldReturnFalseForMissingView"]
+ViewManagement --> V10["41. RemoveView_ShouldRemoveExistingView"]
+ViewManagement --> V11["42. RemoveView_ShouldDecreaseViewCount"]
+ViewManagement --> V12["43. RemoveView_ShouldReturnNullForMissingView"]
+ViewManagement --> V13["44. GetViews_ShouldReturnUnmodifiableCollection"]
+ViewManagement --> V14["45. GetViews_ShouldProtectInternalCollection"]
+
+%% ==========================================
+%% Functional - State Tests
+%% ==========================================
+
+State --> S1["46. IsEmpty_ShouldReturnTrueForNewSchema"]
+State --> S2["47. IsEmpty_ShouldReturnFalseWhenTableExists"]
+State --> S3["48. IsEmpty_ShouldReturnFalseWhenViewExists"]
+State --> S4["49. GetTableCount_ShouldReturnCorrectCount"]
+State --> S5["50. GetViewCount_ShouldReturnCorrectCount"]
+State --> S6["51. IsEmpty_ShouldReturnTrueAfterRemovingAllObjects"]
+
+%% ==========================================
+%% Functional - Metadata Tests
+%% ==========================================
+
+Metadata --> M1["52. GetDatabaseId_ShouldReturnDatabaseId"]
+Metadata --> M2["53. SetDatabaseId_ShouldUpdateDatabaseId"]
+Metadata --> M3["54. SetDatabaseId_ShouldRejectNullDatabaseId"]
+Metadata --> M4["55. GetOwnerId_ShouldReturnOwnerId"]
+Metadata --> M5["56. SetOwnerId_ShouldUpdateOwnerId"]
+Metadata --> M6["57. SetOwnerId_ShouldRejectNullOwnerId"]
+
+%% ==========================================
+%% Validation Tests
+%% ==========================================
+
+Validation --> VA1["58. AddTable_ShouldNotModifyCollectionWhenDuplicateRejected"]
+Validation --> VA2["59. AddView_ShouldNotModifyCollectionWhenDuplicateRejected"]
+Validation --> VA3["60. RemoveTable_ShouldPreserveCollectionWhenTableMissing"]
+Validation --> VA4["61. RemoveView_ShouldPreserveCollectionWhenViewMissing"]
+
+%% ==========================================
+%% Exception Coverage
+%% ==========================================
+
+Exception --> E1["Invalid Schema Name"]
+Exception --> E2["Null Database ID"]
+Exception --> E3["Null Owner ID"]
+Exception --> E4["Null Table"]
+Exception --> E5["Duplicate Table Name"]
+Exception --> E6["Null View"]
+Exception --> E7["Duplicate View Name"]
+Exception --> E8["Unmodifiable Collections"]
+
+%% ==========================================
+%% Concurrency Tests
+%% ==========================================
+
+Concurrency --> CO1["62. ConcurrentTableReads_ShouldReturnConsistentResult"]
+Concurrency --> CO2["63. ConcurrentViewReads_ShouldReturnConsistentResult"]
+Concurrency --> CO3["64. ConcurrentTableCreation_ShouldPreventDuplicateTable"]
+Concurrency --> CO4["65. ConcurrentViewCreation_ShouldPreventDuplicateView"]
+
+%% ==========================================
+%% Integration Tests
+%% ==========================================
+
+Integration --> I1["66. SchemaTableIntegration_ShouldMaintainRelationship"]
+Integration --> I2["67. SchemaViewIntegration_ShouldMaintainRelationship"]
+Integration --> I3["68. SchemaObjectsIntegration_ShouldManageCollectionsIndependently"]
+```
+
+## Test count
+
+```text
+Constructor:              12
+Functional - Name:         5
+Functional - Table:       14
+Functional - View:        14
+Functional - State:        6
+Functional - Metadata:     6
+Validation:                4
+Concurrency:               4
+Integration:               3
+--------------------------------
+Total:                    68 tests
+```
+
+<a name="table-testing"></a>
+
+# 5. Table Testing Roadmap ✅ (53 tests)
+
+```mermaid
+graph LR
+
+TB["Table Testing ✅ 53 tests"]
+
+TB --> Design
+TB --> Constructor
+TB --> Name
+TB --> ColumnManagement
+TB --> RowManagement
+TB --> ConstraintManagement
+TB --> IndexManagement
+TB --> State
+
+%% ==========================================
+%% Test Class Design
+%% ==========================================
+
+Design --> D1["TableTests"]
+Design --> D2["TestFixture"]
+Design --> D3["Mockito Test Doubles"]
+Design --> D4["Reusable UUID Test Data"]
+Design --> D5["Nested Test Groups"]
+
+%% ==========================================
+%% Constructor Tests — 8
+%% ==========================================
+
+Constructor --> C1["1. constructor_ShouldCreateTable✅"]
+Constructor --> C2["2. constructor_ShouldGenerateTableId✅"]
+Constructor --> C3["3. constructor_ShouldGenerateUniqueTableIds✅"]
+Constructor --> C4["4. constructor_ShouldInitializeSchemaId✅"]
+Constructor --> C5["5. constructor_ShouldInitializeEmptyColumns✅"]
+Constructor --> C6["6. constructor_ShouldInitializeEmptyRows✅"]
+Constructor --> C7["7. constructor_ShouldInitializeEmptyConstraints✅"]
+Constructor --> C8["8. constructor_ShouldInitializeEmptyIndexes✅"]
+
+%% ==========================================
+%% Name Tests — 4
+%% ==========================================
+
+Name --> N1["9. getName_ShouldReturnTableName✅"]
+Name --> N2["10. rename_ShouldChangeTableName✅"]
+Name --> N3["11. rename_ShouldRejectNullName✅"]
+Name --> N4["12. rename_ShouldRejectBlankName✅"]
+
+%% ==========================================
+%% Column Management Tests — 11
+%% ==========================================
+
+ColumnManagement --> COL1["13. addColumn_ShouldRegisterColumn✅"]
+ColumnManagement --> COL2["14. addColumn_ShouldIncreaseColumnCount✅"]
+ColumnManagement --> COL3["15. addColumn_ShouldRejectNullColumn✅"]
+ColumnManagement --> COL4["16. addColumn_ShouldRejectDuplicateColumnName✅"]
+ColumnManagement --> COL5["17. getColumn_ShouldReturnExistingColumn✅"]
+ColumnManagement --> COL6["18. getColumn_ShouldReturnNullForMissingColumn✅"]
+ColumnManagement --> COL7["19. containsColumn_ShouldReturnTrueForExistingColumn✅"]
+ColumnManagement --> COL8["20. containsColumn_ShouldReturnFalseForMissingColumn✅"]
+ColumnManagement --> COL9["21. removeColumn_ShouldRemoveExistingColumn✅"]
+ColumnManagement --> COL10["22. removeColumn_ShouldReturnNullForMissingColumn✅"]
+ColumnManagement --> COL11["23. getColumns_ShouldReturnUnmodifiableCollection✅"]
+
+%% ==========================================
+%% Row Management Tests — 12
+%% ==========================================
+
+RowManagement --> R1["24. insertRow_ShouldInsertRow✅"]
+RowManagement --> R2["25. insertRow_ShouldIncreaseRowCount✅"]
+RowManagement --> R3["26. insertRow_ShouldRejectNullRow✅"]
+RowManagement --> R4["27. getRow_ShouldReturnExistingRow✅"]
+RowManagement --> R5["28. getRow_ShouldReturnNullForMissingRow✅"]
+RowManagement --> R6["29. updateRow_ShouldReplaceExistingRow✅"]
+RowManagement --> R7["30. updateRow_ShouldReturnNullForMissingRow✅"]
+RowManagement --> R8["31. deleteRow_ShouldRemoveExistingRow✅"]
+RowManagement --> R9["32. deleteRow_ShouldDecreaseRowCount✅"]
+RowManagement --> R10["33. deleteRow_ShouldReturnNullForMissingRow✅"]
+RowManagement --> R11["34. truncate_ShouldRemoveAllRows✅"]
+RowManagement --> R12["35. getRows_ShouldReturnUnmodifiableCollection✅"]
+
+%% ==========================================
+%% Constraint Management Tests — 6
+%% ==========================================
+
+ConstraintManagement --> CON1["36. addConstraint_ShouldRegisterConstraint✅"]
+ConstraintManagement --> CON2["37. addConstraint_ShouldRejectNullConstraint✅"]
+ConstraintManagement --> CON3["38. addConstraint_ShouldRejectDuplicateConstraintName✅"]
+ConstraintManagement --> CON4["39. getConstraint_ShouldReturnExistingConstraint✅"]
+ConstraintManagement --> CON5["40. removeConstraint_ShouldRemoveExistingConstraint✅"]
+ConstraintManagement --> CON6["41. getConstraints_ShouldReturnUnmodifiableCollection✅"]
+
+%% ==========================================
+%% Index Management Tests — 6
+%% ==========================================
+
+IndexManagement --> I1["42. addIndex_ShouldRegisterIndex✅"]
+IndexManagement --> I2["43. addIndex_ShouldRejectNullIndex✅"]
+IndexManagement --> I3["44. addIndex_ShouldRejectDuplicateIndexName✅"]
+IndexManagement --> I4["45. getIndex_ShouldReturnExistingIndex✅"]
+IndexManagement --> I5["46. removeIndex_ShouldRemoveExistingIndex✅"]
+IndexManagement --> I6["47. getIndexes_ShouldReturnUnmodifiableCollection✅"]
+
+%% ==========================================
+%% State Tests — 6
+%% ==========================================
+
+State --> S1["48. isEmpty_ShouldReturnTrueForNewTable✅"]
+State --> S2["49. isEmpty_ShouldReturnFalseWhenRowExists✅"]
+State --> S3["50. getRowCount_ShouldReturnCorrectCount✅"]
+State --> S4["51. getColumnCount_ShouldReturnCorrectCount✅"]
+State --> S5["52. getConstraintCount_ShouldReturnCorrectCount✅"]
+State --> S6["53. getIndexCount_ShouldReturnCorrectCount✅"]
+```
+
+## Test count
+
+```text
+Constructor Tests                   8
+Name Tests                          4
+Column Management Tests            11
+Row Management Tests               12
+Constraint Management Tests         6
+Index Management Tests              6
+State Tests                         6
+--------------------------------------
+Total                              53
+```
+
+
+<a name="column-testing"></a>
+
+# 6. Column Testing Roadmap (54 test cases)✅
+
+```mermaid
+graph LR
+
+CL["Column Testing — 54 tests"]
+
+CL --> Design
+CL --> Constructor
+CL --> Functional
+CL --> Validation
+CL --> Exception
+
+Design --> D1["ColumnTests✅"]
+Design --> D2["JUnit 5 Test Fixture✅"]
+Design --> D3["Nested Test Groups✅"]
+Design --> D4["Reusable ColumnMetadata Fixture✅"]
+
+Functional --> Metadata
+Functional --> Length
+Functional --> PrecisionScale
+Functional --> DefaultValue
+Functional --> ValueValidation
+Functional --> Identity
+Functional --> Definition
+Functional --> Equality
+
+%% Constructor Tests
+Constructor --> C1["1. Constructor_ShouldCreateColumn✅"]
+Constructor --> C2["2. Constructor_ShouldGenerateColumnId✅"]
+Constructor --> C3["3. Constructor_ShouldGenerateUniqueColumnIds✅"]
+Constructor --> C4["4. Constructor_ShouldInitializeNameAndType✅"]
+Constructor --> C5["5. Constructor_ShouldInitializeNullableAsTrue✅"]
+Constructor --> C6["6. Constructor_ShouldInitializeDefaultPosition✅"]
+Constructor --> C7["7. Constructor_ShouldInitializeIdentityAsFalse✅"]
+Constructor --> C8["8. Constructor_ShouldRejectInvalidName✅"]
+Constructor --> C9["9. Constructor_ShouldRejectNullDataType✅"]
+
+%% Metadata Tests
+Metadata --> M1["10. Rename_ShouldChangeColumnName✅"]
+Metadata --> M2["11. Rename_ShouldRejectInvalidName✅"]
+Metadata --> M3["12. SetDataType_ShouldChangeDataType✅"]
+Metadata --> M4["13. SetDataType_ShouldRejectNull✅"]
+Metadata --> M5["14. SetNullable_ShouldChangeNullableState✅"]
+Metadata --> M6["15. SetPosition_ShouldChangePosition✅"]
+Metadata --> M7["16. SetPosition_ShouldRejectNegativePosition✅"]
+
+%% Length Tests
+Length --> L1["17. SetLength_ShouldStorePositiveLength✅"]
+Length --> L2["18. SetLength_ShouldAllowNull✅"]
+Length --> L3["19. SetLength_ShouldRejectZero✅"]
+Length --> L4["20. SetLength_ShouldRejectNegativeLength✅"]
+Length --> L5["21. ValidateValue_ShouldRejectStringLongerThanLength✅"]
+
+%% PrecisionScale Tests
+PrecisionScale --> P1["22. SetPrecision_ShouldStorePositivePrecision✅"]
+PrecisionScale --> P2["23. SetPrecision_ShouldRejectInvalidPrecision✅"]
+PrecisionScale --> P3["24. SetScale_ShouldStoreNonNegativeScale✅"]
+PrecisionScale --> P4["25. SetScale_ShouldRejectNegativeScale✅"]
+PrecisionScale --> P5["26. SetScale_ShouldRejectScaleGreaterThanPrecision✅"]
+PrecisionScale --> P6["27. SetPrecision_ShouldRejectPrecisionBelowExistingScale✅"]
+
+%% DefaultValue Tests
+DefaultValue --> D1["28. SetDefaultValue_ShouldStoreCompatibleValue✅"]
+DefaultValue --> D2["29. SetDefaultValue_ShouldAllowNull✅"]
+DefaultValue --> D3["30. SetDefaultValue_ShouldRejectIncompatibleValue✅"]
+
+%% ValueValidation Tests
+ValueValidation --> V1["31. ValidateValue_ShouldAcceptCompatibleValue✅"]
+ValueValidation --> V2["32. ValidateValue_ShouldAllowNullWhenNullable✅"]
+ValueValidation --> V3["33. ValidateValue_ShouldRejectNullWhenNotNullable✅"]
+ValueValidation --> V4["34. ValidateValue_ShouldRejectIncompatibleValue✅"]
+ValueValidation --> V5["35. ResolveValue_ShouldReturnSuppliedValue✅"]
+ValueValidation --> V6["36. ResolveValue_ShouldUseDefaultValue✅"]
+ValueValidation --> V7["37. ResolveValue_ShouldReturnNullWhenNullable✅"]
+ValueValidation --> V8["38. ResolveValue_ShouldRejectMissingRequiredValue✅"]
+
+%% Identity Tests
+Identity --> I1["39. SetIdentity_ShouldEnableIdentity✅"]
+Identity --> I2["40. GenerateNextIdentityValue_ShouldReturnCurrentValue✅"]
+Identity --> I3["41. GenerateNextIdentityValue_ShouldIncrementCounter✅"]
+Identity --> I4["42. GenerateNextIdentityValue_ShouldGenerateSequentialValues✅"]
+Identity --> I5["43. GenerateNextIdentityValue_ShouldRejectNonIdentityColumn✅"]
+Identity --> I6["44. SetNextIdentityValue_ShouldChangeCounter✅"]
+Identity --> I7["45. SetNextIdentityValue_ShouldRejectInvalidValue✅"]
+Identity --> I8["46. ResolveValue_ShouldGenerateIdentityWhenValueMissing✅"]
+Identity --> I9["47. ResolveValue_ShouldPreferSuppliedValueOverIdentity✅"]
+
+%% Definition Tests
+Definition --> DF1["48. IsValidDefinition_ShouldReturnTrueForValidColumn✅"]
+Definition --> DF2["49. IsValidDefinition_ShouldRemainValidWithLength✅"]
+Definition --> DF3["50. IsValidDefinition_ShouldRemainValidWithPrecisionAndScale✅"]
+
+%% Equality Tests
+Equality --> E1["51. Equals_ShouldReturnTrueForSameInstance✅"]
+Equality --> E2["52. Equals_ShouldReturnFalseForDifferentColumns✅"]
+Equality --> E3["53. Equals_ShouldReturnFalseForNull✅"]
+Equality --> E4["54. HashCode_ShouldRemainStable✅"] //
+```
+
+## Test count
+
+```text
+Constructor:          9
+Metadata:             7
+Length:               5
+Precision and Scale:  6
+Default Value:        3
+Value Validation:     8
+Identity:             9
+Definition:           3
+Equality:             4
+-----------------------
+Total:               54
+```
+
+
+# 7. Row Testing Roadmap (58 test cases) ✅
+```mermaid
+graph LR
+
+CT["Constraint Testing — 51 tests"]
+
+CT --> Design
+CT --> Constructor
+CT --> Functional
+CT --> Validation
+CT --> Exception
+
+%% ==========================
+%% Test Design
+%% ==========================
+
+Design --> D1["ConstraintTests✅"]
+Design --> D3["Nested Test Groups✅"]
+Design --> D4["Reusable Constraint Fixtures✅"]
+Design --> D5["Reusable Row Test Data✅"]
+Design --> D6["Foreign Key Fixture✅"]
+Design --> D7["Check Constraint Fixture✅"]
+
+%% ==========================
+%% Functional Groups
+%% ==========================
+
+Functional --> Metadata
+Functional --> State
+Functional --> PrimaryKey
+Functional --> Unique
+Functional --> NotNull
+Functional --> ForeignKey
+Functional --> Check
+Functional --> Definition
+
+%% ==========================
+%% Constructor Tests
+%% ==========================
+
+Constructor --> C1["1. Constructor_ShouldCreateConstraint✅"]
+Constructor --> C2["2. Constructor_ShouldGenerateConstraintId✅"]
+Constructor --> C3["3. Constructor_ShouldGenerateUniqueConstraintIds✅"]
+Constructor --> C4["4. Constructor_ShouldInitializeMetadata✅"]
+Constructor --> C5["5. Constructor_ShouldEnableConstraintByDefault✅"]
+Constructor --> C6["6. Constructor_ShouldRejectInvalidName✅"]
+Constructor --> C7["7. Constructor_ShouldRejectNullType✅"]
+Constructor --> C8["8. Constructor_ShouldRejectEmptyColumns✅"]
+
+%% ==========================
+%% Metadata Tests
+%% ==========================
+
+Metadata --> M1["9. Rename_ShouldChangeConstraintName✅"]
+Metadata --> M2["10. Rename_ShouldRejectInvalidName✅"]
+Metadata --> M3["11. GetColumnNames_ShouldReturnUnmodifiableList✅"]
+Metadata --> M4["12. SetReferencedTableId_ShouldStoreId✅"]
+Metadata --> M5["13. SetReferencedTableId_ShouldRejectNull✅"]
+Metadata --> M6["14. SetReferencedColumnNames_ShouldStoreColumns✅"]
+Metadata --> M7["15. GetReferencedColumnNames_ShouldBeUnmodifiable✅"]
+Metadata --> M8["16. SetCheckExpression_ShouldStoreExpression✅"]
+Metadata --> M9["17. SetCheckExpression_ShouldRejectBlankExpression✅"]
+Metadata --> M10["18. SetCheckPredicate_ShouldRejectNull✅"]
+
+%% ==========================
+%% State Tests
+%% ==========================
+
+State --> S1["19. Disable_ShouldDisableConstraint✅"]
+State --> S2["20. Enable_ShouldEnableConstraint✅"]
+State --> S3["21. Disable_ShouldBeIdempotent✅"]
+State --> S4["22. Enable_ShouldBeIdempotent✅"]
+State --> S5["23. DisabledConstraint_ShouldAlwaysPassValidation✅"]
+
+%% ==========================
+%% PrimaryKey Tests
+%% ==========================
+
+PrimaryKey --> PK1["24. ValidatePrimaryKey_ShouldAcceptUniqueNonNullValue✅"]
+PrimaryKey --> PK2["25. ValidatePrimaryKey_ShouldRejectNullValue✅"]
+PrimaryKey --> PK3["26. ValidatePrimaryKey_ShouldRejectDuplicateValue✅"]
+PrimaryKey --> PK4["27. ValidatePrimaryKey_ShouldSupportCompositeKey✅"]
+PrimaryKey --> PK5["28. ValidatePrimaryKey_ShouldRejectNullExistingKeys✅"]
+
+%% ==========================
+%% Unique Tests
+%% ==========================
+
+Unique --> UQ1["29. ValidateUnique_ShouldAcceptUniqueValue✅"]
+Unique --> UQ2["30. ValidateUnique_ShouldRejectDuplicateValue✅"]
+Unique --> UQ3["31. ValidateUnique_ShouldAllowNullValue✅"]
+Unique --> UQ4["32. ValidateUnique_ShouldSupportCompositeValue✅"]
+
+%% ==========================
+%% NotNull Tests
+%% ==========================
+
+NotNull --> NN1["33. ValidateNotNull_ShouldAcceptNonNullValue✅"]
+NotNull --> NN2["34. ValidateNotNull_ShouldRejectNullValue✅"]
+NotNull --> NN3["35. ValidateNotNull_ShouldCheckAllColumns✅"]
+NotNull --> NN4["36. Validate_ShouldDispatchToNotNullValidation✅"]
+
+%% ==========================
+%% ForeignKey Tests
+%% ==========================
+
+ForeignKey --> FK1["37. ValidateForeignKey_ShouldAcceptExistingReference✅"]
+ForeignKey --> FK2["38. ValidateForeignKey_ShouldRejectMissingReference✅"]
+ForeignKey --> FK3["39. ValidateForeignKey_ShouldAllowNullValue✅"]
+ForeignKey --> FK4["40. ValidateForeignKey_ShouldSupportCompositeReference✅"]
+
+%% ==========================
+%% Check Tests
+%% ==========================
+
+Check --> CH1["41. ValidateCheck_ShouldAcceptMatchingRow✅"]
+Check --> CH2["42. ValidateCheck_ShouldRejectNonMatchingRow✅"]
+Check --> CH3["43. ValidateCheck_ShouldRejectMissingPredicate✅"]
+Check --> CH4["44. Validate_ShouldDispatchToCheckValidation✅"]
+
+%% ==========================
+%% Definition Tests
+%% ==========================
+
+Definition --> DF1["45. IsValidDefinition_ShouldAcceptPrimaryKey✅"]
+Definition --> DF2["46. IsValidDefinition_ShouldAcceptUniqueConstraint✅"]
+Definition --> DF3["47. IsValidDefinition_ShouldAcceptNotNullConstraint✅"]
+Definition --> DF4["48. IsValidDefinition_ShouldAcceptConfiguredForeignKey✅"]
+Definition --> DF5["49. IsValidDefinition_ShouldRejectIncompleteForeignKey✅"]
+Definition --> DF6["50. IsValidDefinition_ShouldAcceptConfiguredCheck✅"]
+Definition --> DF7["51. IsValidDefinition_ShouldRejectIncompleteCheck✅"]
+
+```
+
+## Test count
+
+```text
+Constructor:      8
+Metadata:        10
+State:            5
+Primary Key:      5
+Unique:           4
+Not Null:         4
+Foreign Key:      4
+Check:            4
+Definition:       7
+-------------------
+Total:           51
+```
+# 8. Constraint Testing Roadmap (51 tests)  ❌
+
+```mermaid
+graph LR
+
+CT["Constraint Testing — 65 tests"]
+
+CT --> Builder
+CT --> Factory
+CT --> Definition
+CT --> Composite
+CT --> Prototype
+
+Builder --> BuilderCreation
+BuilderCreation --> T1["1. builder_ShouldCreateBuilder"]
+BuilderCreation --> T2["2. constructor_ShouldCreateBuilder"]
+BuilderCreation --> T3["3. builder_ShouldReturnNewBuilderEachTime"]
+
+Builder --> RequiredFieldBuilder
+RequiredFieldBuilder --> T4["4. name_ShouldStoreConstraintName"]
+RequiredFieldBuilder --> T5["5. type_ShouldStoreConstraintType"]
+RequiredFieldBuilder --> T6["6. tableId_ShouldStoreTableId"]
+RequiredFieldBuilder --> T7["7. columnIds_ShouldStoreColumnIds"]
+RequiredFieldBuilder --> T8["8. build_ShouldCreateConstraintDefinition"]
+RequiredFieldBuilder --> T9["9. build_ShouldPreserveRequiredFields"]
+RequiredFieldBuilder --> T10["10. build_ShouldRejectNullName"]
+RequiredFieldBuilder --> T11["11. build_ShouldRejectBlankName"]
+RequiredFieldBuilder --> T12["12. build_ShouldRejectNullType"]
+RequiredFieldBuilder --> T13["13. build_ShouldRejectNullTableId"]
+RequiredFieldBuilder --> T14["14. build_ShouldRejectNullColumnIds"]
+RequiredFieldBuilder --> T15["15. build_ShouldRejectEmptyColumnIds"]
+RequiredFieldBuilder --> T16["16. build_ShouldProtectColumnIdsFromExternalMutation"]
+
+Builder --> ForeignKeyBuilder
+ForeignKeyBuilder --> T17["17. referencedTableId_ShouldStoreReferencedTableId"]
+ForeignKeyBuilder --> T18["18. referencedColumnIds_ShouldStoreReferencedColumnIds"]
+ForeignKeyBuilder --> T19["19. buildForeignKey_ShouldCreateValidDefinition"]
+ForeignKeyBuilder --> T20["20. buildForeignKey_ShouldRejectMissingReferencedTableId"]
+ForeignKeyBuilder --> T21["21. buildForeignKey_ShouldRejectMissingReferencedColumnIds"]
+ForeignKeyBuilder --> T22["22. buildForeignKey_ShouldRejectEmptyReferencedColumnIds"]
+ForeignKeyBuilder --> T23["23. buildForeignKey_ShouldRejectMismatchedColumnCount"]
+ForeignKeyBuilder --> T24["24. buildForeignKey_ShouldProtectReferencedColumnIds"]
+
+Builder --> CheckBuilder
+CheckBuilder --> T25["25. expression_ShouldStoreCheckExpression"]
+CheckBuilder --> T26["26. buildCheck_ShouldCreateValidDefinition"]
+CheckBuilder --> T27["27. buildCheck_ShouldRejectNullExpression"]
+CheckBuilder --> T28["28. buildCheck_ShouldRejectBlankExpression"]
+CheckBuilder --> T29["29. buildNonCheck_ShouldIgnoreMissingExpression"]
+
+Factory --> Factory
+Factory --> T30["30. factory_ShouldCreatePrimaryKeyConstraint"]
+Factory --> T31["31. factory_ShouldCreateUniqueConstraint"]
+Factory --> T32["32. factory_ShouldCreateNotNullConstraint"]
+Factory --> T33["33. factory_ShouldCreateForeignKeyConstraint"]
+Factory --> T34["34. factory_ShouldCreateCheckConstraint"]
+Factory --> T35["35. factory_ShouldReturnConstraintWithDefinitionName"]
+Factory --> T36["36. factory_ShouldReturnConstraintWithTableId"]
+Factory --> T37["37. factory_ShouldReturnConstraintWithColumnIds"]
+Factory --> T38["38. factory_ShouldRejectNullDefinition"]
+Factory --> T39["39. factory_ShouldRejectUnsupportedConstraintType"]
+
+Definition --> PrimaryKeyDefinition
+PrimaryKeyDefinition --> T40["40. primaryKey_ShouldReturnPrimaryKeyType"]
+PrimaryKeyDefinition --> T41["41. primaryKey_ShouldValidateCompleteDefinition"]
+PrimaryKeyDefinition --> T42["42. primaryKey_ShouldSupportCompositeColumns"]
+
+Definition --> UniqueDefinition
+UniqueDefinition --> T43["43. unique_ShouldReturnUniqueType"]
+UniqueDefinition --> T44["44. unique_ShouldValidateCompleteDefinition"]
+UniqueDefinition --> T45["45. unique_ShouldSupportCompositeColumns"]
+
+Definition --> NotNullDefinition
+NotNullDefinition --> T46["46. notNull_ShouldReturnNotNullType"]
+NotNullDefinition --> T47["47. notNull_ShouldValidateSingleColumnDefinition"]
+NotNullDefinition --> T48["48. notNull_ShouldRejectMultipleColumns"]
+
+Definition --> ForeignKeyDefinition
+ForeignKeyDefinition --> T49["49. foreignKey_ShouldReturnForeignKeyType"]
+ForeignKeyDefinition --> T50["50. foreignKey_ShouldValidateCompleteDefinition"]
+ForeignKeyDefinition --> T51["51. foreignKey_ShouldExposeReferencedTableId"]
+ForeignKeyDefinition --> T52["52. foreignKey_ShouldExposeReferencedColumnIds"]
+
+Definition --> CheckDefinition
+CheckDefinition --> T53["53. check_ShouldReturnCheckType"]
+CheckDefinition --> T54["54. check_ShouldValidateCompleteDefinition"]
+CheckDefinition --> T55["55. check_ShouldExposeExpression"]
+
+Composite --> MetadataComposite
+MetadataComposite --> T56["56. constraint_ShouldReturnConstraintMetadataType"]
+MetadataComposite --> T57["57. constraint_ShouldBeLeafMetadataComponent"]
+MetadataComposite --> T58["58. constraint_ShouldReturnEmptyChildren"]
+MetadataComposite --> T59["59. constraint_ShouldRejectAddChild"]
+MetadataComposite --> T60["60. constraint_ShouldRejectRemoveChild"]
+
+Prototype --> Prototype
+Prototype --> T61["61. copyAs_ShouldCreateDifferentConstraintInstance"]
+Prototype --> T62["62. copyAs_ShouldGenerateDifferentConstraintId"]
+Prototype --> T63["63. copyAs_ShouldPreserveConstraintName"]
+Prototype --> T64["64. copyAs_ShouldPreserveConstraintType"]
+Prototype --> T65["65. copyAs_ShouldPreserveDefinitionData"]
+```
+
+## Test count
+
+```text
+Constructor:      8
+Metadata:        10
+State:            5
+Primary Key:      5
+Unique:           4
+Not Null:         4
+Foreign Key:      4
+Check:            4
+Definition:       7
+-------------------
+Total:           51
+```
+# 9. Index Testing Roadmap 
+```mermaid
+graph LR
+
+IX["Index Testing — 49 tests"]
+
+IX --> Design
+IX --> Constructor
+IX --> Functional
+IX --> Validation
+IX --> Exception
+
+Design --> D1["IndexTests"]
+Design --> D2["JUnit 5 Test Fixture"]
+Design --> D3["Nested Test Groups"]
+Design --> D4["Reusable Index Fixture"]
+Design --> D5["Reusable UUID Test Data"]
+
+Functional --> Metadata
+Functional --> State
+Functional --> Insert
+Functional --> Search
+Functional --> Delete
+Functional --> Collection
+
+%% ==========================
+%% Constructor Tests
+%% ==========================
+
+Constructor --> C1["1. Constructor_ShouldCreateIndex"]
+Constructor --> C2["2. Constructor_ShouldGenerateIndexId"]
+Constructor --> C3["3. Constructor_ShouldGenerateUniqueIndexIds"]
+Constructor --> C4["4. Constructor_ShouldInitializeMetadata"]
+Constructor --> C5["5. Constructor_ShouldEnableIndexByDefault"]
+Constructor --> C6["6. Constructor_ShouldInitializeEmptyEntries"]
+Constructor --> C7["7. Constructor_ShouldRejectNullName"]
+Constructor --> C8["8. Constructor_ShouldRejectNullTableId"]
+Constructor --> C9["9. Constructor_ShouldRejectEmptyColumns"]
+Constructor --> C10["10. Constructor_ShouldRejectNullType"]
+
+%% ==========================
+%% Metadata Tests
+%% ==========================
+
+Metadata --> M1["11. Rename_ShouldChangeIndexName ✅"]
+Metadata --> M2["12. Rename_ShouldRejectNullName ✅"]
+Metadata --> M3["13. Rename_ShouldRejectBlankName ✅"]
+Metadata --> M4["14. GetColumnNames_ShouldReturnUnmodifiableList✅"]
+Metadata --> M5["15. IsValidDefinition_ShouldReturnTrueForValidIndex✅"]
+
+%% ==========================
+%% State Tests
+%% ==========================
+
+State --> S1["16. Disable_ShouldDisableIndex"]
+State --> S2["17. Enable_ShouldEnableIndex"]
+State --> S3["18. Disable_ShouldBeIdempotent"]
+State --> S4["19. Enable_ShouldBeIdempotent"]
+State --> S5["20. Insert_ShouldRejectWhenDisabled"]
+State --> S6["21. Delete_ShouldRejectWhenDisabled"]
+State --> S7["22. Search_ShouldStillWorkWhenDisabled"]
+
+%% ==========================
+%% Insert Tests
+%% ==========================
+
+Insert --> I1["23. Insert_ShouldStoreKeyAndRowId"]
+Insert --> I2["24. Insert_ShouldIncreaseKeyCount"]
+Insert --> I3["25. Insert_ShouldIncreaseEntryCount"]
+Insert --> I4["26. Insert_ShouldRejectNullKey"]
+Insert --> I5["27. Insert_ShouldRejectNullRowId"]
+Insert --> I6["28. Insert_ShouldAvoidDuplicateRowIdForSameKey"]
+Insert --> I7["29. Insert_ShouldAllowMultipleRowsForNonUniqueIndex"]
+Insert --> I8["30. Insert_ShouldRejectDuplicateKeyForUniqueIndex"]
+
+%% ==========================
+%% Search Tests
+%% ==========================
+
+Search --> SE1["31. Search_ShouldReturnMatchingRowIds"]
+Search --> SE2["32. Search_ShouldReturnEmptyListForMissingKey"]
+Search --> SE3["33. Search_ShouldRejectNullKey"]
+Search --> SE4["34. Search_ShouldReturnUnmodifiableList"]
+Search --> SE5["35. ContainsKey_ShouldReturnTrueForExistingKey"]
+Search --> SE6["36. ContainsKey_ShouldReturnFalseForMissingKey"]
+
+%% ==========================
+%% Delete Tests
+%% ==========================
+
+Delete --> D1["37. Delete_ShouldRemoveSpecificRowId"]
+Delete --> D2["38. Delete_ShouldReturnFalseForMissingRowId"]
+Delete --> D3["39. Delete_ShouldReturnFalseForMissingKey"]
+Delete --> D4["40. Delete_ShouldRemoveKeyWhenLastRowIdIsDeleted"]
+Delete --> D5["41. DeleteKey_ShouldRemoveEntireKey"]
+Delete --> D6["42. DeleteKey_ShouldReturnFalseForMissingKey"]
+
+%% ==========================
+%% Collection Tests
+%% ==========================
+
+Collection --> CO1["43. Clear_ShouldRemoveAllEntries"]
+Collection --> CO2["44. GetEntries_ShouldReturnUnmodifiableMap"]
+Collection --> CO3["45. GetEntries_ShouldProtectNestedLists"]
+Collection --> CO4["46. IsEmpty_ShouldReturnTrueForNewIndex"]
+Collection --> CO5["47. IsEmpty_ShouldReturnFalseAfterInsert"]
+Collection --> CO6["48. GetKeyCount_ShouldReturnCorrectCount"]
+Collection --> CO7["49. GetEntryCount_ShouldReturnCorrectCount"]
+
+```
+## Test count
+
+```text
+Constructor: 10
+Metadata:     5
+State:        7
+Insert:       8
+Search:       6
+Delete:       6
+Collection:   7
+--------------
+Total:       49
+```
+
+# 10. BTreeIndex Testing Roadmap
+```mermaid
+graph LR
+
+BT[BTreeIndex Testing]
+
+BT --> Design
+BT --> Constructor
+BT --> Functional
+BT --> Validation
+BT --> Exception
+BT --> Concurrency
+BT --> Performance
+BT --> Integration
+
+Design --> BTreeIndexTests
+Design --> TestFixture
+Design --> MockObjects
+
+Constructor --> CreateBTree
+
+Functional --> Insert
+Functional --> Delete
+Functional --> Search
+Functional --> Split
+Functional --> Merge
+Functional --> BorrowFromSibling
+Functional --> Rebalance
+Functional --> RangeScan
+
+Validation --> TreeHeight
+Validation --> NodeOrder
+Validation --> KeyOrdering
+
+Exception --> DuplicateKey
+Exception --> CorruptedNode
+
+Concurrency --> ConcurrentInsert
+Concurrency --> ConcurrentSearch
+
+Performance --> SearchPerformance
+Performance --> InsertPerformance
+
+Integration --> Page
+Integration --> BufferPool
+Integration --> StorageEngine
+```
+
+# 11. HashIndex Testing Roadmap
+```mermaid
+graph LR
+
+HI[HashIndex Testing]
+
+HI --> Design
+HI --> Constructor
+HI --> Functional
+HI --> Validation
+HI --> Exception
+HI --> Concurrency
+HI --> Performance
+HI --> Integration
+
+Design --> HashIndexTests
+Design --> TestFixture
+Design --> MockObjects
+
+Constructor --> CreateHashIndex
+
+Functional --> Insert
+Functional --> Delete
+Functional --> Lookup
+Functional --> SplitBucket
+Functional --> Expand
+
+Validation --> BucketState
+Validation --> HashValue
+
+Exception --> BucketOverflow
+Exception --> InvalidHash
+
+Concurrency --> ConcurrentLookup
+Concurrency --> ConcurrentInsert
+
+Performance --> LookupPerformance
+Performance --> ExpansionPerformance
+
+Integration --> StorageEngine
+Integration --> Page
+Integration --> BufferPool
+```
+
+
+# 12. View Testing Roadmap ⚪
+```mermaid
+graph LR
+
+VW["View Testing — 47 tests"]
+
+VW --> Design
+VW --> Constructor
+VW --> Functional
+VW --> Validation
+VW --> Exception
+
+%% ==========================
+%% Test Design
+%% ==========================
+
+Design --> D1["ViewTests✅"]
+Design --> D2["JUnit 5 Test Fixture✅"]
+Design --> D3["Nested Test Groups✅"]
+Design --> D4["Reusable UUID Test Data✅"]
+
+%% ==========================
+%% Functional Groups
+%% ==========================
+
+Functional --> Name
+Functional --> Definition
+Functional --> Dependency
+Functional --> DependencyValidation
+Functional --> MaterializedView
+Functional --> ValidityState
+Functional --> Metadata
+
+%% ==========================
+%% Constructor Tests
+%% ==========================
+
+Constructor --> C1["1. Constructor_ShouldCreateView"]
+Constructor --> C2["2. Constructor_ShouldGenerateViewId"]
+Constructor --> C3["3. Constructor_ShouldGenerateUniqueViewIds"]
+Constructor --> C4["4. Constructor_ShouldInitializeSchemaId"]
+Constructor --> C5["5. Constructor_ShouldInitializeDefinition"]
+Constructor --> C6["6. Constructor_ShouldInitializeEmptyDependencies"]
+Constructor --> C7["7. Constructor_ShouldCreateNonMaterializedViewByDefault"]
+Constructor --> C8["8. Constructor_ShouldInitializeValidState"]
+
+%% ==========================
+%% Name Tests
+%% ==========================
+
+Name --> N1["9. GetName_ShouldReturnViewName"]
+Name --> N2["10. Rename_ShouldChangeViewName"]
+Name --> N3["11. Rename_ShouldRejectNullName"]
+Name --> N4["12. Rename_ShouldRejectEmptyName"]
+Name --> N5["13. Rename_ShouldRejectBlankName"]
+
+%% ==========================
+%% Definition Tests
+%% ==========================
+
+Definition --> DF1["14. GetDefinition_ShouldReturnDefinition"]
+Definition --> DF2["15. UpdateDefinition_ShouldChangeDefinition"]
+Definition --> DF3["16. UpdateDefinition_ShouldRejectNullDefinition"]
+Definition --> DF4["17. UpdateDefinition_ShouldRejectEmptyDefinition"]
+Definition --> DF5["18. UpdateDefinition_ShouldRejectBlankDefinition"]
+Definition --> DF6["19. ValidateDefinition_ShouldAcceptValidSelectDefinition"]
+Definition --> DF7["20. ValidateDefinition_ShouldRejectInvalidDefinition"]
+
+%% ==========================
+%% Dependency Tests
+%% ==========================
+
+Dependency --> DP1["21. AddDependency_ShouldRegisterDependency"]
+Dependency --> DP2["22. AddDependency_ShouldIncreaseDependencyCount"]
+Dependency --> DP3["23. AddDependency_ShouldRejectNullDependencyId"]
+Dependency --> DP4["24. AddDependency_ShouldIgnoreDuplicateDependency"]
+Dependency --> DP5["25. ContainsDependency_ShouldReturnTrueForExistingDependency"]
+Dependency --> DP6["26. ContainsDependency_ShouldReturnFalseForMissingDependency"]
+Dependency --> DP7["27. RemoveDependency_ShouldRemoveExistingDependency"]
+Dependency --> DP8["28. RemoveDependency_ShouldReturnFalseForMissingDependency"]
+Dependency --> DP9["29. GetDependencyIds_ShouldReturnUnmodifiableSet"]
+Dependency --> DP10["30. HasDependencies_ShouldReturnFalseForNewView"]
+Dependency --> DP11["31. HasDependencies_ShouldReturnTrueWhenDependencyExists"]
+
+%% ==========================
+%% DependencyValidation Tests
+%% ==========================
+
+DependencyValidation --> DV1["32. ValidateDependencies_ShouldReturnTrueWhenAllDependenciesExist"]
+DependencyValidation --> DV2["33. ValidateDependencies_ShouldReturnFalseWhenDependencyIsMissing"]
+DependencyValidation --> DV3["34. ValidateDependencies_ShouldAcceptEmptyDependencyCollection"]
+DependencyValidation --> DV4["35. HasCircularDependency_ShouldReturnTrueForCycle"]
+DependencyValidation --> DV5["36. HasCircularDependency_ShouldReturnFalseWithoutCycle"]
+
+%% ==========================
+%% MaterializedView Tests
+%% ==========================
+
+MaterializedView --> MV1["37. SetMaterialized_ShouldEnableMaterializedMode"]
+MaterializedView --> MV2["38. SetMaterialized_ShouldDisableMaterializedMode"]
+MaterializedView --> MV3["39. Refresh_ShouldRefreshMaterializedView"]
+MaterializedView --> MV4["40. Refresh_ShouldRejectNonMaterializedView"]
+
+%% ==========================
+%% ValidityState Tests
+%% ==========================
+
+ValidityState --> VS1["41. Invalidate_ShouldSetValidToFalse"]
+ValidityState --> VS2["42. Validate_ShouldSetValidToTrue"]
+ValidityState --> VS3["43. Invalidate_ShouldBeIdempotent"]
+ValidityState --> VS4["44. Validate_ShouldBeIdempotent"]
+
+%% ==========================
+%% Metadata Tests
+%% ==========================
+
+Metadata --> M1["45. GetSchemaId_ShouldReturnSchemaId"]
+Metadata --> M2["46. SetSchemaId_ShouldUpdateSchemaId"]
+Metadata --> M3["47. SetSchemaId_ShouldRejectNullSchemaId"]
+
+```
+
+## Test count
+
+```text
+Constructor:             8
+Name:                    5
+Definition:              7
+Dependency:             11
+Dependency Validation:   5
+Materialized View:       4
+Validity State:          4
+Metadata:                3
+--------------------------
+Total:                  47
+```
+
+# 13. Storage Engine Testing Roadmap (25 tests)
+
+```mermaid
+graph LR
+
+SE["Storage Engine Testing — 25 tests"]
+
+SE --> Design
+SE --> Constructor
+SE --> Functional
+SE --> Validation
+SE --> Exception
+SE --> Integration
+
+%% ==========================
+%% Test Design
+%% ==========================
+
+Design --> D1["StorageEngineTests"]
+Design --> D2["JUnit 5 Test Fixture"]
+Design --> D3["Nested Test Groups"]
+Design --> D4["Reusable StorageEngine Fixture"]
+Design --> D5["Reusable Page Data"]
+
+%% ==========================
+%% Functional Groups
+%% ==========================
+
+Functional --> Lifecycle
+Functional --> PageOperations
+Functional --> CollectionSafety
+
+%% ==========================
+%% Constructor Tests
+%% ==========================
+
+Constructor --> C1["1. Constructor_ShouldCreateStorageEngine"]
+Constructor --> C2["2. Constructor_ShouldGenerateStorageEngineId"]
+Constructor --> C3["3. Constructor_ShouldGenerateUniqueStorageEngineIds"]
+Constructor --> C4["4. Constructor_ShouldInitializeClosedState"]
+Constructor --> C5["5. Constructor_ShouldInitializeEmptyPageCollection"]
+
+%% ==========================
+%% Lifecycle Tests
+%% ==========================
+
+Lifecycle --> L1["6. Open_ShouldChangeStateToOpen"]
+Lifecycle --> L2["7. Open_ShouldBeIdempotent"]
+Lifecycle --> L3["8. Close_ShouldChangeStateToClosed"]
+Lifecycle --> L4["9. Close_ShouldBeIdempotent"]
+Lifecycle --> L5["10. Open_ShouldReopenClosedStorageEngine"]
+
+%% ==========================
+%% PageOperations Tests
+%% ==========================
+
+PageOperations --> P1["11. AllocatePage_ShouldCreatePage"]
+PageOperations --> P2["12. AllocatePage_ShouldGenerateSequentialPageIds"]
+PageOperations --> P3["13. AllocatePage_ShouldRejectWhenClosed"]
+PageOperations --> P4["14. WritePage_ShouldStorePageData"]
+PageOperations --> P5["15. WritePage_ShouldReplaceExistingData"]
+PageOperations --> P6["16. WritePage_ShouldRejectNullData"]
+PageOperations --> P7["17. WritePage_ShouldRejectMissingPage"]
+PageOperations --> P8["18. ReadPage_ShouldReturnCopy"]
+PageOperations --> P9["19. ReadPage_ShouldRejectMissingPage"]
+PageOperations --> P10["20. DeletePage_ShouldRemoveExistingPage"]
+PageOperations --> P11["21. DeletePage_ShouldReturnFalseForMissingPage"]
+
+%% ==========================
+%% CollectionSafety Tests
+%% ==========================
+
+CollectionSafety --> CS1["22. GetPages_ShouldReturnUnmodifiableMap"]
+CollectionSafety --> CS2["23. GetPages_ShouldProtectNestedByteArrays"]
+CollectionSafety --> CS3["24. Clear_ShouldRemoveAllPages"]
+CollectionSafety --> CS4["25. Clear_ShouldRejectWhenClosed"]
+
+```
+
+# 14. DiskManager Testing Roadmap (26 tests)
+
+```mermaid
+graph LR
+
+ROOT["DiskManager Testing — 26 tests"]
+
+ROOT --> Design
+ROOT --> Constructor
+ROOT --> Functional
+ROOT --> Validation
+ROOT --> Exception
+
+Design --> D1["DiskManagerTests"]
+Design --> D2["JUnit 5 Test Fixture"]
+Design --> D3["Nested Test Groups"]
+
+Functional --> Lifecycle
+Functional --> Allocation
+Functional --> Write
+Functional --> Read
+Functional --> Deallocation
+Functional --> CollectionSafety
+
+Constructor --> CO1["1. Constructor_ShouldCreateDiskManager"]
+Constructor --> CO2["2. Constructor_ShouldInitializeClosedState"]
+Constructor --> CO3["3. Constructor_ShouldInitializeEmptyStorage"]
+
+Lifecycle --> LI1["4. Open_ShouldOpenDiskManager"]
+Lifecycle --> LI2["5. Open_ShouldBeIdempotent"]
+Lifecycle --> LI3["6. Close_ShouldCloseDiskManager"]
+Lifecycle --> LI4["7. Close_ShouldBeIdempotent"]
+
+Allocation --> AL1["8. AllocatePage_ShouldCreatePage"]
+Allocation --> AL2["9. AllocatePage_ShouldGenerateSequentialIds"]
+Allocation --> AL3["10. AllocatePage_ShouldIncreasePageCount"]
+Allocation --> AL4["11. AllocatePage_ShouldRejectWhenClosed"]
+
+Write --> WR1["12. WritePage_ShouldStoreData"]
+Write --> WR2["13. WritePage_ShouldReplaceData"]
+Write --> WR3["14. WritePage_ShouldRejectNullData"]
+Write --> WR4["15. WritePage_ShouldRejectMissingPage"]
+Write --> WR5["16. WritePage_ShouldRejectWhenClosed"]
+
+Read --> RE1["17. ReadPage_ShouldReturnStoredData"]
+Read --> RE2["18. ReadPage_ShouldReturnDefensiveCopy"]
+Read --> RE3["19. ReadPage_ShouldRejectMissingPage"]
+Read --> RE4["20. ReadPage_ShouldRejectWhenClosed"]
+
+Deallocation --> DE1["21. DeallocatePage_ShouldRemoveExistingPage"]
+Deallocation --> DE2["22. DeallocatePage_ShouldReturnFalseForMissingPage"]
+Deallocation --> DE3["23. DeallocatePage_ShouldDecreasePageCount"]
+Deallocation --> DE4["24. DeallocatePage_ShouldRejectWhenClosed"]
+
+CollectionSafety --> CO1["25. GetPages_ShouldReturnUnmodifiableMap"]
+CollectionSafety --> CO2["26. GetPages_ShouldProtectNestedArrays"]
+
+Validation --> V1["State validation"]
+Validation --> V2["Page ID validation"]
+Validation --> V3["Page existence validation"]
+Validation --> V4["Data null validation"]
+
+Exception --> E1["IllegalArgumentException"]
+Exception --> E2["IllegalStateException"]
+Exception --> E3["UnsupportedOperationException"]
+```
+
+## Test count
+
+```text
+Constructor: 3
+Lifecycle: 4
+Allocation: 4
+Write: 5
+Read: 4
+Deallocation: 4
+CollectionSafety: 2
+Total: 26
+```
+
+# 15. BufferPool Testing Roadmap (29 tests)
+
+```mermaid
+graph LR
+
+ROOT["BufferPool Testing — 29 tests"]
+
+ROOT --> Design
+ROOT --> Constructor
+ROOT --> Functional
+ROOT --> Validation
+ROOT --> Exception
+
+Design --> D1["BufferPoolTests"]
+Design --> D2["JUnit 5 Test Fixture"]
+Design --> D3["Nested Test Groups"]
+
+Functional --> Fetch
+Functional --> Update
+Functional --> Flush
+Functional --> Eviction
+Functional --> CollectionSafety
+
+Constructor --> CO1["1. Constructor_ShouldCreateBufferPool"]
+Constructor --> CO2["2. Constructor_ShouldStoreCapacity"]
+Constructor --> CO3["3. Constructor_ShouldInitializeEmptyFrames"]
+Constructor --> CO4["4. Constructor_ShouldRejectInvalidCapacity"]
+Constructor --> CO5["5. Constructor_ShouldRejectNullDiskManager"]
+
+Fetch --> FE1["6. FetchPage_ShouldLoadPageFromDisk"]
+Fetch --> FE2["7. FetchPage_ShouldCacheLoadedPage"]
+Fetch --> FE3["8. FetchPage_ShouldReturnCachedPage"]
+Fetch --> FE4["9. FetchPage_ShouldReturnDefensiveCopy"]
+Fetch --> FE5["10. FetchPage_ShouldRejectInvalidPageId"]
+Fetch --> FE6["11. FetchPage_ShouldPropagateMissingPageError"]
+
+Update --> UP1["12. UpdatePage_ShouldUpdateCachedPage"]
+Update --> UP2["13. UpdatePage_ShouldFetchMissingCachedPage"]
+Update --> UP3["14. UpdatePage_ShouldMarkPageDirty"]
+Update --> UP4["15. UpdatePage_ShouldRejectNullData"]
+Update --> UP5["16. UpdatePage_ShouldRejectInvalidPageId"]
+
+Flush --> FL1["17. FlushPage_ShouldWriteDirtyPageToDisk"]
+Flush --> FL2["18. FlushPage_ShouldClearDirtyState"]
+Flush --> FL3["19. FlushPage_ShouldDoNothingForCleanPage"]
+Flush --> FL4["20. FlushPage_ShouldRejectMissingCachedPage"]
+Flush --> FL5["21. FlushAll_ShouldFlushEveryDirtyPage"]
+
+Eviction --> EV1["22. FetchPage_ShouldEvictEldestPageWhenFull"]
+Eviction --> EV2["23. FetchPage_ShouldRespectRecentAccessOrder"]
+Eviction --> EV3["24. Eviction_ShouldFlushDirtyPageBeforeRemoval"]
+Eviction --> EV4["25. EvictPage_ShouldRemoveSpecificPage"]
+Eviction --> EV5["26. EvictPage_ShouldReturnFalseForMissingPage"]
+
+CollectionSafety --> CO1["27. GetFrames_ShouldReturnUnmodifiableMap"]
+CollectionSafety --> CO2["28. GetFrames_ShouldProtectNestedArrays"]
+CollectionSafety --> CO3["29. Clear_ShouldFlushAndRemoveAllFrames"]
+
+Validation --> V1["State validation"]
+Validation --> V2["Page ID validation"]
+Validation --> V3["Page existence validation"]
+Validation --> V4["Data null validation"]
+
+Exception --> E1["IllegalArgumentException"]
+Exception --> E2["IllegalStateException"]
+Exception --> E3["UnsupportedOperationException"]
+```
+
+## Test count
+
+```text
+Constructor: 5
+Fetch: 6
+Update: 5
+Flush: 5
+Eviction: 5
+CollectionSafety: 3
+Total: 29
+```
+# 16. Parser Testing Roadmap (21 tests)
+
+```mermaid
+graph LR
+
+ROOT["Parser Testing — 21 tests"]
+
+ROOT --> Design
+ROOT --> Constructor
+ROOT --> Functional
+ROOT --> ValidationCoverage
+ROOT --> Exception
+
+Design --> D1["ParserTests"]
+Design --> D2["JUnit 5 Test Fixture"]
+Design --> D3["Nested Test Groups"]
+
+Functional --> Select
+Functional --> Insert
+Functional --> Update
+Functional --> Delete
+Functional --> Validation
+
+Constructor --> C1["1. Constructor_ShouldCreateParser"]
+
+Select --> S1["2. Parse_ShouldParseSelectStatement"]
+Select --> S2["3. ParseSelect_ShouldExtractTableName"]
+Select --> S3["4. ParseSelect_ShouldExtractColumns"]
+Select --> S4["5. ParseSelect_ShouldSupportWildcard"]
+Select --> S5["6. ParseSelect_ShouldNormalizeWhitespace"]
+Select --> S6["7. ParseSelect_ShouldRejectMissingFrom"]
+Select --> S7["8. ParseSelect_ShouldRejectMissingColumns"]
+Select --> S8["9. ParseSelect_ShouldRejectMissingTable"]
+
+Insert --> I1["10. Parse_ShouldParseInsertStatement"]
+Insert --> I2["11. ParseInsert_ShouldExtractTableName"]
+Insert --> I3["12. ParseInsert_ShouldExtractColumns"]
+
+Update --> U1["13. Parse_ShouldParseUpdateStatement"]
+Update --> U2["14. ParseUpdate_ShouldExtractTableName"]
+
+Delete --> D1["15. Parse_ShouldParseDeleteStatement"]
+Delete --> D2["16. ParseDelete_ShouldExtractTableName"]
+
+Validation --> V1["17. Parse_ShouldRejectNullSql"]
+Validation --> V2["18. Parse_ShouldRejectBlankSql"]
+Validation --> V3["19. Parse_ShouldRejectUnsupportedStatement"]
+Validation --> V4["20. GetColumns_ShouldReturnUnmodifiableList"]
+Validation --> V5["21. ParsedQuery_ShouldPreserveRawSql"]
+
+ValidationCoverage --> V1["Null input validation"]
+ValidationCoverage --> V2["Blank input validation"]
+ValidationCoverage --> V3["Missing object validation"]
+ValidationCoverage --> V4["Collection immutability"]
+
+Exception --> E1["IllegalArgumentException"]
+Exception --> E2["UnsupportedOperationException"]
+```
+
+## Test count
+
+```text
+Constructor: 1
+Select: 8
+Insert: 3
+Update: 2
+Delete: 2
+Validation: 5
+Total: 21
+```
+
+
+# 17. Optimizer Testing Roadmap (19 tests)
+
+```mermaid
+graph LR
+
+ROOT["Optimizer Testing — 19 tests"]
+
+ROOT --> Design
+ROOT --> Constructor
+ROOT --> Functional
+ROOT --> ValidationCoverage
+ROOT --> Exception
+
+Design --> D1["OptimizerTests"]
+Design --> D2["JUnit 5 Test Fixture"]
+Design --> D3["Nested Test Groups"]
+
+Functional --> QueryPlan
+Functional --> Cost
+Functional --> Optimization
+
+Constructor --> C1["1. Constructor_ShouldCreateOptimizer"]
+
+QueryPlan --> Q1["2. QueryPlan_ShouldStoreOperations"]
+QueryPlan --> Q2["3. QueryPlan_ShouldStoreEstimatedCost"]
+QueryPlan --> Q3["4. QueryPlan_ShouldRejectEmptyOperations"]
+QueryPlan --> Q4["5. QueryPlan_ShouldRejectNegativeCost"]
+QueryPlan --> Q5["6. GetOperations_ShouldReturnUnmodifiableList"]
+
+Cost --> C1["7. EstimateCost_ShouldCalculateTableScanCost"]
+Cost --> C2["8. EstimateCost_ShouldCalculateIndexScanCost"]
+Cost --> C3["9. EstimateCost_ShouldCalculateCombinedCost"]
+Cost --> C4["10. EstimateCost_ShouldAssignHighCostToJoin"]
+Cost --> C5["11. EstimateCost_ShouldRejectNullOperations"]
+Cost --> C6["12. EstimateCost_ShouldRejectBlankOperation"]
+
+Optimization --> O1["13. Optimize_ShouldReturnNewPlan"]
+Optimization --> O2["14. Optimize_ShouldMoveFilterBeforeTableScan"]
+Optimization --> O3["15. Optimize_ShouldRemoveDuplicateOperations"]
+Optimization --> O4["16. Optimize_ShouldRemoveRedundantSort"]
+Optimization --> O5["17. Optimize_ShouldReduceCostWhenOperationsRemoved"]
+Optimization --> O6["18. Optimize_ShouldPreserveNonRedundantOperations"]
+Optimization --> O7["19. Optimize_ShouldRejectNullPlan"]
+
+ValidationCoverage --> V1["Null input validation"]
+ValidationCoverage --> V2["Blank input validation"]
+ValidationCoverage --> V3["Missing object validation"]
+ValidationCoverage --> V4["Collection immutability"]
+
+Exception --> E1["IllegalArgumentException"]
+Exception --> E2["UnsupportedOperationException"]
+```
+
+## Test count
+
+```text
+Constructor: 1
+QueryPlan: 5
+Cost: 6
+Optimization: 7
+Total: 19
+```
+
+# 18. Executor Testing Roadmap (24 tests)
+```mermaid
+graph LR
+
+ROOT["Executor Testing — 24 tests"]
+
+ROOT --> Design
+ROOT --> Constructor
+ROOT --> Functional
+ROOT --> ValidationCoverage
+ROOT --> Exception
+
+Design --> D1["ExecutorTests"]
+Design --> D2["JUnit 5 Test Fixture"]
+Design --> D3["Nested Test Groups"]
+
+Functional --> TableRegistration
+Functional --> Select
+Functional --> Insert
+Functional --> Update
+Functional --> Delete
+Functional --> Metadata
+
+Constructor --> C1["1. Constructor_ShouldCreateExecutor"]
+
+TableRegistration --> T1["2. RegisterTable_ShouldStoreTable"]
+TableRegistration --> T2["3. RegisterTable_ShouldCopyInputRows"]
+TableRegistration --> T3["4. RegisterTable_ShouldRejectBlankName"]
+TableRegistration --> T4["5. RegisterTable_ShouldRejectNullRows"]
+
+Select --> S1["6. ExecuteSelect_ShouldReturnAllRows"]
+Select --> S2["7. ExecuteSelect_ShouldFilterMatchingRows"]
+Select --> S3["8. ExecuteSelect_ShouldReturnEmptyListWhenNoMatch"]
+Select --> S4["9. ExecuteSelect_ShouldReturnUnmodifiableList"]
+Select --> S5["10. ExecuteSelect_ShouldRejectMissingTable"]
+
+Insert --> I1["11. ExecuteInsert_ShouldAddRow"]
+Insert --> I2["12. ExecuteInsert_ShouldCopyRow"]
+Insert --> I3["13. ExecuteInsert_ShouldRejectNullRow"]
+
+Update --> U1["14. ExecuteUpdate_ShouldUpdateMatchingRows"]
+Update --> U2["15. ExecuteUpdate_ShouldReturnZeroWhenNoMatch"]
+Update --> U3["16. ExecuteUpdate_ShouldUpdateAllRowsWhenMatchValueNull"]
+Update --> U4["17. ExecuteUpdate_ShouldRejectNullColumnName"]
+
+Delete --> D1["18. ExecuteDelete_ShouldDeleteMatchingRows"]
+Delete --> D2["19. ExecuteDelete_ShouldReturnZeroWhenNoMatch"]
+Delete --> D3["20. ExecuteDelete_ShouldDeleteAllRowsWhenColumnNull"]
+
+Metadata --> M1["21. GetRowCount_ShouldReturnCorrectCount"]
+Metadata --> M2["22. ContainsTable_ShouldReturnFalseForMissingTable"]
+Metadata --> M3["23. GetTables_ShouldReturnUnmodifiableMap"]
+Metadata --> M4["24. GetTables_ShouldProtectNestedRows"]
+
+ValidationCoverage --> V1["Null input validation"]
+ValidationCoverage --> V2["Blank input validation"]
+ValidationCoverage --> V3["Missing object validation"]
+ValidationCoverage --> V4["Collection immutability"]
+
+Exception --> E1["IllegalArgumentException"]
+Exception --> E2["UnsupportedOperationException"]
+```
+
+## Test count
+
+```text
+Constructor: 1
+TableRegistration: 4
+Select: 5
+Insert: 3
+Update: 4
+Delete: 3
+Metadata: 4
+Total: 24
+```
+
+# 19. TransactionManager Testing Roadmap (18 tests)
+
+```mermaid
+graph LR
+
+ROOT["TransactionManager Testing — 18 tests"]
+
+ROOT --> Design
+ROOT --> Constructor
+ROOT --> Functional
+ROOT --> Validation
+ROOT --> Exception
+
+Design --> D1["TransactionManagerTests"]
+Design --> D2["JUnit 5 Test Fixture"]
+Design --> D3["Nested Test Groups"]
+
+Functional --> Begin
+Functional --> Commit
+Functional --> Rollback
+Functional --> Metadata
+
+Constructor --> C1["1. Constructor_ShouldCreateManager"]
+Constructor --> C2["2. Constructor_ShouldInitializeEmptyTransactions"]
+
+Begin --> B1["3. Begin_ShouldCreateTransaction"]
+Begin --> B2["4. Begin_ShouldGenerateTransactionId"]
+Begin --> B3["5. Begin_ShouldInitializeActiveStatus"]
+Begin --> B4["6. Begin_ShouldIncreaseTransactionCount"]
+Begin --> B5["7. Begin_ShouldGenerateUniqueIds"]
+
+Commit --> C1["8. Commit_ShouldCommitActiveTransaction"]
+Commit --> C2["9. Commit_ShouldRejectMissingTransaction"]
+Commit --> C3["10. Commit_ShouldRejectNullId"]
+Commit --> C4["11. Commit_ShouldRejectAlreadyCommittedTransaction"]
+
+Rollback --> R1["12. Rollback_ShouldRollbackActiveTransaction"]
+Rollback --> R2["13. Rollback_ShouldRejectMissingTransaction"]
+Rollback --> R3["14. Rollback_ShouldRejectAlreadyFinishedTransaction"]
+
+Metadata --> M1["15. GetTransaction_ShouldReturnStoredTransaction"]
+Metadata --> M2["16. ContainsTransaction_ShouldReturnTrueForExistingTransaction"]
+Metadata --> M3["17. ContainsTransaction_ShouldReturnFalseForMissingTransaction"]
+Metadata --> M4["18. GetTransactions_ShouldReturnUnmodifiableMap"]
+
+Validation --> V1["Null input validation"]
+Validation --> V2["Blank input validation"]
+Validation --> V3["Missing object validation"]
+Validation --> V4["State validation"]
+Validation --> V5["Collection immutability"]
+
+Exception --> E1["IllegalArgumentException"]
+Exception --> E2["IllegalStateException"]
+Exception --> E3["UnsupportedOperationException"]
+```
+
+## Test count
+
+```text
+Constructor: 2
+Begin: 5
+Commit: 4
+Rollback: 3
+Metadata: 4
+Total: 18
+```
+
+
+# 20. LockManager Testing Roadmap (19 tests)
+
+```mermaid
+graph LR
+
+ROOT["LockManager Testing — 19 tests"]
+
+ROOT --> Design
+ROOT --> Constructor
+ROOT --> Functional
+ROOT --> Validation
+ROOT --> Exception
+
+Design --> D1["LockManagerTests"]
+Design --> D2["JUnit 5 Test Fixture"]
+Design --> D3["Nested Test Groups"]
+
+Functional --> Acquire
+Functional --> Release
+Functional --> Metadata
+
+Constructor --> C1["1. Constructor_ShouldCreateManager"]
+Constructor --> C2["2. Constructor_ShouldInitializeEmptyLocks"]
+
+Acquire --> A1["3. Acquire_ShouldAcquireSharedLock"]
+Acquire --> A2["4. Acquire_ShouldAcquireExclusiveLock"]
+Acquire --> A3["5. Acquire_ShouldStoreOwner"]
+Acquire --> A4["6. Acquire_ShouldStoreMode"]
+Acquire --> A5["7. Acquire_ShouldRejectConflictingOwner"]
+Acquire --> A6["8. Acquire_ShouldAllowSameOwner"]
+Acquire --> A7["9. Acquire_ShouldUpgradeSameOwnerToExclusive"]
+Acquire --> A8["10. Acquire_ShouldRejectBlankResource"]
+Acquire --> A9["11. Acquire_ShouldRejectNullOwner"]
+Acquire --> A10["12. Acquire_ShouldRejectNullMode"]
+
+Release --> R1["13. Release_ShouldRemoveOwnedLock"]
+Release --> R2["14. Release_ShouldReturnFalseForWrongOwner"]
+Release --> R3["15. Release_ShouldReturnFalseForMissingLock"]
+Release --> R4["16. ReleaseAll_ShouldRemoveAllOwnedLocks"]
+
+Metadata --> M1["17. IsLocked_ShouldReturnTrueForExistingLock"]
+Metadata --> M2["18. GetLockMode_ShouldReturnNullForMissingLock"]
+Metadata --> M3["19. GetLocks_ShouldReturnUnmodifiableMap"]
+
+Validation --> V1["Null input validation"]
+Validation --> V2["Blank input validation"]
+Validation --> V3["Missing object validation"]
+Validation --> V4["State validation"]
+Validation --> V5["Collection immutability"]
+
+Exception --> E1["IllegalArgumentException"]
+Exception --> E2["IllegalStateException"]
+Exception --> E3["UnsupportedOperationException"]
+```
+
+## Test count
+
+```text
+Constructor: 2
+Acquire: 10
+Release: 4
+Metadata: 3
+Total: 19
+```
+
+# 21. AuthService Testing Roadmap (19 tests)
+
+```mermaid
+graph LR
+
+ROOT["AuthService Testing — 19 tests"]
+
+ROOT --> Design
+ROOT --> Constructor
+ROOT --> Functional
+ROOT --> Validation
+ROOT --> Exception
+
+Design --> D1["AuthServiceTests"]
+Design --> D2["JUnit 5 Test Fixture"]
+Design --> D3["Nested Test Groups"]
+
+Functional --> Registration
+Functional --> Login
+Functional --> Session
+Functional --> Password
+Functional --> Disable
+
+Constructor --> C1["1. Constructor_ShouldCreateAuthService"]
+Constructor --> C2["2. Constructor_ShouldInitializeEmptyUsers"]
+
+Registration --> R1["3. Register_ShouldCreateUser"]
+Registration --> R2["4. Register_ShouldIncreaseUserCount"]
+Registration --> R3["5. Register_ShouldRejectDuplicateUsername"]
+Registration --> R4["6. Register_ShouldRejectBlankUsername"]
+Registration --> R5["7. Register_ShouldRejectShortPassword"]
+
+Login --> L1["8. Login_ShouldCreateSessionToken"]
+Login --> L2["9. Login_ShouldIncreaseSessionCount"]
+Login --> L3["10. Login_ShouldRejectUnknownUser"]
+Login --> L4["11. Login_ShouldRejectWrongPassword"]
+
+Session --> S1["12. IsAuthenticated_ShouldReturnTrueForValidToken"]
+Session --> S2["13. Logout_ShouldRemoveSession"]
+Session --> S3["14. Logout_ShouldReturnFalseForMissingToken"]
+
+Password --> P1["15. ChangePassword_ShouldAllowLoginWithNewPassword"]
+Password --> P2["16. ChangePassword_ShouldRejectWrongOldPassword"]
+
+Disable --> D1["17. DisableUser_ShouldInvalidateSessions"]
+Disable --> D2["18. DisableUser_ShouldRejectFutureLogin"]
+Disable --> D3["19. DisableUser_ShouldRejectMissingUser"]
+
+Validation --> V1["Null input validation"]
+Validation --> V2["Blank input validation"]
+Validation --> V3["Missing object validation"]
+Validation --> V4["State validation"]
+Validation --> V5["Collection immutability"]
+
+Exception --> E1["IllegalArgumentException"]
+Exception --> E2["IllegalStateException"]
+Exception --> E3["UnsupportedOperationException"]
+```
+
+## Test count
+
+```text
+Constructor: 2
+Registration: 5
+Login: 4
+Session: 3
+Password: 2
+Disable: 3
+Total: 19
+```
+
+
+# 22. SecurityManager Testing Roadmap (20 tests)
+
+```mermaid
+graph LR
+
+ROOT["SecurityManager Testing — 20 tests"]
+
+ROOT --> Design
+ROOT --> Constructor
+ROOT --> Functional
+ROOT --> Validation
+ROOT --> Exception
+
+Design --> D1["SecurityManagerTests"]
+Design --> D2["JUnit 5 Test Fixture"]
+Design --> D3["Nested Test Groups"]
+
+Functional --> Role
+Functional --> Permission
+Functional --> Assignment
+Functional --> Authorization
+Functional --> CollectionSafety
+
+Constructor --> C1["1. Constructor_ShouldCreateManager"]
+Constructor --> C2["2. Constructor_ShouldInitializeEmptyRoles"]
+
+Role --> R1["3. CreateRole_ShouldCreateRole"]
+Role --> R2["4. CreateRole_ShouldBeIdempotent"]
+Role --> R3["5. CreateRole_ShouldRejectBlankRole"]
+
+Permission --> P1["6. GrantPermission_ShouldGrantPermission"]
+Permission --> P2["7. GrantPermission_ShouldRejectMissingRole"]
+Permission --> P3["8. GrantPermission_ShouldRejectBlankPermission"]
+Permission --> P4["9. RevokePermission_ShouldRemovePermission"]
+Permission --> P5["10. RevokePermission_ShouldReturnFalseForMissingPermission"]
+
+Assignment --> A1["11. AssignRole_ShouldAssignRole"]
+Assignment --> A2["12. AssignRole_ShouldRejectMissingRole"]
+Assignment --> A3["13. AssignRole_ShouldAvoidDuplicateRole"]
+Assignment --> A4["14. RemoveRole_ShouldRemoveAssignedRole"]
+Assignment --> A5["15. RemoveRole_ShouldReturnFalseForMissingRole"]
+
+Authorization --> A1["16. HasPermission_ShouldReturnFalseWithoutRole"]
+Authorization --> A2["17. HasPermission_ShouldCheckMultipleRoles"]
+
+CollectionSafety --> C1["18. GetUserRoles_ShouldReturnUnmodifiableSet"]
+CollectionSafety --> C2["19. GetRolePermissions_ShouldReturnUnmodifiableMap"]
+CollectionSafety --> C3["20. GetRolePermissions_ShouldProtectNestedSets"]
+
+Validation --> V1["Null input validation"]
+Validation --> V2["Blank input validation"]
+Validation --> V3["Missing object validation"]
+Validation --> V4["State validation"]
+Validation --> V5["Collection immutability"]
+
+Exception --> E1["IllegalArgumentException"]
+Exception --> E2["IllegalStateException"]
+Exception --> E3["UnsupportedOperationException"]
+```
+
+## Test count
+
+```text
+Constructor: 2
+Role: 3
+Permission: 5
+Assignment: 5
+Authorization: 2
+CollectionSafety: 3
+Total: 20
+
+```
+
+# 23. Catalog Testing Roadmap (24 tests)
+```mermaid
+graph LR
+
+ROOT["Catalog Testing — 24 tests"]
+
+ROOT --> Design
+ROOT --> Constructor
+ROOT --> SchemaManagement
+ROOT --> TableManagement
+ROOT --> CollectionSafety
+ROOT --> Consistency
+
+Design --> D1["CatalogTests"]
+Design --> D2["JUnit 5 Test Fixture"]
+Design --> D3["Reusable Test Data"]
+Design --> D4["Nested Test Groups"]
+
+Constructor --> C1["1. constructor_ShouldCreateCatalog"]
+Constructor --> C2["2. constructor_ShouldInitializeEmptySchemas"]
+Constructor --> C3["3. constructor_ShouldInitializeEmptyTables"]
+
+SchemaManagement --> S1["4. putSchema_ShouldRegisterSchema"]
+SchemaManagement --> S2["5. putSchema_ShouldRejectNullSchema"]
+SchemaManagement --> S3["6. putSchema_ShouldRejectDuplicateSchemaName"]
+SchemaManagement --> S4["7. getSchema_ShouldReturnExistingSchema"]
+SchemaManagement --> S5["8. getSchema_ShouldReturnNullForMissingSchema"]
+SchemaManagement --> S6["9. removeSchema_ShouldRemoveExistingSchema"]
+SchemaManagement --> S7["10. removeSchema_ShouldReturnNullForMissingSchema"]
+
+TableManagement --> T1["11. putTable_ShouldRegisterTable"]
+TableManagement --> T2["12. putTable_ShouldRejectNullTable"]
+TableManagement --> T3["13. putTable_ShouldRejectDuplicateTableName"]
+TableManagement --> T4["14. getTable_ShouldReturnExistingTable"]
+TableManagement --> T5["15. getTable_ShouldReturnNullForMissingTable"]
+TableManagement --> T6["16. removeTable_ShouldRemoveExistingTable"]
+TableManagement --> T7["17. removeTable_ShouldReturnNullForMissingTable"]
+
+CollectionSafety --> C1["18. getSchemas_ShouldReturnUnmodifiableMap"]
+CollectionSafety --> C2["19. getTables_ShouldReturnUnmodifiableMap"]
+CollectionSafety --> C3["20. getSchemas_ShouldProtectInternalCollection"]
+CollectionSafety --> C4["21. getTables_ShouldProtectInternalCollection"]
+
+Consistency --> C1["22. catalog_ShouldMaintainSchemaTableRelationship"]
+Consistency --> C2["23. catalog_ShouldKeepIndependentCollections"]
+Consistency --> C3["24. clear_ShouldRemoveAllMetadata"]
+```
+
+```text
+Test count
+
+Constructor: 3
+SchemaManagement: 7
+TableManagement: 7
+CollectionSafety: 4
+Consistency: 3
+Total: 24
+```
+<a name="file-manager-testing"></a>
+
+# 24. FileManager Testing Roadmap (24 tests)
+```mermaid
+graph LR
+
+ROOT["FileManager Testing — 24 tests"]
+
+ROOT --> Design
+ROOT --> Constructor
+ROOT --> FileLifecycle
+ROOT --> Metadata
+ROOT --> Validation
+ROOT --> CollectionSafety
+
+Design --> D1["FileManagerTests"]
+Design --> D2["JUnit 5 Test Fixture"]
+Design --> D3["Reusable Test Data"]
+Design --> D4["Nested Test Groups"]
+
+Constructor --> C1["1. constructor_ShouldCreateFileManager"]
+Constructor --> C2["2. constructor_ShouldStoreBaseDirectory"]
+Constructor --> C3["3. constructor_ShouldRejectNullBaseDirectory"]
+Constructor --> C4["4. constructor_ShouldRejectBlankBaseDirectory"]
+
+FileLifecycle --> F1["5. createFile_ShouldCreateNewFile"]
+FileLifecycle --> F2["6. createFile_ShouldRejectDuplicateFile"]
+FileLifecycle --> F3["7. openFile_ShouldOpenExistingFile"]
+FileLifecycle --> F4["8. openFile_ShouldRejectMissingFile"]
+FileLifecycle --> F5["9. closeFile_ShouldCloseOpenFile"]
+FileLifecycle --> F6["10. closeFile_ShouldBeIdempotent"]
+FileLifecycle --> F7["11. deleteFile_ShouldDeleteExistingFile"]
+FileLifecycle --> F8["12. deleteFile_ShouldRejectOpenFile"]
+FileLifecycle --> F9["13. deleteFile_ShouldReturnFalseForMissingFile"]
+
+Metadata --> M1["14. fileExists_ShouldReturnTrueForExistingFile"]
+Metadata --> M2["15. fileExists_ShouldReturnFalseForMissingFile"]
+Metadata --> M3["16. getOpenFileCount_ShouldReturnCorrectCount"]
+Metadata --> M4["17. listFiles_ShouldReturnCreatedFiles"]
+
+Validation --> V1["18. createFile_ShouldRejectNullName"]
+Validation --> V2["19. createFile_ShouldRejectBlankName"]
+Validation --> V3["20. openFile_ShouldRejectInvalidName"]
+Validation --> V4["21. deleteFile_ShouldRejectInvalidName"]
+
+CollectionSafety --> C1["22. listFiles_ShouldReturnUnmodifiableCollection"]
+CollectionSafety --> C2["23. getOpenFiles_ShouldReturnUnmodifiableMap"]
+CollectionSafety --> C3["24. closeAll_ShouldCloseEveryFile"]
+```
+```text
+Test count
+
+Constructor: 4
+FileLifecycle: 9
+Metadata: 4
+Validation: 4
+CollectionSafety: 3
+Total: 24
+```
+<a name="page-testing"></a>
+
+# 25.Page Testing Roadmap (25 tests)
+```mermaid
+graph LR
+
+ROOT["Page Testing — 25 tests"]
+
+ROOT --> Design
+ROOT --> Constructor
+ROOT --> Data
+ROOT --> DirtyState
+ROOT --> Pinning
+ROOT --> Validation
+ROOT --> CopySafety
+
+Design --> D1["PageTests"]
+Design --> D2["JUnit 5 Test Fixture"]
+Design --> D3["Reusable Test Data"]
+Design --> D4["Nested Test Groups"]
+
+Constructor --> C1["1. constructor_ShouldCreatePage"]
+Constructor --> C2["2. constructor_ShouldStorePageId"]
+Constructor --> C3["3. constructor_ShouldInitializeEmptyData"]
+Constructor --> C4["4. constructor_ShouldInitializeHeader"]
+Constructor --> C5["5. constructor_ShouldInitializeCleanState"]
+Constructor --> C6["6. constructor_ShouldInitializeZeroPinCount"]
+
+Data --> D1["7. setData_ShouldStoreData"]
+Data --> D2["8. getData_ShouldReturnDefensiveCopy"]
+Data --> D3["9. setData_ShouldRejectNullData"]
+Data --> D4["10. setData_ShouldReplaceExistingData"]
+Data --> D5["11. getSize_ShouldReturnDataLength"]
+
+DirtyState --> D1["12. markDirty_ShouldSetDirtyState"]
+DirtyState --> D2["13. unmarkDirty_ShouldClearDirtyState"]
+DirtyState --> D3["14. markDirty_ShouldBeIdempotent"]
+DirtyState --> D4["15. unmarkDirty_ShouldBeIdempotent"]
+
+Pinning --> P1["16. pin_ShouldIncreasePinCount"]
+Pinning --> P2["17. unpin_ShouldDecreasePinCount"]
+Pinning --> P3["18. unpin_ShouldRejectNegativePinCount"]
+Pinning --> P4["19. isPinned_ShouldReturnTrueWhenPinned"]
+Pinning --> P5["20. isPinned_ShouldReturnFalseWhenUnpinned"]
+
+Validation --> V1["21. constructor_ShouldRejectNegativePageId"]
+Validation --> V2["22. setPageId_ShouldRejectNegativePageId"]
+Validation --> V3["23. setPageId_ShouldUpdatePageId"]
+
+CopySafety --> C1["24. copy_ShouldCreateDifferentInstance"]
+CopySafety --> C2["25. copy_ShouldPreservePageData"]
+```
+
+```text
+Test count
+
+Constructor: 6
+Data: 5
+DirtyState: 4
+Pinning: 5
+Validation: 3
+CopySafety: 2
+Total: 25
+```
+<a name="page-header-testing"></a>
+
+# 26. PageHeader Testing Roadmap (20 tests)
+```mermaid
+graph LR
+
+ROOT["PageHeader Testing — 20 tests"]
+
+ROOT --> Design
+ROOT --> Constructor
+ROOT --> FreeSpace
+ROOT --> Slots
+ROOT --> Checksum
+ROOT --> Validation
+
+Design --> D1["PageHeaderTests"]
+Design --> D2["JUnit 5 Test Fixture"]
+Design --> D3["Reusable Test Data"]
+Design --> D4["Nested Test Groups"]
+
+Constructor --> C1["1. constructor_ShouldCreatePageHeader"]
+Constructor --> C2["2. constructor_ShouldStorePageId"]
+Constructor --> C3["3. constructor_ShouldInitializeFreeSpacePointer"]
+Constructor --> C4["4. constructor_ShouldInitializeZeroSlotCount"]
+Constructor --> C5["5. constructor_ShouldInitializeChecksum"]
+
+FreeSpace --> F1["6. setFreeSpacePointer_ShouldUpdatePointer"]
+FreeSpace --> F2["7. setFreeSpacePointer_ShouldRejectNegativeValue"]
+FreeSpace --> F3["8. setFreeSpacePointer_ShouldRejectValueBeyondPageSize"]
+FreeSpace --> F4["9. getFreeSpacePointer_ShouldReturnCurrentPointer"]
+
+Slots --> S1["10. incrementSlotCount_ShouldIncreaseCount"]
+Slots --> S2["11. decrementSlotCount_ShouldDecreaseCount"]
+Slots --> S3["12. decrementSlotCount_ShouldRejectNegativeCount"]
+Slots --> S4["13. getSlotCount_ShouldReturnCurrentCount"]
+
+Checksum --> C1["14. updateChecksum_ShouldChangeChecksum"]
+Checksum --> C2["15. updateChecksum_ShouldBeDeterministic"]
+Checksum --> C3["16. validateChecksum_ShouldReturnTrueForValidHeader"]
+Checksum --> C4["17. validateChecksum_ShouldReturnFalseAfterCorruption"]
+
+Validation --> V1["18. constructor_ShouldRejectNegativePageId"]
+Validation --> V2["19. setPageId_ShouldUpdatePageId"]
+Validation --> V3["20. setPageId_ShouldRejectNegativePageId"]
+```
+
+```text
+Test count
+
+Constructor: 5
+FreeSpace: 4
+Slots: 4
+Checksum: 4
+Validation: 3
+Total: 20
+```
+<a name="record-manager-testing"></a>
+
+# 27.RecordManager Testing Roadmap (26 tests)
+```mermaid
+
+graph LR
+
+ROOT["RecordManager Testing — 26 tests"]
+
+ROOT --> Design
+ROOT --> Constructor
+ROOT --> Insert
+ROOT --> Read
+ROOT --> Update
+ROOT --> Delete
+ROOT --> Integration
+
+Design --> D1["RecordManagerTests"]
+Design --> D2["JUnit 5 Test Fixture"]
+Design --> D3["Reusable Test Data"]
+Design --> D4["Nested Test Groups"]
+
+Constructor --> C1["1. constructor_ShouldCreateRecordManager"]
+Constructor --> C2["2. constructor_ShouldInitializeDependencies"]
+Constructor --> C3["3. constructor_ShouldRejectNullDiskManager"]
+
+Insert --> I1["4. insert_ShouldStoreRecord"]
+Insert --> I2["5. insert_ShouldReturnRecordId"]
+Insert --> I3["6. insert_ShouldIncreaseRecordCount"]
+Insert --> I4["7. insert_ShouldRejectNullRecord"]
+Insert --> I5["8. insert_ShouldRejectBlankTableFile"]
+Insert --> I6["9. insert_ShouldAllocatePageWhenRequired"]
+
+Read --> R1["10. getRecord_ShouldReturnExistingRecord"]
+Read --> R2["11. getRecord_ShouldReturnDefensiveCopy"]
+Read --> R3["12. getRecord_ShouldRejectNullRecordId"]
+Read --> R4["13. getRecord_ShouldRejectMissingRecord"]
+Read --> R5["14. getRecord_ShouldRejectBlankTableFile"]
+
+Update --> U1["15. update_ShouldReplaceRecordData"]
+Update --> U2["16. update_ShouldPreserveRecordId"]
+Update --> U3["17. update_ShouldRejectNullRecord"]
+Update --> U4["18. update_ShouldRejectMissingRecord"]
+
+Delete --> D1["19. delete_ShouldMarkRecordDeleted"]
+Delete --> D2["20. delete_ShouldDecreaseActiveRecordCount"]
+Delete --> D3["21. delete_ShouldRejectMissingRecord"]
+Delete --> D4["22. delete_ShouldBeIdempotent"]
+
+Integration --> I1["23. insert_ShouldWriteThroughBufferPool"]
+Integration --> I2["24. getRecord_ShouldReadThroughBufferPool"]
+Integration --> I3["25. update_ShouldMarkPageDirty"]
+Integration --> I4["26. delete_ShouldMaintainPageSlotState"]
+```
+```text
+Test count
+
+Constructor: 3
+Insert: 6
+Read: 5
+Update: 4
+Delete: 4
+Integration: 4
+Total: 26
+```
+
+# 28. LRUReplacementStrategyTests
+```text
+    SelectVictim_ShouldReturnLeastRecentlyUsedFrame
+    OnPageAccessed_ShouldUpdateAccessOrder
+    SelectVictim_ShouldIgnorePinnedFrames
+    SelectVictim_ShouldReturnNullWhenAllFramesPinned
+    OnPageRemoved_ShouldRemoveFrameFromTracking
+```
+# 29. FIFOReplacementStrategyTests
+```text
+    SelectVictim_ShouldReturnOldestLoadedFrame
+    PageAccess_ShouldNotChangeInsertionOrder
+    SelectVictim_ShouldIgnorePinnedFrames
+    OnPageRemoved_ShouldRemoveFrameFromQueue
+```
+
+# 30. ClockReplacementStrategyTests
+```text
+    SelectVictim_ShouldSelectFrameWithClearedReferenceBit
+    SelectVictim_ShouldGiveReferencedFrameSecondChance
+    OnPageAccessed_ShouldSetReferenceBit
+    SelectVictim_ShouldMoveClockHand
+    SelectVictim_ShouldIgnorePinnedFrames
+```
+
+# 31. StorageAllocationStrategyTests
+```text
+    FirstFit_ShouldReturnFirstSufficientBlock
+    BestFit_ShouldReturnSmallestSufficientBlock
+    NextFit_ShouldSearchFromPreviousPosition
+    SelectBlock_ShouldReturnNullWhenNoBlockFits
+    SelectBlock_ShouldIgnoreAllocatedBlocks
+```
+
+# 32. BufferPoolStrategyIntegrationTests
+```text
+    EvictPage_ShouldDelegateToReplacementStrategy
+    SetReplacementStrategy_ShouldChangeAlgorithm
+    LoadPage_ShouldNotifyStrategy
+    GetPage_ShouldNotifyPageAccess
+```
+<a name="query-validate-testing"></a>
+# 33. QueryValidationVisitorTests
+
+```text
+    VisitTable_ShouldResolveExistingTable
+    VisitTable_ShouldRejectMissingTable
+    VisitColumn_ShouldResolveExistingColumn
+    VisitColumn_ShouldRejectMissingColumn
+    VisitColumn_ShouldRejectAmbiguousColumn
+    VisitSelect_ShouldValidateAllSelectedColumns
+    VisitInsert_ShouldValidateColumnValueCount
+    VisitExpression_ShouldValidateOperandTypes
+```
+<a name="logical-plan-visitor"></a>
+# 34. LogicalPlanVisitorTests
+```text
+    VisitTable_ShouldCreateTableScanNode
+    VisitSelect_ShouldCreateProjectionNode
+    VisitSelectWithWhere_ShouldCreateFilterNode
+    VisitSelectWithJoin_ShouldCreateJoinNode
+    VisitInsert_ShouldCreateInsertPlan
+    VisitUpdate_ShouldCreateUpdatePlan
+    VisitDelete_ShouldCreateDeletePlan
+```
+<a name="cost-estimation-visitor"></a>
+# 35. CostEstimationVisitorTests
+```text
+    VisitTable_ShouldUseTableStatistics
+    VisitTable_ShouldEstimateScanCost
+    VisitExpression_ShouldEstimateFilterSelectivity
+    VisitJoin_ShouldEstimateJoinCost
+    VisitSelect_ShouldAccumulateChildCosts
+    VisitSelect_ShouldEstimateOutputRows    
+```
+<a name="AST-node-testing"></a>
+
+# 36. ASTNodeTests
+
+```text
+    SelectNodeAccept_ShouldCallVisitSelect
+    TableNodeAccept_ShouldCallVisitTable
+    ColumnNodeAccept_ShouldCallVisitColumn
+    JoinNodeAccept_ShouldCallVisitJoin
+    ExpressionNodeAccept_ShouldCallVisitExpression
+```
+
+<a name ="tablescanoperatortests"> </a>
+# 37. TableScanOperatorTests
+```text
+    Init_ShouldPrepareTableScan
+    Next_ShouldReturnFirstRow
+    Next_ShouldReturnRowsSequentially
+    Next_ShouldReturnNullWhenNoRowsRemain
+    Close_ShouldReleaseCurrentPage
+    NextBeforeInit_ShouldRejectOperation
+    NextAfterClose_ShouldRejectOperation
+```
+
+<a name= "filteroperatortests"> </a>
+# 37. FilterOperatorTests
+```text
+    Init_ShouldInitializeChild
+    Next_ShouldReturnMatchingRow
+    Next_ShouldSkipNonMatchingRows
+    Next_ShouldReturnNullWhenChildExhausted
+    Close_ShouldCloseChild
+    Predicate_ShouldReceiveEachRow
+```
+<a name="projectionoperatortests"> </a>
+# 37. ProjectionOperatorTests
+```text
+Init_ShouldInitializeChild
+Next_ShouldReturnSelectedColumns
+Next_ShouldPreserveColumnOrder
+Next_ShouldReturnNullWhenChildExhausted
+Close_ShouldCloseChild
+```
+<a name ="limitoperatortests"></a>
+
+# 37. LimitOperatorTests
+```text
+Next_ShouldReturnRowsUpToLimit
+Next_ShouldReturnNullAfterLimitReached
+LimitZero_ShouldReturnNoRows
+Init_ShouldResetReturnedCount
+Close_ShouldCloseChild
+```
+<a name="executiontests"></a>
+# 37. ExecutorTests
+```text
+Execute_ShouldInitializeRootOperator
+Execute_ShouldPullRowsUntilNull
+Execute_ShouldAddRowsToResult
+Execute_ShouldCloseRootOperator
+Execute_ShouldCloseOperatorWhenNextThrows
+```
+<a name="constraint-validation-chain-testing"></a>
+
+# 38. ConstraintValidationChainTests
+```text
+    Constructor_ShouldCreateChain
+    Constructor_ShouldStoreFirstHandler
+    SetNext_ShouldReturnNextHandler
+    DefaultChain_ShouldStartWithNotNullHandler
+    DefaultChain_ShouldPlaceCheckAfterNotNull
+    DefaultChain_ShouldPlacePrimaryKeyAfterCheck
+    DefaultChain_ShouldPlaceUniqueAfterPrimaryKey
+    DefaultChain_ShouldEndWithForeignKey
+    Validate_ShouldDelegateToConcreteConstraint
+    Validate_ShouldPassSameContextToNextHandler
+    Validate_ShouldSkipMissingConstraintType
+    Validate_ShouldReturnSuccessWhenAllConstraintsPass
+    Validate_ShouldStopAtNotNullViolation
+    Validate_ShouldStopAtCheckViolation
+    Validate_ShouldStopAtPrimaryKeyViolation
+    Validate_ShouldStopAtUniqueViolation
+    Validate_ShouldStopAtForeignKeyViolation
+    RecordManagerInsert_ShouldValidateBeforeStorageWrite
+```
+
+# 39. SchemaRepositoryTests
+```text
+Constructor_ShouldCreateRepository
+Save_ShouldStoreSchema
+Save_ShouldReturnSavedSchema
+Save_ShouldRejectNullSchema
+Save_ShouldRejectDuplicateSchemaNameInSameDatabase
+Save_ShouldAllowSameSchemaNameInDifferentDatabases
+FindById_ShouldReturnExistingSchema
+FindById_ShouldReturnEmptyForMissingSchema
+FindById_ShouldRejectNullId
+FindByName_ShouldReturnExistingSchema
+FindByName_ShouldIgnoreCase
+FindByName_ShouldReturnEmptyForMissingSchema
+FindByDatabaseId_ShouldReturnSchemasOfDatabase
+FindByDatabaseId_ShouldReturnEmptyListWhenDatabaseHasNoSchemas
+FindByDatabaseIdAndName_ShouldReturnMatchingSchema
+FindByDatabaseIdAndName_ShouldReturnEmptyForWrongDatabase
+ExistsById_ShouldReturnTrueForExistingSchema
+ExistsById_ShouldReturnFalseForMissingSchema
+ExistsByName_ShouldReturnTrueForExistingSchema
+ExistsByName_ShouldReturnFalseForMissingSchema
+FindAll_ShouldReturnAllSchemas
+FindAll_ShouldReturnImmutableList
+DeleteById_ShouldRemoveExistingSchema
+DeleteById_ShouldDoNothingForMissingSchema
+Count_ShouldReturnSchemaCount
+Clear_ShouldRemoveAllSchemas
+ConcurrentSave_ShouldStoreAllUniqueSchemas
+ConcurrentDuplicateSave_ShouldStoreOnlyOneSchema
+ConcurrentRead_ShouldReturnConsistentSchema
+```
+
+# 40. TableMetadataRepositoryTests
+```text
+Constructor_ShouldCreateRepository
+Save_ShouldStoreTable
+Save_ShouldReturnSavedTable
+Save_ShouldRejectNullTable
+Save_ShouldRejectDuplicateTableNameInSameSchema
+Save_ShouldAllowSameTableNameInDifferentSchemas
+FindById_ShouldReturnExistingTable
+FindById_ShouldReturnEmptyForMissingTable
+FindById_ShouldRejectNullId
+FindByName_ShouldReturnExistingTable
+FindByName_ShouldIgnoreCase
+FindByName_ShouldReturnEmptyForMissingTable
+FindBySchemaId_ShouldReturnTablesOfSchema
+FindBySchemaId_ShouldReturnEmptyListWhenSchemaHasNoTables
+FindBySchemaIdAndName_ShouldReturnMatchingTable
+FindBySchemaIdAndName_ShouldReturnEmptyForWrongSchema
+ExistsById_ShouldReturnTrueForExistingTable
+ExistsById_ShouldReturnFalseForMissingTable
+ExistsByName_ShouldReturnTrueForExistingTable
+ExistsByName_ShouldReturnFalseForMissingTable
+FindAll_ShouldReturnAllTables
+FindAll_ShouldReturnImmutableList
+DeleteById_ShouldRemoveExistingTable
+DeleteById_ShouldDoNothingForMissingTable
+Count_ShouldReturnTableCount
+Clear_ShouldRemoveAllTables
+ConcurrentSave_ShouldStoreAllUniqueTables
+ConcurrentDuplicateSave_ShouldStoreOnlyOneTable
+ConcurrentRead_ShouldReturnConsistentTable
+```
+# 41. IndexMetadataRepositoryTests
+```text
+    Constructor_ShouldCreateRepository
+Save_ShouldStoreIndex
+Save_ShouldReturnSavedIndex
+Save_ShouldRejectNullIndex
+Save_ShouldRejectDuplicateIndexNameInSameTable
+Save_ShouldAllowSameIndexNameInDifferentTables
+FindById_ShouldReturnExistingIndex
+FindById_ShouldReturnEmptyForMissingIndex
+FindById_ShouldRejectNullId
+FindByName_ShouldReturnExistingIndex
+FindByName_ShouldIgnoreCase
+FindByName_ShouldReturnEmptyForMissingIndex
+FindByTableId_ShouldReturnIndexesOfTable
+FindByTableId_ShouldReturnEmptyListWhenTableHasNoIndexes
+FindByTableIdAndName_ShouldReturnMatchingIndex
+FindByTableIdAndName_ShouldReturnEmptyForWrongTable
+ExistsById_ShouldReturnTrueForExistingIndex
+ExistsById_ShouldReturnFalseForMissingIndex
+ExistsByName_ShouldReturnTrueForExistingIndex
+ExistsByName_ShouldReturnFalseForMissingIndex
+FindAll_ShouldReturnAllIndexes
+FindAll_ShouldReturnImmutableList
+DeleteById_ShouldRemoveExistingIndex
+DeleteById_ShouldDoNothingForMissingIndex
+Count_ShouldReturnIndexCount
+Clear_ShouldRemoveAllIndexes
+ConcurrentSave_ShouldStoreAllUniqueIndexes
+ConcurrentDuplicateSave_ShouldStoreOnlyOneIndex
+ConcurrentRead_ShouldReturnConsistentIndex
+```
+
+# 42. ConstraintRepositoryTests
+```mermaid
+Constructor_ShouldCreateRepository
+Save_ShouldStoreConstraint
+Save_ShouldReturnSavedConstraint
+Save_ShouldRejectNullConstraint
+Save_ShouldRejectDuplicateConstraintNameInSameTable
+Save_ShouldAllowSameConstraintNameInDifferentTables
+FindById_ShouldReturnExistingConstraint
+FindById_ShouldReturnEmptyForMissingConstraint
+FindById_ShouldRejectNullId
+FindByName_ShouldReturnExistingConstraint
+FindByName_ShouldIgnoreCase
+FindByName_ShouldReturnEmptyForMissingConstraint
+FindByTableId_ShouldReturnConstraintsOfTable
+FindByTableId_ShouldReturnEmptyListWhenTableHasNoConstraints
+FindByTableIdAndName_ShouldReturnMatchingConstraint
+FindByTableIdAndName_ShouldReturnEmptyForWrongTable
+FindByType_ShouldReturnConstraintsOfRequestedType
+FindByType_ShouldReturnEmptyListWhenTypeDoesNotExist
+FindByType_ShouldReturnMultipleMatchingConstraints
+ExistsById_ShouldReturnTrueForExistingConstraint
+ExistsById_ShouldReturnFalseForMissingConstraint
+ExistsByName_ShouldReturnTrueForExistingConstraint
+ExistsByName_ShouldReturnFalseForMissingConstraint
+FindAll_ShouldReturnAllConstraints
+FindAll_ShouldReturnImmutableList
+DeleteById_ShouldRemoveExistingConstraint
+DeleteById_ShouldDoNothingForMissingConstraint
+Count_ShouldReturnConstraintCount
+Clear_ShouldRemoveAllConstraints
+ConcurrentSave_ShouldStoreAllUniqueConstraints
+ConcurrentDuplicateSave_ShouldStoreOnlyOneConstraint
+ConcurrentRead_ShouldReturnConsistentConstraint
+```
+# 43. MetadataManagerRepositoryTests
+```text
+Constructor_ShouldCreateMetadataManager
+Constructor_ShouldStoreSchemaRepository
+Constructor_ShouldStoreTableRepository
+Constructor_ShouldStoreIndexRepository
+Constructor_ShouldStoreConstraintRepository
+Constructor_ShouldRejectNullSchemaRepository
+Constructor_ShouldRejectNullTableRepository
+Constructor_ShouldRejectNullIndexRepository
+Constructor_ShouldRejectNullConstraintRepository
+SaveSchema_ShouldDelegateToSchemaRepository
+FindSchemaById_ShouldDelegateToSchemaRepository
+FindSchema_ShouldDelegateToSchemaRepository
+FindSchemasByDatabase_ShouldDelegateToSchemaRepository
+SaveTable_ShouldDelegateToTableRepository
+SaveTable_ShouldRejectTableWhenSchemaDoesNotExist
+SaveTable_ShouldRejectDuplicateTableName
+FindTableById_ShouldDelegateToTableRepository
+FindTable_ShouldDelegateToTableRepository
+FindTablesBySchema_ShouldDelegateToTableRepository
+SaveIndex_ShouldDelegateToIndexRepository
+SaveIndex_ShouldRejectIndexWhenTableDoesNotExist
+FindIndexesByTable_ShouldDelegateToIndexRepository
+SaveConstraint_ShouldDelegateToConstraintRepository
+SaveConstraint_ShouldRejectConstraintWhenTableDoesNotExist
+FindConstraintsByTable_ShouldDelegateToConstraintRepository
+DeleteSchema_ShouldDeleteExistingSchema
+DeleteSchema_ShouldRejectMissingSchema
+DeleteTable_ShouldDeleteTable
+DeleteTable_ShouldDeleteRelatedIndexes
+DeleteTable_ShouldDeleteRelatedConstraints
+DeleteTable_ShouldRejectMissingTable
+DeleteIndex_ShouldDelegateToIndexRepository
+DeleteConstraint_ShouldDelegateToConstraintRepository
+SaveTable_ShouldNotModifySchemaRepositoryWhenSaveFails
+DeleteTable_ShouldNotDeleteTableBeforeDependencies
+RepositoryFailure_ShouldPropagateException
+ConcurrentTableSave_ShouldPreventDuplicateTable
+ConcurrentMetadataReads_ShouldReturnConsistentResults
+```
