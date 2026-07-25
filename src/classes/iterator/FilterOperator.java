@@ -2,17 +2,28 @@ package classes.iterator;
 
 import classes.metadata.Row;
 import interfaces.IExecutionOperator;
+import interfaces.IRowPredicate;
 
-public class FilterOperator extends AbstractExecutionOperator {
-    private IExecutionOperator child;
+public class FilterOperator extends AbstractExecutionOperator implements IExecutionOperator {
+    private final IExecutionOperator child;
+    private final IRowPredicate predicate;
+
+    public FilterOperator(IExecutionOperator child, IRowPredicate predicate) {
+        this.child = child;
+        this.predicate = predicate;
+    }
 
     public FilterOperator() {
         // TODO: Implement
+        child = null;
+        predicate = null;
     }
 
     public FilterOperator(
             IExecutionOperator child) {
         // TODO: Implement
+        this.child = child;
+        predicate = null;
     }
 
     @Override
