@@ -1,48 +1,49 @@
 package classes.tx;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public class TransactionManager {
-    public enum Status {
-        ACTIVE, COMMITTED, ROLLED_BACK
+
+    private Map<UUID, Transaction> transactions = new LinkedHashMap<>();
+
+    public TransactionManager() {
+        // TODO: Implement
+
+        this.transactions = null;
     }
-
-    public static final class Transaction {
-        private final UUID id;
-        private Status status;
-
-        private Transaction(UUID id) {
-            this.id = id;
-            this.status = Status.ACTIVE;
-        }
-
-        public UUID getId() {
-            return id;
-        }
-
-        public Status getStatus() {
-            return status;
-        }
-    }
-
-    private final Map<UUID, Transaction> transactions = new LinkedHashMap<>();
 
     public Transaction begin() {
-       return null;
+        // TODO: Implement
+        return null;
     }
 
-    public void commit(UUID transactionId) {
-       
+    public void commit(
+            Transaction transaction) {
+        // TODO: Implement
     }
 
-    public void rollback(UUID transactionId) {
-       
+    public void rollback(
+            Transaction transaction) {
+        // TODO: Implement
+    }
+
+    public Optional<Transaction> findById(
+            UUID transactionId) {
+        // TODO: Implement
+        return Optional.empty();
+    }
+
+    public List<Transaction> getActiveTransactions() {
+        // TODO: Implement
+        return List.of();
     }
 
     public Transaction getTransaction(UUID transactionId) {
-       return null;
+        return null;
     }
 
     public boolean containsTransaction(UUID transactionId) {
@@ -58,10 +59,10 @@ public class TransactionManager {
     }
 
     private Transaction requireActive(UUID transactionId) {
-       return null;
+        return null;
     }
 
     private void validateId(UUID transactionId) {
-       
+
     }
 }
