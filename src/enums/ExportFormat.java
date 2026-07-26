@@ -1,5 +1,5 @@
 package enums;
 
-public class ExportFormat {
+public enum ExportFormat {
     
 }
