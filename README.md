@@ -1536,8 +1536,9 @@ PhysicalPlanBuilder ..> PhysicalPlan : builds
 | Transaction Management         | `BEGIN`, `COMMIT`, `ROLLBACK`, `SAVEPOINT`                                                                        | Command                   | Transaction operations can be represented as objects, making them easier to execute, log, queue, audit or extend.                                                                         |
 | Transaction Management         | MVCC, optimistic and pessimistic concurrency                                                                      | Strategy                  | Different concurrency-control mechanisms may be selected depending on workload and isolation requirements without modifying transaction management logic.                                 |
 | Transaction Management         | Transaction commit and rollback events                                                                            | Observer                  | Commit and rollback may trigger logging, lock release, cache invalidation, replication and auditing. Observer allows these components to react independently.                             |
-| Database & Metadata Management | Store and retrieve `Schema`, `TableMetadata`, `IndexMetadata`, `Constraint` | Repository     | Separates metadata retrieval logic from domain objects and allows switching between in-memory, file-based or persistent storage. |
-| Storage Engine                 | Convert external `Page`, `Record` or file formats into internal interfaces  | Adapter        | Allows Storage Engine to use many different storage formats or libraries without modifying client code.           |
+| Database & Metadata Management | Store and retrieve `Schema`, `TableMetadata`, `IndexMetadata`, `Constraint` ✅ | Repository     | Separates metadata retrieval logic from domain objects and allows switching between in-memory, file-based or persistent storage. |
+| Storage Engine                 | Convert external Page format into the internal Page model   ✅ | Adapter        |Adapter allows Storage Engine to read page data from another format or library without changing StorageEngine, BufferPool or DiskManager.
+| Query Processor — Result Processing | Adapt JSON and CSV export libraries to a common `ResultExporter` interface | Adapter        | JSON and CSV libraries provide different APIs. Adapter converts these incompatible APIs into one interface so client code can export `QueryResult` without depending on a specific library. |
 
 
 
@@ -2656,7 +2657,6 @@ sequenceDiagram
         Engine-->>Client: exception
     end
 ```
-
 ### 10. Visitor Pattern
 ```mermaid
 classDiagram
@@ -3257,7 +3257,7 @@ sequenceDiagram
     LogManager-->>Engine: completed
 ```
 
-## General Class Diagram
+- General Class Diagram
 ```mermaid
     classDiagram
         direction LR
@@ -3818,6 +3818,218 @@ ConstraintRepository ..> Constraint
 
 
 
+### 16. Convert external Page format into the internal Page model - Adapter 
+```mermaid
+classDiagram
+direction LR
+
+class Page {
+    -int pageId
+    -byte[] data
+    -PageHeader header
+    -boolean dirty
+
+    +Page()
+    +Page(int pageId)
+    +Page(int pageId, byte[] data)
+    +getPageId() int
+    +getData() byte[]
+    +getHeader() PageHeader
+    +isDirty() boolean
+}
+
+class ExternalPage {
+    -long externalPageId
+    -ByteBuffer content
+    -int checksum
+    -int freeSpacePointer
+
+    +getExternalPageId() long
+    +getContent() ByteBuffer
+    +getChecksum() int
+    +getFreeSpacePointer() int
+}
+
+class PageAdapter {
+    <<interface>>
+
+    +toInternalPage(ExternalPage externalPage) Page
+    +toExternalPage(Page page) ExternalPage
+}
+
+class DefaultPageAdapter {
+    +toInternalPage(ExternalPage externalPage) Page
+    +toExternalPage(Page page) ExternalPage
+    -convertPageId(long externalPageId) int
+    -convertData(ByteBuffer content) byte[]
+    -createPageHeader(ExternalPage externalPage) PageHeader
+}
+
+class StorageEngine {
+    -PageAdapter pageAdapter
+
+    +importPage(ExternalPage externalPage) void
+    +exportPage(int pageId) ExternalPage
+    +readPage(int pageId) Page
+    +writePage(Page page) void
+}
+
+PageAdapter <|.. DefaultPageAdapter
+
+DefaultPageAdapter ..> ExternalPage : reads
+DefaultPageAdapter ..> Page : creates
+DefaultPageAdapter ..> PageHeader : creates
+
+StorageEngine --> PageAdapter : uses
+StorageEngine --> Page
+StorageEngine ..> ExternalPage
+```
+
+### 17. Adapt JSON and CSV export libraries to a common `ResultExporter` interface - Adapter
+```mermaid
+    classDiagram
+        direction LR
+
+        class QueryResult {
+            -List~Row~ rows
+            -List~String~ columnNames
+
+            +getRows() List~Row~
+            +getColumnNames() List~String~
+        }
+
+        class ExportFormat {
+            <<enumeration>>
+            JSON
+            CSV
+        }
+
+        class ResultExporter {
+            <<interface>>
+
+            +getFormat() ExportFormat
+            +export(QueryResult result) String
+            +export(QueryResult result, OutputStream output) void
+        }
+
+        class JsonResultExporterAdapter {
+            -JsonWriter jsonWriter
+
+            +JsonResultExporterAdapter(JsonWriter jsonWriter)
+            +getFormat() ExportFormat
+            +export(QueryResult result) String
+            +export(QueryResult result, OutputStream output) void
+            -convertRows(QueryResult result) List~Map~
+        }
+
+        class CsvResultExporterAdapter {
+            -CsvWriter csvWriter
+
+            +CsvResultExporterAdapter(CsvWriter csvWriter)
+            +getFormat() ExportFormat
+            +export(QueryResult result) String
+            +export(QueryResult result, OutputStream output) void
+            -convertRows(QueryResult result) List~List~
+        }
+
+        class JsonWriter {
+            +write(Object value) String
+            +write(Object value, OutputStream output) void
+        }
+
+        class CsvWriter {
+            +write(List~String~ headers, List~List~ rows) String
+            +write(List~String~ headers, List~List~ rows, OutputStream output) void
+        }
+
+        class ResultExportService {
+            -Map~ExportFormat, ResultExporter~ exporters
+
+            +ResultExportService(List~ResultExporter~ exporters)
+            +export(QueryResult result, ExportFormat format) String
+            +export(QueryResult result, ExportFormat format, OutputStream output) void
+            +registerExporter(ResultExporter exporter) void
+        }
+
+        ResultExporter <|.. JsonResultExporterAdapter
+        ResultExporter <|.. CsvResultExporterAdapter
+
+        JsonResultExporterAdapter --> JsonWriter : adapts
+        CsvResultExporterAdapter --> CsvWriter : adapts
+
+        JsonResultExporterAdapter ..> QueryResult
+        CsvResultExporterAdapter ..> QueryResult
+
+        ResultExportService --> ResultExporter
+        ResultExporter --> ExportFormat
+        ResultExporter ..> QueryResult
+```
+
+- Sequence - Export JSON
+```mermaid
+    sequenceDiagram
+    actor Client
+    participant Service as ResultExportService
+    participant Adapter as JsonResultExporterAdapter
+    participant Result as QueryResult
+    participant Writer as JsonWriter
+
+    Client->>Service: export(queryResult, JSON)
+
+    Service->>Service: getExporter(JSON)
+    Service-->>Service: JsonResultExporterAdapter
+
+    Service->>Adapter: export(queryResult)
+
+    Adapter->>Result: getColumnNames()
+    Result-->>Adapter: columns
+
+    Adapter->>Result: getRows()
+    Result-->>Adapter: rows
+
+    Adapter->>Adapter: convertRows(queryResult)
+    Adapter-->>Adapter: List<Map<String, Object>>
+
+    Adapter->>Writer: write(convertedRows)
+    Writer-->>Adapter: json
+
+    Adapter-->>Service: json
+    Service-->>Client: json
+```
+- Sequence - Export CSV file 
+```mermaid
+    sequenceDiagram
+    actor Client
+    participant Service as ResultExportService
+    participant Adapter as CsvResultExporterAdapter
+    participant Result as QueryResult
+    participant Writer as CsvWriter
+    participant Output as OutputStream
+
+    Client->>Service: export(result, CSV, output)
+
+    Service->>Service: getExporter(CSV)
+    Service-->>Service: CsvResultExporterAdapter
+
+    Service->>Adapter: export(result, output)
+
+    Adapter->>Result: getColumnNames()
+    Result-->>Adapter: headers
+
+    Adapter->>Result: getRows()
+    Result-->>Adapter: rows
+
+    Adapter->>Adapter: convertRows(result)
+    Adapter-->>Adapter: CSV rows
+
+    Adapter->>Writer: write(headers, rows, output)
+    Writer->>Output: write CSV bytes
+    Output-->>Writer: completed
+
+    Writer-->>Adapter: completed
+    Adapter-->>Service: completed
+    Service-->>Client: file exported
+```
 # 🧪 Testing Status
 
 # DBMS Testing Documentation
@@ -3837,13 +4049,13 @@ ConstraintRepository ..> Constraint
 
 ## Overall Test Progress
 
-**Implemented:** 438 / 875 planned tests
+**Implemented:** 438 / 1050 planned tests
 
 `██████████░░░░░░░░░░ 51%`
 
 | Metric | Result |
 | --- | ---: |
-| Planned tests | 1014 |
+| Planned tests | 1050 |
 | Implemented tests | 438 |
 | Passed | 364 |
 | Failed | 0 |
@@ -3905,6 +4117,8 @@ ConstraintRepository ..> Constraint
 | [Index Metadata Repository](#index-metadata-repository-testing) | `IndexMetadataRepositoryTests` | 0 / 29 | 0 | 0 | 0% | ⚪ Not started |
 | [Constraint Repository](#constraint-repository-testing) | `ConstraintRepositoryTests` | 0 / 32 | 0 | 0 | 0% | ⚪ Not started |
 | [Metadata Manager Repository](#metadata-manager-repository-testing) | `MetadataManagerRepositoryTests` | 0 / 38 | 0 | 0 | 0% | ⚪ Not started |
+| [Page Adapter](#page-adapter-testing) | `PageAdapterTests` | 0 / 16 | 0 | 0 | 0% | ⚪ Not started |
+| [Result Export Adapter](#result-export-adapter-testing) | `ResultExportAdapterTests` | 0 / 20 | 0 | 0 | 0% | ⚪ Not started |
 
 ## Module Progress
 
@@ -6712,4 +6926,47 @@ DeleteTable_ShouldNotDeleteTableBeforeDependencies
 RepositoryFailure_ShouldPropagateException
 ConcurrentTableSave_ShouldPreventDuplicateTable
 ConcurrentMetadataReads_ShouldReturnConsistentResults
+```
+# 44. PageAdapterTests
+
+```text
+Constructor_ShouldCreateDefaultPageAdapter
+ToInternalPage_ShouldConvertExternalPage
+ToInternalPage_ShouldConvertExternalPageId
+ToInternalPage_ShouldConvertByteBufferToByteArray
+ToInternalPage_ShouldCopyChecksumToPageHeader
+ToInternalPage_ShouldCopyFreeSpacePointerToPageHeader
+ToInternalPage_ShouldRejectNullExternalPage
+ToInternalPage_ShouldRejectPageIdOutsideIntegerRange
+ToExternalPage_ShouldConvertInternalPage
+ToExternalPage_ShouldConvertPageIdToExternalId
+ToExternalPage_ShouldConvertByteArrayToByteBuffer
+ToExternalPage_ShouldCopyChecksumFromPageHeader
+ToExternalPage_ShouldCopyFreeSpacePointerFromPageHeader
+ToExternalPage_ShouldRejectNullPage
+StorageEngineImport_ShouldAdaptBeforeWritingPage
+StorageEngineExport_ShouldReadPageBeforeAdapting
+```
+# 45. ResultExportAdapterTests
+```text
+JsonAdapter_Constructor_ShouldStoreJsonWriter
+JsonAdapter_GetFormat_ShouldReturnJson
+JsonAdapter_Export_ShouldConvertQueryResultToMaps
+JsonAdapter_Export_ShouldDelegateToJsonWriter
+JsonAdapter_ExportToStream_ShouldDelegateToJsonWriter
+CsvAdapter_Constructor_ShouldStoreCsvWriter
+CsvAdapter_GetFormat_ShouldReturnCsv
+CsvAdapter_Export_ShouldUseColumnNamesAsHeaders
+CsvAdapter_Export_ShouldConvertRowsToOrderedValues
+CsvAdapter_Export_ShouldDelegateToCsvWriter
+CsvAdapter_ExportToStream_ShouldDelegateToCsvWriter
+ExportService_Constructor_ShouldRegisterExporters
+ExportService_Supports_ShouldReturnTrueForRegisteredFormat
+ExportService_Supports_ShouldReturnFalseForMissingFormat
+ExportService_Export_ShouldSelectJsonAdapter
+ExportService_Export_ShouldSelectCsvAdapter
+ExportService_ExportToStream_ShouldDelegateToSelectedAdapter
+ExportService_Export_ShouldRejectUnsupportedFormat
+ExportService_RegisterExporter_ShouldAddNewExporter
+ExportService_RegisterExporter_ShouldReplaceExistingFormat
 ```

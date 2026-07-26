@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
-
+import classes.storageengine.adapter.PageAdapter;
 public class StorageEngine {
     public enum State {
         CLOSED, OPEN
@@ -14,6 +14,10 @@ public class StorageEngine {
     private final Map<Long, byte[]> pages = new LinkedHashMap<>();
     private State state = State.CLOSED;
     private long nextPageId = 1L;
+    private BufferPool bufferPool;
+    private DiskManager diskManager;
+    private RecordManager recordManager;
+    private PageAdapter pageAdapter;
 
     public UUID getId() {
         return id;

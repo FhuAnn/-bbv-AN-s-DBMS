@@ -2,7 +2,7 @@ package classes.storageengine;
 
 import enums.PageType;
 
-public abstract class Page {
+public class Page {
     private int pageId;
     private byte[] data;
     private PageHeader header;
@@ -15,7 +15,10 @@ public abstract class Page {
         // TODO: Implement
     }
 
-    public abstract PageType getPageType();
+    public PageType getPageType()
+    {
+        return null;
+    };
 
     public Page(int pageId) {
         this.pageId = pageId;
