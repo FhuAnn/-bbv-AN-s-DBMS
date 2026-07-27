@@ -31,6 +31,12 @@ public class TransactionManager {
         // TODO: Implement
     }
 
+    public void createSavepoint(
+            Transaction transaction,
+            String savepointName) {
+        // TODO: Implement
+    }
+
     public Optional<Transaction> findById(
             UUID transactionId) {
         // TODO: Implement
@@ -65,4 +71,5 @@ public class TransactionManager {
     private void validateId(UUID transactionId) {
 
     }
+
 }
