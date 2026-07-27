@@ -12,7 +12,6 @@ public class Transaction {
 
     private UUID id;
     private TransactionState state;
-
     private Instant startedAt;
     private Instant completedAt;
 

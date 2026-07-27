@@ -13,7 +13,9 @@ public class QueryOptimizer {
     public QueryOptimizer(
             ScanStrategySelector scanStrategySelector) {
         // TODO: Implement
-
+        catalogManager = null;
+        costModel = null;
+        cardinalityEstimator = null;
         this.scanStrategySelector = scanStrategySelector;
     }
 
