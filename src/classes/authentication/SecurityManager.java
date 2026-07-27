@@ -6,10 +6,26 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class SecurityManager {
+import classes.queryprocessor.chain.IQueryPermissionChecker;
+
+public class SecurityManager implements IQueryPermissionChecker {
 
     private final Map<String, Set<String>> rolePermissions = new LinkedHashMap<>();
     private final Map<String, Set<String>> userRoles = new LinkedHashMap<>();
+
+    @Override
+    public boolean hasPermission(
+            String userId,
+            String resource,
+            String action) {
+
+        /*
+         * Tìm UserSession hoặc role của user.
+         * Kiểm tra Permission.resource và Permission.action.
+         */
+
+        return false;
+    }
 
     public void createRole(String role) {
         validate(role, "Role");
