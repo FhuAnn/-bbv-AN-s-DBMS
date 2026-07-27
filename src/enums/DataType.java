@@ -8,5 +8,7 @@ public enum DataType {
     DOUBLE,
     DATE,
     VARCHAR,
-    TEXT
+    TEXT,
+    DECIMAL,
+    TIMESTAMP
 }

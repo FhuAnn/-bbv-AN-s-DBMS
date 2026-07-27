@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 import classes.storageengine.adapter.PageAdapter;
+
 public class StorageEngine {
     public enum State {
         CLOSED, OPEN
@@ -18,6 +19,7 @@ public class StorageEngine {
     private DiskManager diskManager;
     private RecordManager recordManager;
     private PageAdapter pageAdapter;
+    private final StorageAllocator storageAllocator;
 
     public UUID getId() {
         return id;

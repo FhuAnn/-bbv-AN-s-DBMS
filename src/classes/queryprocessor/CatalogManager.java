@@ -1,6 +1,16 @@
 package classes.queryprocessor;
 
-public class CatalogManager {
+import classes.metadata.Catalog;
+import classes.metadata.Table;
+import interfaces.IQueryValidationCatalog;
+
+public class CatalogManager implements IQueryValidationCatalog {
+    private final Catalog catalog;
+
+    public CatalogManager(Catalog catalog) {
+        this.catalog = catalog;
+    }
+
     public void registerTable(String tableName) {
     }
 
@@ -14,5 +24,25 @@ public class CatalogManager {
 
     public Object getBufferPoolManager() {
         return null;
+    }
+
+    @Override
+    public boolean schemaExists(String schemaName) {
+        return catalog.getSchemas()
+                .values()
+                .stream()
+                .anyMatch(schema -> schema.getName().equalsIgnoreCase(schemaName));
+    }
+
+    @Override
+    public Table getTable(String schemaName, String tableName) {
+        return catalog.getSchemas()
+                .values()
+                .stream()
+                .filter(schema -> schema.getName().equalsIgnoreCase(schemaName))
+                .flatMap(schema -> schema.getTables().stream())
+                .filter(table -> table.getName().equalsIgnoreCase(tableName))
+                .findFirst()
+                .orElse(null);
     }
 }
