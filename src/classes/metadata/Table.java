@@ -172,11 +172,6 @@ public class Table extends AbstractMetadataComponent implements MetadataPrototyp
 
     public void truncate() {
     }
-
-    public List<Row> getRows() {
-        return Collections.unmodifiableList(rows);
-    }
-
     // public Integer getRowCount() {
     //     return rows.size();
     // }
