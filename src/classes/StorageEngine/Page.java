@@ -1,6 +1,12 @@
 package classes.storageengine;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import classes.storageengine.iterator.PageRecordIterator;
 import enums.PageType;
+import interfaces.storage.record.IRecordIterator;
+import classes.storageengine.Record;
 
 public class Page {
     private int pageId;
@@ -8,15 +14,16 @@ public class Page {
     private PageHeader header;
     private boolean isDirty;
     private int pinCount;
+    private final List<Record> records = new ArrayList<>();
 
     protected Page(
             int pageId,
             int pageSize) {
         // TODO: Implement
+
     }
 
-    public PageType getPageType()
-    {
+    public PageType getPageType() {
         return null;
     };
 
@@ -68,5 +75,17 @@ public class Page {
     }
 
     public void unpin() {
+    }
+
+    public int getRecordCount() {
+        return records.size();
+    }
+
+    public IRecordIterator iterator() {
+        return new PageRecordIterator(this);
+    }
+
+    public Record getRecord(int position) {
+        return records.get(position);
     }
 }

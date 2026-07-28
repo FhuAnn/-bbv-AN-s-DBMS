@@ -22,7 +22,6 @@ public class Table extends AbstractMetadataComponent implements MetadataPrototyp
     private final List<ColumnMetadata> columns;
     private final List<Index> indexes;
     private final List<Constraint> constraints;
-    private final List<Row> rows;
 
     public Table(String name, UUID schemaId) {
         if (name == null || name.isBlank()) {
@@ -40,7 +39,7 @@ public class Table extends AbstractMetadataComponent implements MetadataPrototyp
         this.columns = new ArrayList<>();
         this.indexes = new ArrayList<>();
         this.constraints = new ArrayList<>();
-        this.rows = new ArrayList<>();
+       // this.rows = new ArrayList<>();
     }
 
     public UUID getSchemaId() {
@@ -178,9 +177,9 @@ public class Table extends AbstractMetadataComponent implements MetadataPrototyp
         return Collections.unmodifiableList(rows);
     }
 
-    public Integer getRowCount() {
-        return rows.size();
-    }
+    // public Integer getRowCount() {
+    //     return rows.size();
+    // }
 
     public void removeRow(Row row) {
     }
