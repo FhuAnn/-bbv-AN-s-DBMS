@@ -4845,2428 +4845,1034 @@ Cost Estimation Visitor         ░░░░░░░░░░░░░░░░
 | ⏸️ | Temporarily postponed |
 ---
 
-# 1. DatabaseServer Testing Roadmap ⚪
-
-```mermaid
-graph LR
-
-DS[DatabaseServer Testing]
-
-DS --> Design
-DS --> Constructor
-DS --> Lifecycle
-DS --> DatabaseManagement
-DS --> Recovery
-DS --> Validation
-DS --> Exception
-DS --> Concurrency
-DS --> Performance
-DS --> Integration
-
-%% ==================================================
-%% Test Class Design
-%% ==================================================
-
-Design --> TestClass
-Design --> TestFixture
-Design --> TestBuilder
-Design --> MockObjects
-Design --> TestData
-
-TestClass --> DatabaseServerTests
-
-MockObjects --> MockDatabaseManager
-MockObjects --> MockStorageEngine
-MockObjects --> MockTransactionManager
-MockObjects --> MockCatalogManager
-MockObjects --> MockBufferPool
-MockObjects --> MockRecoveryManager
-MockObjects --> MockWALManager
-MockObjects --> MockSecurityManager
-MockObjects --> MockConfigurationManager
-MockObjects --> MockMonitoringManager
-
-%% ==================================================
-%% Constructor Tests
-%% ==================================================
-
-Constructor --> CreateDatabaseServer
-Constructor --> GenerateServerId
-Constructor --> InitializeConfiguration
-Constructor --> InitializeManagers
-Constructor --> InitializeServices
-Constructor --> InitializeStorage
-Constructor --> InitializeCatalog
-Constructor --> InitializeTransactionSubsystem
-Constructor --> InitializeSecuritySubsystem
-Constructor --> InitializeMonitoringSubsystem
-
-%% ==================================================
-%% Lifecycle Tests
-%% ==================================================
-
-Lifecycle --> StartServer
-Lifecycle --> StopServer
-Lifecycle --> RestartServer
-Lifecycle --> ShutdownGracefully
-Lifecycle --> ReloadConfiguration
-Lifecycle --> ReloadMetadata
-
-%% ==================================================
-%% Database Management
-%% ==================================================
-
-DatabaseManagement --> CreateDatabase
-DatabaseManagement --> DropDatabase
-DatabaseManagement --> OpenDatabase
-DatabaseManagement --> CloseDatabase
-DatabaseManagement --> AttachDatabase
-DatabaseManagement --> DetachDatabase
-DatabaseManagement --> ListDatabases
-DatabaseManagement --> DatabaseExists
-
-%% ==================================================
-%% Recovery Tests
-%% ==================================================
-
-Recovery --> CrashRecovery
-Recovery --> ReplayWAL
-Recovery --> RestoreCheckpoint
-Recovery --> RecoverTransactions
-Recovery --> RecoverBufferPool
-Recovery --> RecoverCatalog
-
-%% ==================================================
-%% Validation Tests
-%% ==================================================
-
-Validation --> ValidateConfiguration
-Validation --> ValidateServerState
-Validation --> ValidateStartupSequence
-Validation --> ValidateShutdownSequence
-Validation --> ValidateRecoveryState
-Validation --> ValidateStorage
-Validation --> ValidateManagers
-Validation --> ValidateServices
-
-%% ==================================================
-%% Exception Tests
-%% ==================================================
-
-Exception --> InvalidConfiguration
-Exception --> DuplicateDatabase
-Exception --> StartupFailure
-Exception --> ShutdownFailure
-Exception --> StorageFailure
-Exception --> RecoveryFailure
-Exception --> CatalogFailure
-Exception --> SecurityFailure
-Exception --> TransactionFailure
-Exception --> ConfigurationFailure
-
-%% ==================================================
-%% Concurrency Tests
-%% ==================================================
-
-Concurrency --> ConcurrentStartup
-Concurrency --> ConcurrentShutdown
-Concurrency --> ConcurrentRestart
-Concurrency --> ConcurrentCreateDatabase
-Concurrency --> ConcurrentDropDatabase
-Concurrency --> ConcurrentRecovery
-Concurrency --> ConcurrentConnections
-
-%% ==================================================
-%% Performance Tests
-%% ==================================================
-
-Performance --> StartupPerformance
-Performance --> ShutdownPerformance
-Performance --> RecoveryPerformance
-Performance --> DatabaseCreationPerformance
-Performance --> MetadataLoadingPerformance
-Performance --> ResourceConsumption
-
-%% ==================================================
-%% Integration Tests
-%% ==================================================
-
-Integration --> DatabaseManager
-Integration --> StorageEngine
-Integration --> BufferPool
-Integration --> CatalogManager
-Integration --> TransactionManager
-Integration --> WALManager
-Integration --> RecoveryManager
-Integration --> SecurityManager
-Integration --> ConfigurationManager
-Integration --> MonitoringManager
-
-```
-
-# 2. Database Manager Testing ⚪
-```mermaid
-graph LR
-
-DM[DatabaseManager Testing]
-
-DM --> Design
-DM --> Constructor
-DM --> Functional
-DM --> Validation
-DM --> Exception
-DM --> Concurrency
-DM --> Performance
-DM --> Integration
-
-Design --> DatabaseManagerTests
-Design --> TestFixture
-Design --> MockObjects
-
-Constructor --> CreateManager
-Constructor --> InitializeCatalog
-
-Functional --> CreateDatabase
-Functional --> DropDatabase
-Functional --> RenameDatabase
-Functional --> AttachDatabase
-Functional --> DetachDatabase
-Functional --> BackupDatabase
-Functional --> RestoreDatabase
-Functional --> ListDatabases
-
-Validation --> DatabaseName
-Validation --> DuplicateDatabase
-Validation --> DatabaseExists
-
-Exception --> CatalogFailure
-Exception --> StorageFailure
-Exception --> BackupFailure
-
-Concurrency --> ConcurrentCreate
-Concurrency --> ConcurrentDrop
-Concurrency --> ConcurrentBackup
-
-Performance --> CreatePerformance
-Performance --> BackupPerformance
-
-Integration --> Database
-Integration --> CatalogManager
-Integration --> StorageEngine
-Integration --> BackupManager
-```
-<a name="database-testing"></a>
-
-# 3. Database Testing Roadmap ✅ (53 test)
-
-```mermaid
-graph LR
-
-DB["Database Testing - 53 tests"]
-
-DB --> Constructor
-DB --> Lifecycle
-DB --> SchemaManagement
-DB --> ReadOnly
-DB --> Rename
-DB --> CollectionSafety
-DB --> CatalogConsistency
-DB --> Concurrency
-DB --> Integration
-DB --> Design
-
-%% ==========================================
-%% Test Class Design
-%% ==========================================
-
-Design --> DatabaseTests
-Design --> TestFixture
-Design --> TestBuilder
-Design --> MockObjects
-Design --> TestData
-
-%% ==========================================
-%% Constructor Tests — 12
-%% ==========================================
-
-Constructor --> C1["1. Constructor_ShouldCreateDatabase✅"]
-Constructor --> C2["2. Constructor_ShouldGenerateDatabaseId✅"]
-Constructor --> C3["3. Constructor_ShouldGenerateUniqueDatabaseId✅"]
-Constructor --> C4["4. Constructor_ShouldInitializeCatalog✅"]
-Constructor --> C5["5. Constructor_ShouldInitializeSchemaCollection✅"]
-Constructor --> C6["6. Constructor_ShouldInitializeClosedState✅"]
-Constructor --> C7["7. Constructor_ShouldInitializeWritableMode✅"]
-Constructor --> C8["8. Constructor_ShouldRejectNullName✅"]
-Constructor --> C9["9. Constructor_ShouldRejectEmptyName✅"]
-Constructor --> C10["10. Constructor_ShouldRejectBlankName✅"]
-Constructor --> C11["11. Constructor_ShouldRejectTooLongName✅"]
-Constructor --> C12["12. Constructor_ShouldAcceptMaximumLengthName✅"]
-
-%% ==========================================
-%% Lifecycle Tests — 5
-%% ==========================================
-
-Lifecycle --> L1["13. Open_ShouldChangeDatabaseStateToOpen✅"]
-Lifecycle --> L2["14. Open_ShouldBeIdempotent✅"]
-Lifecycle --> L3["15. Close_ShouldChangeDatabaseStateToClosed✅"]
-Lifecycle --> L4["16. Close_ShouldBeIdempotent✅"]
-Lifecycle --> L5["17. Open_ShouldReopenClosedDatabase✅"]
-
-%% ==========================================
-%% Schema Management Tests — 16
-%% ==========================================
-
-SchemaManagement --> A1["18. AddSchema_ShouldRegisterSchema✅"]
-SchemaManagement --> A2["19. AddSchema_ShouldIncreaseSchemaCount✅"]
-SchemaManagement --> A3["20. AddSchema_ShouldRegisterMultipleSchemas✅"]
-SchemaManagement --> A4["21. AddSchema_ShouldRejectNullSchema✅"]
-SchemaManagement --> A5["22. AddSchema_ShouldRejectDuplicateSchemaName✅"]
-SchemaManagement --> A6["23. AddSchema_ShouldRejectSchemaFromAnotherDatabase✅"]
-
-SchemaManagement --> A7["24. GetSchema_ShouldReturnExistingSchema✅"]
-SchemaManagement --> A8["25. GetSchema_ShouldThrowWhenSchemaDoesNotExist✅"]
-
-SchemaManagement --> A9["26. ContainsSchema_ShouldReturnTrueForExistingSchema✅"]
-SchemaManagement --> A10["27. ContainsSchema_ShouldReturnFalseForMissingSchema✅"]
-
-SchemaManagement --> A11["28. RemoveSchema_ShouldRemoveExistingSchema✅"]
-SchemaManagement --> A12["29. RemoveSchema_ShouldDecreaseSchemaCount✅"]
-SchemaManagement --> A13["30. RemoveSchema_ShouldThrowWhenSchemaNotFound✅"]
-SchemaManagement --> A14["31. RemoveSchema_ShouldRejectNullName✅"]
-SchemaManagement --> A15["32. RemoveSchema_ShouldRejectBlankName✅"]
-SchemaManagement --> A16["33. RemoveSchema_ShouldRejectNonEmptySchema✅"]
-
-%% ==========================================
-%% Read-only Tests — 5
-%% ==========================================
-
-ReadOnly --> R1["34. SetReadOnly_ShouldChangeDatabaseMode✅"]
-ReadOnly --> R2["35. SetReadOnlyFalse_ShouldRestoreWritableMode✅"]
-ReadOnly --> R3["36. AddSchema_ShouldRejectWhenDatabaseIsReadOnly✅"]
-ReadOnly --> R4["37. RemoveSchema_ShouldRejectWhenDatabaseIsReadOnly✅"]
-ReadOnly --> R5["38. WritableDatabase_ShouldAllowSchemaModification✅"]
-
-%% ==========================================
-%% Rename Tests — 5
-%% ==========================================
-
-Rename --> N1["39. Rename_ShouldChangeDatabaseName✅"]
-Rename --> N2["40. Rename_ShouldRejectNullName✅"]
-Rename --> N3["41. Rename_ShouldRejectBlankName✅"]
-Rename --> N4["42. Rename_ShouldRejectTooLongName✅"]
-Rename --> N5["43. Rename_ShouldRejectWhenDatabaseIsReadOnly✅"]
-
-%% ==========================================
-%% Collection Safety Tests — 2
-%% ==========================================
-
-CollectionSafety --> Co1["44. GetSchemas_ShouldReturnUnmodifiableCollection✅"]
-CollectionSafety --> Co2["45. GetSchemas_ShouldProtectInternalCollection✅"]
-
-%% ==========================================
-%% Catalog Consistency Tests — 3
-%% ==========================================
-
-CatalogConsistency --> K1["46. Catalog_ShouldRemainConsistentAfterAddingSchema✅"]
-CatalogConsistency --> K2["47. Catalog_ShouldRemainConsistentAfterRemovingSchema✅"]
-CatalogConsistency --> K3["48. Catalog_ShouldHaveSameSchemaCountAsDatabase✅"]
-
-%% ==========================================
-%% Concurrency Tests — 3
-%% ==========================================
-
-Concurrency --> Con1["49. ConcurrentOpen_ShouldMaintainDatabaseState✅"]
-Concurrency --> Con2["50. ConcurrentSchemaReads_ShouldReturnConsistentResult✅"]
-Concurrency --> Con3["51. ConcurrentSchemaCreation_ShouldPreventDuplicateSchema✅"]
-
-%% ==========================================
-%% Integration Tests — 2
-%% ==========================================
-
-Integration --> I1["52. DatabaseSchemaIntegration_ShouldMaintainRelationship✅"]
-Integration --> I2["53. DatabaseSchemaTableIntegration_ShouldBuildMetadataHierarchy✅"]
-```
-<a name="schema-testing"></a>
-
-# 4. Schema Testing Roadmap (68 test cases) ⚪
-
-```mermaid
-graph LR
-
-SC["Schema Testing"]
-
-SC --> Design
-SC --> Constructor
-SC --> Functional
-SC --> Validation
-SC --> Exception
-SC --> Concurrency
-SC --> Integration
-
-%% ==========================================
-%% Test Class Design
-%% ==========================================
-
-Design --> D1["SchemaTests"]
-Design --> D2["TestFixture"]
-Design --> D3["Mockito Test Doubles"]
-Design --> D4["Reusable UUID Test Data"]
-Design --> D5["Nested Test Groups"]
-
-%% ==========================================
-%% Constructor Tests
-%% ==========================================
-
-Constructor --> C1["1. Constructor_ShouldCreateSchema"]
-Constructor --> C2["2. Constructor_ShouldGenerateSchemaId"]
-Constructor --> C3["3. Constructor_ShouldGenerateUniqueSchemaIds"]
-Constructor --> C4["4. Constructor_ShouldInitializeDatabaseId"]
-Constructor --> C5["5. Constructor_ShouldInitializeOwnerId"]
-Constructor --> C6["6. Constructor_ShouldInitializeEmptyTableCollection"]
-Constructor --> C7["7. Constructor_ShouldInitializeEmptyViewCollection"]
-Constructor --> C8["8. Constructor_ShouldRejectNullName"]
-Constructor --> C9["9. Constructor_ShouldRejectEmptyName"]
-Constructor --> C10["10. Constructor_ShouldRejectBlankName"]
-Constructor --> C11["11. Constructor_ShouldRejectNullDatabaseId"]
-Constructor --> C12["12. Constructor_ShouldRejectNullOwnerId"]
-
-%% ==========================================
-%% Functional Tests
-%% Functional remains the main category.
-%% ==========================================
-
-Functional --> Name
-Functional --> TableManagement
-Functional --> ViewManagement
-Functional --> State
-Functional --> Metadata
-
-%% ==========================================
-%% Functional - Name Tests
-%% ==========================================
-
-Name --> N1["13. GetName_ShouldReturnSchemaName"]
-Name --> N2["14. Rename_ShouldChangeSchemaName"]
-Name --> N3["15. Rename_ShouldRejectNullName"]
-Name --> N4["16. Rename_ShouldRejectEmptyName"]
-Name --> N5["17. Rename_ShouldRejectBlankName"]
-
-%% ==========================================
-%% Functional - Table Management Tests
-%% ==========================================
-
-TableManagement --> T1["18. AddTable_ShouldRegisterTable"]
-TableManagement --> T2["19. AddTable_ShouldIncreaseTableCount"]
-TableManagement --> T3["20. AddTable_ShouldRegisterMultipleTables"]
-TableManagement --> T4["21. AddTable_ShouldRejectNullTable"]
-TableManagement --> T5["22. AddTable_ShouldRejectDuplicateTableName"]
-TableManagement --> T6["23. GetTable_ShouldReturnExistingTable"]
-TableManagement --> T7["24. GetTable_ShouldReturnNullForMissingTable"]
-TableManagement --> T8["25. ContainsTable_ShouldReturnTrueForExistingTable"]
-TableManagement --> T9["26. ContainsTable_ShouldReturnFalseForMissingTable"]
-TableManagement --> T10["27. RemoveTable_ShouldRemoveExistingTable"]
-TableManagement --> T11["28. RemoveTable_ShouldDecreaseTableCount"]
-TableManagement --> T12["29. RemoveTable_ShouldReturnNullForMissingTable"]
-TableManagement --> T13["30. GetTables_ShouldReturnUnmodifiableCollection"]
-TableManagement --> T14["31. GetTables_ShouldProtectInternalCollection"]
-
-%% ==========================================
-%% Functional - View Management Tests
-%% ==========================================
-
-ViewManagement --> V1["32. AddView_ShouldRegisterView"]
-ViewManagement --> V2["33. AddView_ShouldIncreaseViewCount"]
-ViewManagement --> V3["34. AddView_ShouldRegisterMultipleViews"]
-ViewManagement --> V4["35. AddView_ShouldRejectNullView"]
-ViewManagement --> V5["36. AddView_ShouldRejectDuplicateViewName"]
-ViewManagement --> V6["37. GetView_ShouldReturnExistingView"]
-ViewManagement --> V7["38. GetView_ShouldReturnNullForMissingView"]
-ViewManagement --> V8["39. ContainsView_ShouldReturnTrueForExistingView"]
-ViewManagement --> V9["40. ContainsView_ShouldReturnFalseForMissingView"]
-ViewManagement --> V10["41. RemoveView_ShouldRemoveExistingView"]
-ViewManagement --> V11["42. RemoveView_ShouldDecreaseViewCount"]
-ViewManagement --> V12["43. RemoveView_ShouldReturnNullForMissingView"]
-ViewManagement --> V13["44. GetViews_ShouldReturnUnmodifiableCollection"]
-ViewManagement --> V14["45. GetViews_ShouldProtectInternalCollection"]
-
-%% ==========================================
-%% Functional - State Tests
-%% ==========================================
-
-State --> S1["46. IsEmpty_ShouldReturnTrueForNewSchema"]
-State --> S2["47. IsEmpty_ShouldReturnFalseWhenTableExists"]
-State --> S3["48. IsEmpty_ShouldReturnFalseWhenViewExists"]
-State --> S4["49. GetTableCount_ShouldReturnCorrectCount"]
-State --> S5["50. GetViewCount_ShouldReturnCorrectCount"]
-State --> S6["51. IsEmpty_ShouldReturnTrueAfterRemovingAllObjects"]
-
-%% ==========================================
-%% Functional - Metadata Tests
-%% ==========================================
-
-Metadata --> M1["52. GetDatabaseId_ShouldReturnDatabaseId"]
-Metadata --> M2["53. SetDatabaseId_ShouldUpdateDatabaseId"]
-Metadata --> M3["54. SetDatabaseId_ShouldRejectNullDatabaseId"]
-Metadata --> M4["55. GetOwnerId_ShouldReturnOwnerId"]
-Metadata --> M5["56. SetOwnerId_ShouldUpdateOwnerId"]
-Metadata --> M6["57. SetOwnerId_ShouldRejectNullOwnerId"]
-
-%% ==========================================
-%% Validation Tests
-%% ==========================================
-
-Validation --> VA1["58. AddTable_ShouldNotModifyCollectionWhenDuplicateRejected"]
-Validation --> VA2["59. AddView_ShouldNotModifyCollectionWhenDuplicateRejected"]
-Validation --> VA3["60. RemoveTable_ShouldPreserveCollectionWhenTableMissing"]
-Validation --> VA4["61. RemoveView_ShouldPreserveCollectionWhenViewMissing"]
-
-%% ==========================================
-%% Exception Coverage
-%% ==========================================
-
-Exception --> E1["Invalid Schema Name"]
-Exception --> E2["Null Database ID"]
-Exception --> E3["Null Owner ID"]
-Exception --> E4["Null Table"]
-Exception --> E5["Duplicate Table Name"]
-Exception --> E6["Null View"]
-Exception --> E7["Duplicate View Name"]
-Exception --> E8["Unmodifiable Collections"]
-
-%% ==========================================
-%% Concurrency Tests
-%% ==========================================
-
-Concurrency --> CO1["62. ConcurrentTableReads_ShouldReturnConsistentResult"]
-Concurrency --> CO2["63. ConcurrentViewReads_ShouldReturnConsistentResult"]
-Concurrency --> CO3["64. ConcurrentTableCreation_ShouldPreventDuplicateTable"]
-Concurrency --> CO4["65. ConcurrentViewCreation_ShouldPreventDuplicateView"]
-
-%% ==========================================
-%% Integration Tests
-%% ==========================================
-
-Integration --> I1["66. SchemaTableIntegration_ShouldMaintainRelationship"]
-Integration --> I2["67. SchemaViewIntegration_ShouldMaintainRelationship"]
-Integration --> I3["68. SchemaObjectsIntegration_ShouldManageCollectionsIndependently"]
-```
-
-## Test count
+# 1. DatabaseServerTests
 
 ```text
-Constructor:              12
-Functional - Name:         5
-Functional - Table:       14
-Functional - View:        14
-Functional - State:        6
-Functional - Metadata:     6
-Validation:                4
-Concurrency:               4
-Integration:               3
---------------------------------
-Total:                    68 tests
+CreateDatabaseServer
+GenerateServerId
+InitializeConfiguration
+InitializeManagers
+InitializeServices
+InitializeStorage
+InitializeCatalog
+InitializeTransactionSubsystem
+InitializeSecuritySubsystem
+InitializeMonitoringSubsystem
+StartServer
+StopServer
+RestartServer
+ShutdownGracefully
+ReloadConfiguration
+ReloadMetadata
+CreateDatabase
+DropDatabase
+OpenDatabase
+CloseDatabase
+AttachDatabase
+DetachDatabase
+ListDatabases
+DatabaseExists
+CrashRecovery
+ReplayWAL
+RestoreCheckpoint
+RecoverTransactions
+RecoverBufferPool
+RecoverCatalog
+ValidateConfiguration
+ValidateServerState
+ValidateStartupSequence
+ValidateShutdownSequence
+ValidateRecoveryState
+ValidateStorage
+ValidateManagers
+ValidateServices
+InvalidConfiguration
+DuplicateDatabase
+StartupFailure
+ShutdownFailure
+StorageFailure
+RecoveryFailure
+CatalogFailure
+SecurityFailure
+TransactionFailure
+ConfigurationFailure
+ConcurrentStartup
+ConcurrentShutdown
+ConcurrentRestart
+ConcurrentCreateDatabase
+ConcurrentDropDatabase
+ConcurrentRecovery
+ConcurrentConnections
+StartupPerformance
+ShutdownPerformance
+RecoveryPerformance
+DatabaseCreationPerformance
+MetadataLoadingPerformance
+ResourceConsumption
+DatabaseManager
+TransactionManager
 ```
 
-<a name="table-testing"></a>
-
-# 5. Table Testing Roadmap ✅ (53 tests)
-
-```mermaid
-graph LR
-
-TB["Table Testing ✅ 53 tests"]
-
-TB --> Design
-TB --> Constructor
-TB --> Name
-TB --> ColumnManagement
-TB --> RowManagement
-TB --> ConstraintManagement
-TB --> IndexManagement
-TB --> State
-
-%% ==========================================
-%% Test Class Design
-%% ==========================================
-
-Design --> D1["TableTests"]
-Design --> D2["TestFixture"]
-Design --> D3["Mockito Test Doubles"]
-Design --> D4["Reusable UUID Test Data"]
-Design --> D5["Nested Test Groups"]
-
-%% ==========================================
-%% Constructor Tests — 8
-%% ==========================================
-
-Constructor --> C1["1. constructor_ShouldCreateTable✅"]
-Constructor --> C2["2. constructor_ShouldGenerateTableId✅"]
-Constructor --> C3["3. constructor_ShouldGenerateUniqueTableIds✅"]
-Constructor --> C4["4. constructor_ShouldInitializeSchemaId✅"]
-Constructor --> C5["5. constructor_ShouldInitializeEmptyColumns✅"]
-Constructor --> C6["6. constructor_ShouldInitializeEmptyRows✅"]
-Constructor --> C7["7. constructor_ShouldInitializeEmptyConstraints✅"]
-Constructor --> C8["8. constructor_ShouldInitializeEmptyIndexes✅"]
-
-%% ==========================================
-%% Name Tests — 4
-%% ==========================================
-
-Name --> N1["9. getName_ShouldReturnTableName✅"]
-Name --> N2["10. rename_ShouldChangeTableName✅"]
-Name --> N3["11. rename_ShouldRejectNullName✅"]
-Name --> N4["12. rename_ShouldRejectBlankName✅"]
-
-%% ==========================================
-%% Column Management Tests — 11
-%% ==========================================
-
-ColumnManagement --> COL1["13. addColumn_ShouldRegisterColumn✅"]
-ColumnManagement --> COL2["14. addColumn_ShouldIncreaseColumnCount✅"]
-ColumnManagement --> COL3["15. addColumn_ShouldRejectNullColumn✅"]
-ColumnManagement --> COL4["16. addColumn_ShouldRejectDuplicateColumnName✅"]
-ColumnManagement --> COL5["17. getColumn_ShouldReturnExistingColumn✅"]
-ColumnManagement --> COL6["18. getColumn_ShouldReturnNullForMissingColumn✅"]
-ColumnManagement --> COL7["19. containsColumn_ShouldReturnTrueForExistingColumn✅"]
-ColumnManagement --> COL8["20. containsColumn_ShouldReturnFalseForMissingColumn✅"]
-ColumnManagement --> COL9["21. removeColumn_ShouldRemoveExistingColumn✅"]
-ColumnManagement --> COL10["22. removeColumn_ShouldReturnNullForMissingColumn✅"]
-ColumnManagement --> COL11["23. getColumns_ShouldReturnUnmodifiableCollection✅"]
-
-%% ==========================================
-%% Row Management Tests — 12
-%% ==========================================
-
-RowManagement --> R1["24. insertRow_ShouldInsertRow✅"]
-RowManagement --> R2["25. insertRow_ShouldIncreaseRowCount✅"]
-RowManagement --> R3["26. insertRow_ShouldRejectNullRow✅"]
-RowManagement --> R4["27. getRow_ShouldReturnExistingRow✅"]
-RowManagement --> R5["28. getRow_ShouldReturnNullForMissingRow✅"]
-RowManagement --> R6["29. updateRow_ShouldReplaceExistingRow✅"]
-RowManagement --> R7["30. updateRow_ShouldReturnNullForMissingRow✅"]
-RowManagement --> R8["31. deleteRow_ShouldRemoveExistingRow✅"]
-RowManagement --> R9["32. deleteRow_ShouldDecreaseRowCount✅"]
-RowManagement --> R10["33. deleteRow_ShouldReturnNullForMissingRow✅"]
-RowManagement --> R11["34. truncate_ShouldRemoveAllRows✅"]
-RowManagement --> R12["35. getRows_ShouldReturnUnmodifiableCollection✅"]
-
-%% ==========================================
-%% Constraint Management Tests — 6
-%% ==========================================
-
-ConstraintManagement --> CON1["36. addConstraint_ShouldRegisterConstraint✅"]
-ConstraintManagement --> CON2["37. addConstraint_ShouldRejectNullConstraint✅"]
-ConstraintManagement --> CON3["38. addConstraint_ShouldRejectDuplicateConstraintName✅"]
-ConstraintManagement --> CON4["39. getConstraint_ShouldReturnExistingConstraint✅"]
-ConstraintManagement --> CON5["40. removeConstraint_ShouldRemoveExistingConstraint✅"]
-ConstraintManagement --> CON6["41. getConstraints_ShouldReturnUnmodifiableCollection✅"]
-
-%% ==========================================
-%% Index Management Tests — 6
-%% ==========================================
-
-IndexManagement --> I1["42. addIndex_ShouldRegisterIndex✅"]
-IndexManagement --> I2["43. addIndex_ShouldRejectNullIndex✅"]
-IndexManagement --> I3["44. addIndex_ShouldRejectDuplicateIndexName✅"]
-IndexManagement --> I4["45. getIndex_ShouldReturnExistingIndex✅"]
-IndexManagement --> I5["46. removeIndex_ShouldRemoveExistingIndex✅"]
-IndexManagement --> I6["47. getIndexes_ShouldReturnUnmodifiableCollection✅"]
-
-%% ==========================================
-%% State Tests — 6
-%% ==========================================
-
-State --> S1["48. isEmpty_ShouldReturnTrueForNewTable✅"]
-State --> S2["49. isEmpty_ShouldReturnFalseWhenRowExists✅"]
-State --> S3["50. getRowCount_ShouldReturnCorrectCount✅"]
-State --> S4["51. getColumnCount_ShouldReturnCorrectCount✅"]
-State --> S5["52. getConstraintCount_ShouldReturnCorrectCount✅"]
-State --> S6["53. getIndexCount_ShouldReturnCorrectCount✅"]
-```
-
-## Test count
+# 2. DatabaseManagerTests
 
 ```text
-Constructor Tests                   8
-Name Tests                          4
-Column Management Tests            11
-Row Management Tests               12
-Constraint Management Tests         6
-Index Management Tests              6
-State Tests                         6
---------------------------------------
-Total                              53
+CreateManager
+InitializeCatalog
+CreateDatabase
+DropDatabase
+RenameDatabase
+AttachDatabase
+DetachDatabase
+BackupDatabase
+RestoreDatabase
+ListDatabases
+DatabaseName
+DuplicateDatabase
+DatabaseExists
+CatalogFailure
+StorageFailure
+BackupFailure
+ConcurrentCreate
+ConcurrentDrop
+ConcurrentBackup
+CreatePerformance
+BackupPerformance
 ```
 
-
-<a name="column-testing"></a>
-
-# 6. Column Testing Roadmap (54 test cases)✅
-
-```mermaid
-graph LR
-
-CL["Column Testing — 54 tests"]
-
-CL --> Design
-CL --> Constructor
-CL --> Functional
-CL --> Validation
-CL --> Exception
-
-Design --> D1["ColumnTests✅"]
-Design --> D2["JUnit 5 Test Fixture✅"]
-Design --> D3["Nested Test Groups✅"]
-Design --> D4["Reusable ColumnMetadata Fixture✅"]
-
-Functional --> Metadata
-Functional --> Length
-Functional --> PrecisionScale
-Functional --> DefaultValue
-Functional --> ValueValidation
-Functional --> Identity
-Functional --> Definition
-Functional --> Equality
-
-%% Constructor Tests
-Constructor --> C1["1. Constructor_ShouldCreateColumn✅"]
-Constructor --> C2["2. Constructor_ShouldGenerateColumnId✅"]
-Constructor --> C3["3. Constructor_ShouldGenerateUniqueColumnIds✅"]
-Constructor --> C4["4. Constructor_ShouldInitializeNameAndType✅"]
-Constructor --> C5["5. Constructor_ShouldInitializeNullableAsTrue✅"]
-Constructor --> C6["6. Constructor_ShouldInitializeDefaultPosition✅"]
-Constructor --> C7["7. Constructor_ShouldInitializeIdentityAsFalse✅"]
-Constructor --> C8["8. Constructor_ShouldRejectInvalidName✅"]
-Constructor --> C9["9. Constructor_ShouldRejectNullDataType✅"]
-
-%% Metadata Tests
-Metadata --> M1["10. Rename_ShouldChangeColumnName✅"]
-Metadata --> M2["11. Rename_ShouldRejectInvalidName✅"]
-Metadata --> M3["12. SetDataType_ShouldChangeDataType✅"]
-Metadata --> M4["13. SetDataType_ShouldRejectNull✅"]
-Metadata --> M5["14. SetNullable_ShouldChangeNullableState✅"]
-Metadata --> M6["15. SetPosition_ShouldChangePosition✅"]
-Metadata --> M7["16. SetPosition_ShouldRejectNegativePosition✅"]
-
-%% Length Tests
-Length --> L1["17. SetLength_ShouldStorePositiveLength✅"]
-Length --> L2["18. SetLength_ShouldAllowNull✅"]
-Length --> L3["19. SetLength_ShouldRejectZero✅"]
-Length --> L4["20. SetLength_ShouldRejectNegativeLength✅"]
-Length --> L5["21. ValidateValue_ShouldRejectStringLongerThanLength✅"]
-
-%% PrecisionScale Tests
-PrecisionScale --> P1["22. SetPrecision_ShouldStorePositivePrecision✅"]
-PrecisionScale --> P2["23. SetPrecision_ShouldRejectInvalidPrecision✅"]
-PrecisionScale --> P3["24. SetScale_ShouldStoreNonNegativeScale✅"]
-PrecisionScale --> P4["25. SetScale_ShouldRejectNegativeScale✅"]
-PrecisionScale --> P5["26. SetScale_ShouldRejectScaleGreaterThanPrecision✅"]
-PrecisionScale --> P6["27. SetPrecision_ShouldRejectPrecisionBelowExistingScale✅"]
-
-%% DefaultValue Tests
-DefaultValue --> D1["28. SetDefaultValue_ShouldStoreCompatibleValue✅"]
-DefaultValue --> D2["29. SetDefaultValue_ShouldAllowNull✅"]
-DefaultValue --> D3["30. SetDefaultValue_ShouldRejectIncompatibleValue✅"]
-
-%% ValueValidation Tests
-ValueValidation --> V1["31. ValidateValue_ShouldAcceptCompatibleValue✅"]
-ValueValidation --> V2["32. ValidateValue_ShouldAllowNullWhenNullable✅"]
-ValueValidation --> V3["33. ValidateValue_ShouldRejectNullWhenNotNullable✅"]
-ValueValidation --> V4["34. ValidateValue_ShouldRejectIncompatibleValue✅"]
-ValueValidation --> V5["35. ResolveValue_ShouldReturnSuppliedValue✅"]
-ValueValidation --> V6["36. ResolveValue_ShouldUseDefaultValue✅"]
-ValueValidation --> V7["37. ResolveValue_ShouldReturnNullWhenNullable✅"]
-ValueValidation --> V8["38. ResolveValue_ShouldRejectMissingRequiredValue✅"]
-
-%% Identity Tests
-Identity --> I1["39. SetIdentity_ShouldEnableIdentity✅"]
-Identity --> I2["40. GenerateNextIdentityValue_ShouldReturnCurrentValue✅"]
-Identity --> I3["41. GenerateNextIdentityValue_ShouldIncrementCounter✅"]
-Identity --> I4["42. GenerateNextIdentityValue_ShouldGenerateSequentialValues✅"]
-Identity --> I5["43. GenerateNextIdentityValue_ShouldRejectNonIdentityColumn✅"]
-Identity --> I6["44. SetNextIdentityValue_ShouldChangeCounter✅"]
-Identity --> I7["45. SetNextIdentityValue_ShouldRejectInvalidValue✅"]
-Identity --> I8["46. ResolveValue_ShouldGenerateIdentityWhenValueMissing✅"]
-Identity --> I9["47. ResolveValue_ShouldPreferSuppliedValueOverIdentity✅"]
-
-%% Definition Tests
-Definition --> DF1["48. IsValidDefinition_ShouldReturnTrueForValidColumn✅"]
-Definition --> DF2["49. IsValidDefinition_ShouldRemainValidWithLength✅"]
-Definition --> DF3["50. IsValidDefinition_ShouldRemainValidWithPrecisionAndScale✅"]
-
-%% Equality Tests
-Equality --> E1["51. Equals_ShouldReturnTrueForSameInstance✅"]
-Equality --> E2["52. Equals_ShouldReturnFalseForDifferentColumns✅"]
-Equality --> E3["53. Equals_ShouldReturnFalseForNull✅"]
-Equality --> E4["54. HashCode_ShouldRemainStable✅"] //
-```
-
-## Test count
+# 3. DatabaseTests
 
 ```text
-Constructor:          9
-Metadata:             7
-Length:               5
-Precision and Scale:  6
-Default Value:        3
-Value Validation:     8
-Identity:             9
-Definition:           3
-Equality:             4
------------------------
-Total:               54
+Constructor_ShouldCreateDatabase
+Constructor_ShouldGenerateDatabaseId
+Constructor_ShouldGenerateUniqueDatabaseId
+Constructor_ShouldInitializeCatalog
+Constructor_ShouldInitializeSchemaCollection
+Constructor_ShouldInitializeClosedState
+Constructor_ShouldInitializeWritableMode
+Constructor_ShouldRejectNullName
+Constructor_ShouldRejectEmptyName
+Constructor_ShouldRejectBlankName
+Constructor_ShouldRejectTooLongName
+Constructor_ShouldAcceptMaximumLengthName
+Open_ShouldChangeDatabaseStateToOpen
+Open_ShouldBeIdempotent
+Close_ShouldChangeDatabaseStateToClosed
+Close_ShouldBeIdempotent
+Open_ShouldReopenClosedDatabase
+AddSchema_ShouldRegisterSchema
+AddSchema_ShouldIncreaseSchemaCount
+AddSchema_ShouldRegisterMultipleSchemas
+AddSchema_ShouldRejectNullSchema
+AddSchema_ShouldRejectDuplicateSchemaName
+AddSchema_ShouldRejectSchemaFromAnotherDatabase
+GetSchema_ShouldReturnExistingSchema
+GetSchema_ShouldThrowWhenSchemaDoesNotExist
+ContainsSchema_ShouldReturnTrueForExistingSchema
+ContainsSchema_ShouldReturnFalseForMissingSchema
+RemoveSchema_ShouldRemoveExistingSchema
+RemoveSchema_ShouldDecreaseSchemaCount
+RemoveSchema_ShouldThrowWhenSchemaNotFound
+RemoveSchema_ShouldRejectNullName
+RemoveSchema_ShouldRejectBlankName
+RemoveSchema_ShouldRejectNonEmptySchema
+SetReadOnly_ShouldChangeDatabaseMode
+SetReadOnlyFalse_ShouldRestoreWritableMode
+AddSchema_ShouldRejectWhenDatabaseIsReadOnly
+RemoveSchema_ShouldRejectWhenDatabaseIsReadOnly
+WritableDatabase_ShouldAllowSchemaModification
+Rename_ShouldChangeDatabaseName
+Rename_ShouldRejectNullName
+Rename_ShouldRejectBlankName
+Rename_ShouldRejectTooLongName
+Rename_ShouldRejectWhenDatabaseIsReadOnly
+GetSchemas_ShouldReturnUnmodifiableCollection
+GetSchemas_ShouldProtectInternalCollection
+Catalog_ShouldRemainConsistentAfterAddingSchema
+Catalog_ShouldRemainConsistentAfterRemovingSchema
+Catalog_ShouldHaveSameSchemaCountAsDatabase
+ConcurrentOpen_ShouldMaintainDatabaseState
+ConcurrentSchemaReads_ShouldReturnConsistentResult
+ConcurrentSchemaCreation_ShouldPreventDuplicateSchema
+DatabaseSchemaIntegration_ShouldMaintainRelationship
+DatabaseSchemaTableIntegration_ShouldBuildMetadataHierarchy
 ```
 
-
-# 7. Row Testing Roadmap (58 test cases) ✅
-```mermaid
-graph LR
-
-CT["Constraint Testing — 51 tests"]
-
-CT --> Design
-CT --> Constructor
-CT --> Functional
-CT --> Validation
-CT --> Exception
-
-%% ==========================
-%% Test Design
-%% ==========================
-
-Design --> D1["ConstraintTests✅"]
-Design --> D3["Nested Test Groups✅"]
-Design --> D4["Reusable Constraint Fixtures✅"]
-Design --> D5["Reusable Row Test Data✅"]
-Design --> D6["Foreign Key Fixture✅"]
-Design --> D7["Check Constraint Fixture✅"]
-
-%% ==========================
-%% Functional Groups
-%% ==========================
-
-Functional --> Metadata
-Functional --> State
-Functional --> PrimaryKey
-Functional --> Unique
-Functional --> NotNull
-Functional --> ForeignKey
-Functional --> Check
-Functional --> Definition
-
-%% ==========================
-%% Constructor Tests
-%% ==========================
-
-Constructor --> C1["1. Constructor_ShouldCreateConstraint✅"]
-Constructor --> C2["2. Constructor_ShouldGenerateConstraintId✅"]
-Constructor --> C3["3. Constructor_ShouldGenerateUniqueConstraintIds✅"]
-Constructor --> C4["4. Constructor_ShouldInitializeMetadata✅"]
-Constructor --> C5["5. Constructor_ShouldEnableConstraintByDefault✅"]
-Constructor --> C6["6. Constructor_ShouldRejectInvalidName✅"]
-Constructor --> C7["7. Constructor_ShouldRejectNullType✅"]
-Constructor --> C8["8. Constructor_ShouldRejectEmptyColumns✅"]
-
-%% ==========================
-%% Metadata Tests
-%% ==========================
-
-Metadata --> M1["9. Rename_ShouldChangeConstraintName✅"]
-Metadata --> M2["10. Rename_ShouldRejectInvalidName✅"]
-Metadata --> M3["11. GetColumnNames_ShouldReturnUnmodifiableList✅"]
-Metadata --> M4["12. SetReferencedTableId_ShouldStoreId✅"]
-Metadata --> M5["13. SetReferencedTableId_ShouldRejectNull✅"]
-Metadata --> M6["14. SetReferencedColumnNames_ShouldStoreColumns✅"]
-Metadata --> M7["15. GetReferencedColumnNames_ShouldBeUnmodifiable✅"]
-Metadata --> M8["16. SetCheckExpression_ShouldStoreExpression✅"]
-Metadata --> M9["17. SetCheckExpression_ShouldRejectBlankExpression✅"]
-Metadata --> M10["18. SetCheckPredicate_ShouldRejectNull✅"]
-
-%% ==========================
-%% State Tests
-%% ==========================
-
-State --> S1["19. Disable_ShouldDisableConstraint✅"]
-State --> S2["20. Enable_ShouldEnableConstraint✅"]
-State --> S3["21. Disable_ShouldBeIdempotent✅"]
-State --> S4["22. Enable_ShouldBeIdempotent✅"]
-State --> S5["23. DisabledConstraint_ShouldAlwaysPassValidation✅"]
-
-%% ==========================
-%% PrimaryKey Tests
-%% ==========================
-
-PrimaryKey --> PK1["24. ValidatePrimaryKey_ShouldAcceptUniqueNonNullValue✅"]
-PrimaryKey --> PK2["25. ValidatePrimaryKey_ShouldRejectNullValue✅"]
-PrimaryKey --> PK3["26. ValidatePrimaryKey_ShouldRejectDuplicateValue✅"]
-PrimaryKey --> PK4["27. ValidatePrimaryKey_ShouldSupportCompositeKey✅"]
-PrimaryKey --> PK5["28. ValidatePrimaryKey_ShouldRejectNullExistingKeys✅"]
-
-%% ==========================
-%% Unique Tests
-%% ==========================
-
-Unique --> UQ1["29. ValidateUnique_ShouldAcceptUniqueValue✅"]
-Unique --> UQ2["30. ValidateUnique_ShouldRejectDuplicateValue✅"]
-Unique --> UQ3["31. ValidateUnique_ShouldAllowNullValue✅"]
-Unique --> UQ4["32. ValidateUnique_ShouldSupportCompositeValue✅"]
-
-%% ==========================
-%% NotNull Tests
-%% ==========================
-
-NotNull --> NN1["33. ValidateNotNull_ShouldAcceptNonNullValue✅"]
-NotNull --> NN2["34. ValidateNotNull_ShouldRejectNullValue✅"]
-NotNull --> NN3["35. ValidateNotNull_ShouldCheckAllColumns✅"]
-NotNull --> NN4["36. Validate_ShouldDispatchToNotNullValidation✅"]
-
-%% ==========================
-%% ForeignKey Tests
-%% ==========================
-
-ForeignKey --> FK1["37. ValidateForeignKey_ShouldAcceptExistingReference✅"]
-ForeignKey --> FK2["38. ValidateForeignKey_ShouldRejectMissingReference✅"]
-ForeignKey --> FK3["39. ValidateForeignKey_ShouldAllowNullValue✅"]
-ForeignKey --> FK4["40. ValidateForeignKey_ShouldSupportCompositeReference✅"]
-
-%% ==========================
-%% Check Tests
-%% ==========================
-
-Check --> CH1["41. ValidateCheck_ShouldAcceptMatchingRow✅"]
-Check --> CH2["42. ValidateCheck_ShouldRejectNonMatchingRow✅"]
-Check --> CH3["43. ValidateCheck_ShouldRejectMissingPredicate✅"]
-Check --> CH4["44. Validate_ShouldDispatchToCheckValidation✅"]
-
-%% ==========================
-%% Definition Tests
-%% ==========================
-
-Definition --> DF1["45. IsValidDefinition_ShouldAcceptPrimaryKey✅"]
-Definition --> DF2["46. IsValidDefinition_ShouldAcceptUniqueConstraint✅"]
-Definition --> DF3["47. IsValidDefinition_ShouldAcceptNotNullConstraint✅"]
-Definition --> DF4["48. IsValidDefinition_ShouldAcceptConfiguredForeignKey✅"]
-Definition --> DF5["49. IsValidDefinition_ShouldRejectIncompleteForeignKey✅"]
-Definition --> DF6["50. IsValidDefinition_ShouldAcceptConfiguredCheck✅"]
-Definition --> DF7["51. IsValidDefinition_ShouldRejectIncompleteCheck✅"]
-
-```
-
-## Test count
+# 4. SchemaTests
 
 ```text
-Constructor:      8
-Metadata:        10
-State:            5
-Primary Key:      5
-Unique:           4
-Not Null:         4
-Foreign Key:      4
-Check:            4
-Definition:       7
--------------------
-Total:           51
-```
-# 8. Constraint Testing Roadmap (51 tests)  ❌
-
-```mermaid
-graph LR
-
-CT["Constraint Testing — 65 tests"]
-
-CT --> Builder
-CT --> Factory
-CT --> Definition
-CT --> Composite
-CT --> Prototype
-
-Builder --> BuilderCreation
-BuilderCreation --> T1["1. builder_ShouldCreateBuilder"]
-BuilderCreation --> T2["2. constructor_ShouldCreateBuilder"]
-BuilderCreation --> T3["3. builder_ShouldReturnNewBuilderEachTime"]
-
-Builder --> RequiredFieldBuilder
-RequiredFieldBuilder --> T4["4. name_ShouldStoreConstraintName"]
-RequiredFieldBuilder --> T5["5. type_ShouldStoreConstraintType"]
-RequiredFieldBuilder --> T6["6. tableId_ShouldStoreTableId"]
-RequiredFieldBuilder --> T7["7. columnIds_ShouldStoreColumnIds"]
-RequiredFieldBuilder --> T8["8. build_ShouldCreateConstraintDefinition"]
-RequiredFieldBuilder --> T9["9. build_ShouldPreserveRequiredFields"]
-RequiredFieldBuilder --> T10["10. build_ShouldRejectNullName"]
-RequiredFieldBuilder --> T11["11. build_ShouldRejectBlankName"]
-RequiredFieldBuilder --> T12["12. build_ShouldRejectNullType"]
-RequiredFieldBuilder --> T13["13. build_ShouldRejectNullTableId"]
-RequiredFieldBuilder --> T14["14. build_ShouldRejectNullColumnIds"]
-RequiredFieldBuilder --> T15["15. build_ShouldRejectEmptyColumnIds"]
-RequiredFieldBuilder --> T16["16. build_ShouldProtectColumnIdsFromExternalMutation"]
-
-Builder --> ForeignKeyBuilder
-ForeignKeyBuilder --> T17["17. referencedTableId_ShouldStoreReferencedTableId"]
-ForeignKeyBuilder --> T18["18. referencedColumnIds_ShouldStoreReferencedColumnIds"]
-ForeignKeyBuilder --> T19["19. buildForeignKey_ShouldCreateValidDefinition"]
-ForeignKeyBuilder --> T20["20. buildForeignKey_ShouldRejectMissingReferencedTableId"]
-ForeignKeyBuilder --> T21["21. buildForeignKey_ShouldRejectMissingReferencedColumnIds"]
-ForeignKeyBuilder --> T22["22. buildForeignKey_ShouldRejectEmptyReferencedColumnIds"]
-ForeignKeyBuilder --> T23["23. buildForeignKey_ShouldRejectMismatchedColumnCount"]
-ForeignKeyBuilder --> T24["24. buildForeignKey_ShouldProtectReferencedColumnIds"]
-
-Builder --> CheckBuilder
-CheckBuilder --> T25["25. expression_ShouldStoreCheckExpression"]
-CheckBuilder --> T26["26. buildCheck_ShouldCreateValidDefinition"]
-CheckBuilder --> T27["27. buildCheck_ShouldRejectNullExpression"]
-CheckBuilder --> T28["28. buildCheck_ShouldRejectBlankExpression"]
-CheckBuilder --> T29["29. buildNonCheck_ShouldIgnoreMissingExpression"]
-
-Factory --> Factory
-Factory --> T30["30. factory_ShouldCreatePrimaryKeyConstraint"]
-Factory --> T31["31. factory_ShouldCreateUniqueConstraint"]
-Factory --> T32["32. factory_ShouldCreateNotNullConstraint"]
-Factory --> T33["33. factory_ShouldCreateForeignKeyConstraint"]
-Factory --> T34["34. factory_ShouldCreateCheckConstraint"]
-Factory --> T35["35. factory_ShouldReturnConstraintWithDefinitionName"]
-Factory --> T36["36. factory_ShouldReturnConstraintWithTableId"]
-Factory --> T37["37. factory_ShouldReturnConstraintWithColumnIds"]
-Factory --> T38["38. factory_ShouldRejectNullDefinition"]
-Factory --> T39["39. factory_ShouldRejectUnsupportedConstraintType"]
-
-Definition --> PrimaryKeyDefinition
-PrimaryKeyDefinition --> T40["40. primaryKey_ShouldReturnPrimaryKeyType"]
-PrimaryKeyDefinition --> T41["41. primaryKey_ShouldValidateCompleteDefinition"]
-PrimaryKeyDefinition --> T42["42. primaryKey_ShouldSupportCompositeColumns"]
-
-Definition --> UniqueDefinition
-UniqueDefinition --> T43["43. unique_ShouldReturnUniqueType"]
-UniqueDefinition --> T44["44. unique_ShouldValidateCompleteDefinition"]
-UniqueDefinition --> T45["45. unique_ShouldSupportCompositeColumns"]
-
-Definition --> NotNullDefinition
-NotNullDefinition --> T46["46. notNull_ShouldReturnNotNullType"]
-NotNullDefinition --> T47["47. notNull_ShouldValidateSingleColumnDefinition"]
-NotNullDefinition --> T48["48. notNull_ShouldRejectMultipleColumns"]
-
-Definition --> ForeignKeyDefinition
-ForeignKeyDefinition --> T49["49. foreignKey_ShouldReturnForeignKeyType"]
-ForeignKeyDefinition --> T50["50. foreignKey_ShouldValidateCompleteDefinition"]
-ForeignKeyDefinition --> T51["51. foreignKey_ShouldExposeReferencedTableId"]
-ForeignKeyDefinition --> T52["52. foreignKey_ShouldExposeReferencedColumnIds"]
-
-Definition --> CheckDefinition
-CheckDefinition --> T53["53. check_ShouldReturnCheckType"]
-CheckDefinition --> T54["54. check_ShouldValidateCompleteDefinition"]
-CheckDefinition --> T55["55. check_ShouldExposeExpression"]
-
-Composite --> MetadataComposite
-MetadataComposite --> T56["56. constraint_ShouldReturnConstraintMetadataType"]
-MetadataComposite --> T57["57. constraint_ShouldBeLeafMetadataComponent"]
-MetadataComposite --> T58["58. constraint_ShouldReturnEmptyChildren"]
-MetadataComposite --> T59["59. constraint_ShouldRejectAddChild"]
-MetadataComposite --> T60["60. constraint_ShouldRejectRemoveChild"]
-
-Prototype --> Prototype
-Prototype --> T61["61. copyAs_ShouldCreateDifferentConstraintInstance"]
-Prototype --> T62["62. copyAs_ShouldGenerateDifferentConstraintId"]
-Prototype --> T63["63. copyAs_ShouldPreserveConstraintName"]
-Prototype --> T64["64. copyAs_ShouldPreserveConstraintType"]
-Prototype --> T65["65. copyAs_ShouldPreserveDefinitionData"]
+Constructor_ShouldCreateSchema
+Constructor_ShouldGenerateSchemaId
+Constructor_ShouldGenerateUniqueSchemaIds
+Constructor_ShouldInitializeDatabaseId
+Constructor_ShouldInitializeOwnerId
+Constructor_ShouldInitializeEmptyTableCollection
+Constructor_ShouldInitializeEmptyViewCollection
+Constructor_ShouldRejectNullName
+Constructor_ShouldRejectEmptyName
+Constructor_ShouldRejectBlankName
+Constructor_ShouldRejectNullDatabaseId
+Constructor_ShouldRejectNullOwnerId
+GetName_ShouldReturnSchemaName
+Rename_ShouldChangeSchemaName
+Rename_ShouldRejectNullName
+Rename_ShouldRejectEmptyName
+Rename_ShouldRejectBlankName
+AddTable_ShouldRegisterTable
+AddTable_ShouldIncreaseTableCount
+AddTable_ShouldRegisterMultipleTables
+AddTable_ShouldRejectNullTable
+AddTable_ShouldRejectDuplicateTableName
+GetTable_ShouldReturnExistingTable
+GetTable_ShouldReturnNullForMissingTable
+ContainsTable_ShouldReturnTrueForExistingTable
+ContainsTable_ShouldReturnFalseForMissingTable
+RemoveTable_ShouldRemoveExistingTable
+RemoveTable_ShouldDecreaseTableCount
+RemoveTable_ShouldReturnNullForMissingTable
+GetTables_ShouldReturnUnmodifiableCollection
+GetTables_ShouldProtectInternalCollection
+AddView_ShouldRegisterView
+AddView_ShouldIncreaseViewCount
+AddView_ShouldRegisterMultipleViews
+AddView_ShouldRejectNullView
+AddView_ShouldRejectDuplicateViewName
+GetView_ShouldReturnExistingView
+GetView_ShouldReturnNullForMissingView
+ContainsView_ShouldReturnTrueForExistingView
+ContainsView_ShouldReturnFalseForMissingView
+RemoveView_ShouldRemoveExistingView
+RemoveView_ShouldDecreaseViewCount
+RemoveView_ShouldReturnNullForMissingView
+GetViews_ShouldReturnUnmodifiableCollection
+GetViews_ShouldProtectInternalCollection
+IsEmpty_ShouldReturnTrueForNewSchema
+IsEmpty_ShouldReturnFalseWhenTableExists
+IsEmpty_ShouldReturnFalseWhenViewExists
+GetTableCount_ShouldReturnCorrectCount
+GetViewCount_ShouldReturnCorrectCount
+IsEmpty_ShouldReturnTrueAfterRemovingAllObjects
+GetDatabaseId_ShouldReturnDatabaseId
+SetDatabaseId_ShouldUpdateDatabaseId
+SetDatabaseId_ShouldRejectNullDatabaseId
+GetOwnerId_ShouldReturnOwnerId
+SetOwnerId_ShouldUpdateOwnerId
+SetOwnerId_ShouldRejectNullOwnerId
+AddTable_ShouldNotModifyCollectionWhenDuplicateRejected
+AddView_ShouldNotModifyCollectionWhenDuplicateRejected
+RemoveTable_ShouldPreserveCollectionWhenTableMissing
+RemoveView_ShouldPreserveCollectionWhenViewMissing
+ConcurrentTableReads_ShouldReturnConsistentResult
+ConcurrentViewReads_ShouldReturnConsistentResult
+ConcurrentTableCreation_ShouldPreventDuplicateTable
+ConcurrentViewCreation_ShouldPreventDuplicateView
+SchemaTableIntegration_ShouldMaintainRelationship
+SchemaViewIntegration_ShouldMaintainRelationship
+SchemaObjectsIntegration_ShouldManageCollectionsIndependently
 ```
 
-## Test count
+# 5. TableTests
 
 ```text
-Constructor:      8
-Metadata:        10
-State:            5
-Primary Key:      5
-Unique:           4
-Not Null:         4
-Foreign Key:      4
-Check:            4
-Definition:       7
--------------------
-Total:           51
+constructor_ShouldCreateTable
+constructor_ShouldGenerateTableId
+constructor_ShouldGenerateUniqueTableIds
+constructor_ShouldInitializeSchemaId
+constructor_ShouldInitializeEmptyColumns
+constructor_ShouldInitializeEmptyRows
+constructor_ShouldInitializeEmptyConstraints
+constructor_ShouldInitializeEmptyIndexes
+getName_ShouldReturnTableName
+rename_ShouldChangeTableName
+rename_ShouldRejectNullName
+rename_ShouldRejectBlankName
+addColumn_ShouldRegisterColumn
+addColumn_ShouldIncreaseColumnCount
+addColumn_ShouldRejectNullColumn
+addColumn_ShouldRejectDuplicateColumnName
+getColumn_ShouldReturnExistingColumn
+getColumn_ShouldReturnNullForMissingColumn
+containsColumn_ShouldReturnTrueForExistingColumn
+containsColumn_ShouldReturnFalseForMissingColumn
+removeColumn_ShouldRemoveExistingColumn
+removeColumn_ShouldReturnNullForMissingColumn
+getColumns_ShouldReturnUnmodifiableCollection
+insertRow_ShouldInsertRow
+insertRow_ShouldIncreaseRowCount
+insertRow_ShouldRejectNullRow
+getRow_ShouldReturnExistingRow
+getRow_ShouldReturnNullForMissingRow
+updateRow_ShouldReplaceExistingRow
+updateRow_ShouldReturnNullForMissingRow
+deleteRow_ShouldRemoveExistingRow
+deleteRow_ShouldDecreaseRowCount
+deleteRow_ShouldReturnNullForMissingRow
+truncate_ShouldRemoveAllRows
+getRows_ShouldReturnUnmodifiableCollection
+addConstraint_ShouldRegisterConstraint
+addConstraint_ShouldRejectNullConstraint
+addConstraint_ShouldRejectDuplicateConstraintName
+getConstraint_ShouldReturnExistingConstraint
+removeConstraint_ShouldRemoveExistingConstraint
+getConstraints_ShouldReturnUnmodifiableCollection
+addIndex_ShouldRegisterIndex
+addIndex_ShouldRejectNullIndex
+addIndex_ShouldRejectDuplicateIndexName
+getIndex_ShouldReturnExistingIndex
+removeIndex_ShouldRemoveExistingIndex
+getIndexes_ShouldReturnUnmodifiableCollection
+isEmpty_ShouldReturnTrueForNewTable
+isEmpty_ShouldReturnFalseWhenRowExists
+getRowCount_ShouldReturnCorrectCount
+getColumnCount_ShouldReturnCorrectCount
+getConstraintCount_ShouldReturnCorrectCount
+getIndexCount_ShouldReturnCorrectCount
 ```
-# 9. Index Testing Roadmap 
-```mermaid
-graph LR
 
-IX["Index Testing — 49 tests"]
-
-IX --> Design
-IX --> Constructor
-IX --> Functional
-IX --> Validation
-IX --> Exception
-
-Design --> D1["IndexTests"]
-Design --> D2["JUnit 5 Test Fixture"]
-Design --> D3["Nested Test Groups"]
-Design --> D4["Reusable Index Fixture"]
-Design --> D5["Reusable UUID Test Data"]
-
-Functional --> Metadata
-Functional --> State
-Functional --> Insert
-Functional --> Search
-Functional --> Delete
-Functional --> Collection
-
-%% ==========================
-%% Constructor Tests
-%% ==========================
-
-Constructor --> C1["1. Constructor_ShouldCreateIndex"]
-Constructor --> C2["2. Constructor_ShouldGenerateIndexId"]
-Constructor --> C3["3. Constructor_ShouldGenerateUniqueIndexIds"]
-Constructor --> C4["4. Constructor_ShouldInitializeMetadata"]
-Constructor --> C5["5. Constructor_ShouldEnableIndexByDefault"]
-Constructor --> C6["6. Constructor_ShouldInitializeEmptyEntries"]
-Constructor --> C7["7. Constructor_ShouldRejectNullName"]
-Constructor --> C8["8. Constructor_ShouldRejectNullTableId"]
-Constructor --> C9["9. Constructor_ShouldRejectEmptyColumns"]
-Constructor --> C10["10. Constructor_ShouldRejectNullType"]
-
-%% ==========================
-%% Metadata Tests
-%% ==========================
-
-Metadata --> M1["11. Rename_ShouldChangeIndexName ✅"]
-Metadata --> M2["12. Rename_ShouldRejectNullName ✅"]
-Metadata --> M3["13. Rename_ShouldRejectBlankName ✅"]
-Metadata --> M4["14. GetColumnNames_ShouldReturnUnmodifiableList✅"]
-Metadata --> M5["15. IsValidDefinition_ShouldReturnTrueForValidIndex✅"]
-
-%% ==========================
-%% State Tests
-%% ==========================
-
-State --> S1["16. Disable_ShouldDisableIndex"]
-State --> S2["17. Enable_ShouldEnableIndex"]
-State --> S3["18. Disable_ShouldBeIdempotent"]
-State --> S4["19. Enable_ShouldBeIdempotent"]
-State --> S5["20. Insert_ShouldRejectWhenDisabled"]
-State --> S6["21. Delete_ShouldRejectWhenDisabled"]
-State --> S7["22. Search_ShouldStillWorkWhenDisabled"]
-
-%% ==========================
-%% Insert Tests
-%% ==========================
-
-Insert --> I1["23. Insert_ShouldStoreKeyAndRowId"]
-Insert --> I2["24. Insert_ShouldIncreaseKeyCount"]
-Insert --> I3["25. Insert_ShouldIncreaseEntryCount"]
-Insert --> I4["26. Insert_ShouldRejectNullKey"]
-Insert --> I5["27. Insert_ShouldRejectNullRowId"]
-Insert --> I6["28. Insert_ShouldAvoidDuplicateRowIdForSameKey"]
-Insert --> I7["29. Insert_ShouldAllowMultipleRowsForNonUniqueIndex"]
-Insert --> I8["30. Insert_ShouldRejectDuplicateKeyForUniqueIndex"]
-
-%% ==========================
-%% Search Tests
-%% ==========================
-
-Search --> SE1["31. Search_ShouldReturnMatchingRowIds"]
-Search --> SE2["32. Search_ShouldReturnEmptyListForMissingKey"]
-Search --> SE3["33. Search_ShouldRejectNullKey"]
-Search --> SE4["34. Search_ShouldReturnUnmodifiableList"]
-Search --> SE5["35. ContainsKey_ShouldReturnTrueForExistingKey"]
-Search --> SE6["36. ContainsKey_ShouldReturnFalseForMissingKey"]
-
-%% ==========================
-%% Delete Tests
-%% ==========================
-
-Delete --> D1["37. Delete_ShouldRemoveSpecificRowId"]
-Delete --> D2["38. Delete_ShouldReturnFalseForMissingRowId"]
-Delete --> D3["39. Delete_ShouldReturnFalseForMissingKey"]
-Delete --> D4["40. Delete_ShouldRemoveKeyWhenLastRowIdIsDeleted"]
-Delete --> D5["41. DeleteKey_ShouldRemoveEntireKey"]
-Delete --> D6["42. DeleteKey_ShouldReturnFalseForMissingKey"]
-
-%% ==========================
-%% Collection Tests
-%% ==========================
-
-Collection --> CO1["43. Clear_ShouldRemoveAllEntries"]
-Collection --> CO2["44. GetEntries_ShouldReturnUnmodifiableMap"]
-Collection --> CO3["45. GetEntries_ShouldProtectNestedLists"]
-Collection --> CO4["46. IsEmpty_ShouldReturnTrueForNewIndex"]
-Collection --> CO5["47. IsEmpty_ShouldReturnFalseAfterInsert"]
-Collection --> CO6["48. GetKeyCount_ShouldReturnCorrectCount"]
-Collection --> CO7["49. GetEntryCount_ShouldReturnCorrectCount"]
-
-```
-## Test count
+# 6. ColumnTests
 
 ```text
-Constructor: 10
-Metadata:     5
-State:        7
-Insert:       8
-Search:       6
-Delete:       6
-Collection:   7
---------------
-Total:       49
+Constructor_ShouldCreateColumn
+Constructor_ShouldGenerateColumnId
+Constructor_ShouldGenerateUniqueColumnIds
+Constructor_ShouldInitializeNameAndType
+Constructor_ShouldInitializeNullableAsTrue
+Constructor_ShouldInitializeDefaultPosition
+Constructor_ShouldInitializeIdentityAsFalse
+Constructor_ShouldRejectInvalidName
+Constructor_ShouldRejectNullDataType
+Rename_ShouldChangeColumnName
+Rename_ShouldRejectInvalidName
+SetDataType_ShouldChangeDataType
+SetDataType_ShouldRejectNull
+SetNullable_ShouldChangeNullableState
+SetPosition_ShouldChangePosition
+SetPosition_ShouldRejectNegativePosition
+SetLength_ShouldStorePositiveLength
+SetLength_ShouldAllowNull
+SetLength_ShouldRejectZero
+SetLength_ShouldRejectNegativeLength
+ValidateValue_ShouldRejectStringLongerThanLength
+SetPrecision_ShouldStorePositivePrecision
+SetPrecision_ShouldRejectInvalidPrecision
+SetScale_ShouldStoreNonNegativeScale
+SetScale_ShouldRejectNegativeScale
+SetScale_ShouldRejectScaleGreaterThanPrecision
+SetPrecision_ShouldRejectPrecisionBelowExistingScale
+SetDefaultValue_ShouldStoreCompatibleValue
+SetDefaultValue_ShouldAllowNull
+SetDefaultValue_ShouldRejectIncompatibleValue
+ValidateValue_ShouldAcceptCompatibleValue
+ValidateValue_ShouldAllowNullWhenNullable
+ValidateValue_ShouldRejectNullWhenNotNullable
+ValidateValue_ShouldRejectIncompatibleValue
+ResolveValue_ShouldReturnSuppliedValue
+ResolveValue_ShouldUseDefaultValue
+ResolveValue_ShouldReturnNullWhenNullable
+ResolveValue_ShouldRejectMissingRequiredValue
+SetIdentity_ShouldEnableIdentity
+GenerateNextIdentityValue_ShouldReturnCurrentValue
+GenerateNextIdentityValue_ShouldIncrementCounter
+GenerateNextIdentityValue_ShouldGenerateSequentialValues
+GenerateNextIdentityValue_ShouldRejectNonIdentityColumn
+SetNextIdentityValue_ShouldChangeCounter
+SetNextIdentityValue_ShouldRejectInvalidValue
+ResolveValue_ShouldGenerateIdentityWhenValueMissing
+ResolveValue_ShouldPreferSuppliedValueOverIdentity
+IsValidDefinition_ShouldReturnTrueForValidColumn
+IsValidDefinition_ShouldRemainValidWithLength
+IsValidDefinition_ShouldRemainValidWithPrecisionAndScale
+Equals_ShouldReturnTrueForSameInstance
+Equals_ShouldReturnFalseForDifferentColumns
+Equals_ShouldReturnFalseForNull
+HashCode_ShouldRemainStable
 ```
 
-# 10. BTreeIndex Testing Roadmap
-```mermaid
-graph LR
-
-BT[BTreeIndex Testing]
-
-BT --> Design
-BT --> Constructor
-BT --> Functional
-BT --> Validation
-BT --> Exception
-BT --> Concurrency
-BT --> Performance
-BT --> Integration
-
-Design --> BTreeIndexTests
-Design --> TestFixture
-Design --> MockObjects
-
-Constructor --> CreateBTree
-
-Functional --> Insert
-Functional --> Delete
-Functional --> Search
-Functional --> Split
-Functional --> Merge
-Functional --> BorrowFromSibling
-Functional --> Rebalance
-Functional --> RangeScan
-
-Validation --> TreeHeight
-Validation --> NodeOrder
-Validation --> KeyOrdering
-
-Exception --> DuplicateKey
-Exception --> CorruptedNode
-
-Concurrency --> ConcurrentInsert
-Concurrency --> ConcurrentSearch
-
-Performance --> SearchPerformance
-Performance --> InsertPerformance
-
-Integration --> Page
-Integration --> BufferPool
-Integration --> StorageEngine
-```
-
-# 11. HashIndex Testing Roadmap
-```mermaid
-graph LR
-
-HI[HashIndex Testing]
-
-HI --> Design
-HI --> Constructor
-HI --> Functional
-HI --> Validation
-HI --> Exception
-HI --> Concurrency
-HI --> Performance
-HI --> Integration
-
-Design --> HashIndexTests
-Design --> TestFixture
-Design --> MockObjects
-
-Constructor --> CreateHashIndex
-
-Functional --> Insert
-Functional --> Delete
-Functional --> Lookup
-Functional --> SplitBucket
-Functional --> Expand
-
-Validation --> BucketState
-Validation --> HashValue
-
-Exception --> BucketOverflow
-Exception --> InvalidHash
-
-Concurrency --> ConcurrentLookup
-Concurrency --> ConcurrentInsert
-
-Performance --> LookupPerformance
-Performance --> ExpansionPerformance
-
-Integration --> StorageEngine
-Integration --> Page
-Integration --> BufferPool
-```
-
-
-# 12. View Testing Roadmap ⚪
-```mermaid
-graph LR
-
-VW["View Testing — 47 tests"]
-
-VW --> Design
-VW --> Constructor
-VW --> Functional
-VW --> Validation
-VW --> Exception
-
-%% ==========================
-%% Test Design
-%% ==========================
-
-Design --> D1["ViewTests✅"]
-Design --> D2["JUnit 5 Test Fixture✅"]
-Design --> D3["Nested Test Groups✅"]
-Design --> D4["Reusable UUID Test Data✅"]
-
-%% ==========================
-%% Functional Groups
-%% ==========================
-
-Functional --> Name
-Functional --> Definition
-Functional --> Dependency
-Functional --> DependencyValidation
-Functional --> MaterializedView
-Functional --> ValidityState
-Functional --> Metadata
-
-%% ==========================
-%% Constructor Tests
-%% ==========================
-
-Constructor --> C1["1. Constructor_ShouldCreateView"]
-Constructor --> C2["2. Constructor_ShouldGenerateViewId"]
-Constructor --> C3["3. Constructor_ShouldGenerateUniqueViewIds"]
-Constructor --> C4["4. Constructor_ShouldInitializeSchemaId"]
-Constructor --> C5["5. Constructor_ShouldInitializeDefinition"]
-Constructor --> C6["6. Constructor_ShouldInitializeEmptyDependencies"]
-Constructor --> C7["7. Constructor_ShouldCreateNonMaterializedViewByDefault"]
-Constructor --> C8["8. Constructor_ShouldInitializeValidState"]
-
-%% ==========================
-%% Name Tests
-%% ==========================
-
-Name --> N1["9. GetName_ShouldReturnViewName"]
-Name --> N2["10. Rename_ShouldChangeViewName"]
-Name --> N3["11. Rename_ShouldRejectNullName"]
-Name --> N4["12. Rename_ShouldRejectEmptyName"]
-Name --> N5["13. Rename_ShouldRejectBlankName"]
-
-%% ==========================
-%% Definition Tests
-%% ==========================
-
-Definition --> DF1["14. GetDefinition_ShouldReturnDefinition"]
-Definition --> DF2["15. UpdateDefinition_ShouldChangeDefinition"]
-Definition --> DF3["16. UpdateDefinition_ShouldRejectNullDefinition"]
-Definition --> DF4["17. UpdateDefinition_ShouldRejectEmptyDefinition"]
-Definition --> DF5["18. UpdateDefinition_ShouldRejectBlankDefinition"]
-Definition --> DF6["19. ValidateDefinition_ShouldAcceptValidSelectDefinition"]
-Definition --> DF7["20. ValidateDefinition_ShouldRejectInvalidDefinition"]
-
-%% ==========================
-%% Dependency Tests
-%% ==========================
-
-Dependency --> DP1["21. AddDependency_ShouldRegisterDependency"]
-Dependency --> DP2["22. AddDependency_ShouldIncreaseDependencyCount"]
-Dependency --> DP3["23. AddDependency_ShouldRejectNullDependencyId"]
-Dependency --> DP4["24. AddDependency_ShouldIgnoreDuplicateDependency"]
-Dependency --> DP5["25. ContainsDependency_ShouldReturnTrueForExistingDependency"]
-Dependency --> DP6["26. ContainsDependency_ShouldReturnFalseForMissingDependency"]
-Dependency --> DP7["27. RemoveDependency_ShouldRemoveExistingDependency"]
-Dependency --> DP8["28. RemoveDependency_ShouldReturnFalseForMissingDependency"]
-Dependency --> DP9["29. GetDependencyIds_ShouldReturnUnmodifiableSet"]
-Dependency --> DP10["30. HasDependencies_ShouldReturnFalseForNewView"]
-Dependency --> DP11["31. HasDependencies_ShouldReturnTrueWhenDependencyExists"]
-
-%% ==========================
-%% DependencyValidation Tests
-%% ==========================
-
-DependencyValidation --> DV1["32. ValidateDependencies_ShouldReturnTrueWhenAllDependenciesExist"]
-DependencyValidation --> DV2["33. ValidateDependencies_ShouldReturnFalseWhenDependencyIsMissing"]
-DependencyValidation --> DV3["34. ValidateDependencies_ShouldAcceptEmptyDependencyCollection"]
-DependencyValidation --> DV4["35. HasCircularDependency_ShouldReturnTrueForCycle"]
-DependencyValidation --> DV5["36. HasCircularDependency_ShouldReturnFalseWithoutCycle"]
-
-%% ==========================
-%% MaterializedView Tests
-%% ==========================
-
-MaterializedView --> MV1["37. SetMaterialized_ShouldEnableMaterializedMode"]
-MaterializedView --> MV2["38. SetMaterialized_ShouldDisableMaterializedMode"]
-MaterializedView --> MV3["39. Refresh_ShouldRefreshMaterializedView"]
-MaterializedView --> MV4["40. Refresh_ShouldRejectNonMaterializedView"]
-
-%% ==========================
-%% ValidityState Tests
-%% ==========================
-
-ValidityState --> VS1["41. Invalidate_ShouldSetValidToFalse"]
-ValidityState --> VS2["42. Validate_ShouldSetValidToTrue"]
-ValidityState --> VS3["43. Invalidate_ShouldBeIdempotent"]
-ValidityState --> VS4["44. Validate_ShouldBeIdempotent"]
-
-%% ==========================
-%% Metadata Tests
-%% ==========================
-
-Metadata --> M1["45. GetSchemaId_ShouldReturnSchemaId"]
-Metadata --> M2["46. SetSchemaId_ShouldUpdateSchemaId"]
-Metadata --> M3["47. SetSchemaId_ShouldRejectNullSchemaId"]
-
-```
-
-## Test count
+# 7. ConstraintTests
 
 ```text
-Constructor:             8
-Name:                    5
-Definition:              7
-Dependency:             11
-Dependency Validation:   5
-Materialized View:       4
-Validity State:          4
-Metadata:                3
---------------------------
-Total:                  47
+Constructor_ShouldCreateConstraint
+Constructor_ShouldGenerateConstraintId
+Constructor_ShouldGenerateUniqueConstraintIds
+Constructor_ShouldInitializeMetadata
+Constructor_ShouldEnableConstraintByDefault
+Constructor_ShouldRejectInvalidName
+Constructor_ShouldRejectNullType
+Constructor_ShouldRejectEmptyColumns
+Rename_ShouldChangeConstraintName
+Rename_ShouldRejectInvalidName
+GetColumnNames_ShouldReturnUnmodifiableList
+SetReferencedTableId_ShouldStoreId
+SetReferencedTableId_ShouldRejectNull
+SetReferencedColumnNames_ShouldStoreColumns
+GetReferencedColumnNames_ShouldBeUnmodifiable
+SetCheckExpression_ShouldStoreExpression
+SetCheckExpression_ShouldRejectBlankExpression
+SetCheckPredicate_ShouldRejectNull
+Disable_ShouldDisableConstraint
+Enable_ShouldEnableConstraint
+Disable_ShouldBeIdempotent
+Enable_ShouldBeIdempotent
+DisabledConstraint_ShouldAlwaysPassValidation
+ValidatePrimaryKey_ShouldAcceptUniqueNonNullValue
+ValidatePrimaryKey_ShouldRejectNullValue
+ValidatePrimaryKey_ShouldRejectDuplicateValue
+ValidatePrimaryKey_ShouldSupportCompositeKey
+ValidatePrimaryKey_ShouldRejectNullExistingKeys
+ValidateUnique_ShouldAcceptUniqueValue
+ValidateUnique_ShouldRejectDuplicateValue
+ValidateUnique_ShouldAllowNullValue
+ValidateUnique_ShouldSupportCompositeValue
+ValidateNotNull_ShouldAcceptNonNullValue
+ValidateNotNull_ShouldRejectNullValue
+ValidateNotNull_ShouldCheckAllColumns
+Validate_ShouldDispatchToNotNullValidation
+ValidateForeignKey_ShouldAcceptExistingReference
+ValidateForeignKey_ShouldRejectMissingReference
+ValidateForeignKey_ShouldAllowNullValue
+ValidateForeignKey_ShouldSupportCompositeReference
+ValidateCheck_ShouldAcceptMatchingRow
+ValidateCheck_ShouldRejectNonMatchingRow
+ValidateCheck_ShouldRejectMissingPredicate
+Validate_ShouldDispatchToCheckValidation
+IsValidDefinition_ShouldAcceptPrimaryKey
+IsValidDefinition_ShouldAcceptUniqueConstraint
+IsValidDefinition_ShouldAcceptNotNullConstraint
+IsValidDefinition_ShouldAcceptConfiguredForeignKey
+IsValidDefinition_ShouldRejectIncompleteForeignKey
+IsValidDefinition_ShouldAcceptConfiguredCheck
+IsValidDefinition_ShouldRejectIncompleteCheck
 ```
 
-# 13. Storage Engine Testing Roadmap (25 tests)
-
-```mermaid
-graph LR
-
-SE["Storage Engine Testing — 25 tests"]
-
-SE --> Design
-SE --> Constructor
-SE --> Functional
-SE --> Validation
-SE --> Exception
-SE --> Integration
-
-%% ==========================
-%% Test Design
-%% ==========================
-
-Design --> D1["StorageEngineTests"]
-Design --> D2["JUnit 5 Test Fixture"]
-Design --> D3["Nested Test Groups"]
-Design --> D4["Reusable StorageEngine Fixture"]
-Design --> D5["Reusable Page Data"]
-
-%% ==========================
-%% Functional Groups
-%% ==========================
-
-Functional --> Lifecycle
-Functional --> PageOperations
-Functional --> CollectionSafety
-
-%% ==========================
-%% Constructor Tests
-%% ==========================
-
-Constructor --> C1["1. Constructor_ShouldCreateStorageEngine"]
-Constructor --> C2["2. Constructor_ShouldGenerateStorageEngineId"]
-Constructor --> C3["3. Constructor_ShouldGenerateUniqueStorageEngineIds"]
-Constructor --> C4["4. Constructor_ShouldInitializeClosedState"]
-Constructor --> C5["5. Constructor_ShouldInitializeEmptyPageCollection"]
-
-%% ==========================
-%% Lifecycle Tests
-%% ==========================
-
-Lifecycle --> L1["6. Open_ShouldChangeStateToOpen"]
-Lifecycle --> L2["7. Open_ShouldBeIdempotent"]
-Lifecycle --> L3["8. Close_ShouldChangeStateToClosed"]
-Lifecycle --> L4["9. Close_ShouldBeIdempotent"]
-Lifecycle --> L5["10. Open_ShouldReopenClosedStorageEngine"]
-
-%% ==========================
-%% PageOperations Tests
-%% ==========================
-
-PageOperations --> P1["11. AllocatePage_ShouldCreatePage"]
-PageOperations --> P2["12. AllocatePage_ShouldGenerateSequentialPageIds"]
-PageOperations --> P3["13. AllocatePage_ShouldRejectWhenClosed"]
-PageOperations --> P4["14. WritePage_ShouldStorePageData"]
-PageOperations --> P5["15. WritePage_ShouldReplaceExistingData"]
-PageOperations --> P6["16. WritePage_ShouldRejectNullData"]
-PageOperations --> P7["17. WritePage_ShouldRejectMissingPage"]
-PageOperations --> P8["18. ReadPage_ShouldReturnCopy"]
-PageOperations --> P9["19. ReadPage_ShouldRejectMissingPage"]
-PageOperations --> P10["20. DeletePage_ShouldRemoveExistingPage"]
-PageOperations --> P11["21. DeletePage_ShouldReturnFalseForMissingPage"]
-
-%% ==========================
-%% CollectionSafety Tests
-%% ==========================
-
-CollectionSafety --> CS1["22. GetPages_ShouldReturnUnmodifiableMap"]
-CollectionSafety --> CS2["23. GetPages_ShouldProtectNestedByteArrays"]
-CollectionSafety --> CS3["24. Clear_ShouldRemoveAllPages"]
-CollectionSafety --> CS4["25. Clear_ShouldRejectWhenClosed"]
-
-```
-
-# 14. DiskManager Testing Roadmap (26 tests)
-
-```mermaid
-graph LR
-
-ROOT["DiskManager Testing — 26 tests"]
-
-ROOT --> Design
-ROOT --> Constructor
-ROOT --> Functional
-ROOT --> Validation
-ROOT --> Exception
-
-Design --> D1["DiskManagerTests"]
-Design --> D2["JUnit 5 Test Fixture"]
-Design --> D3["Nested Test Groups"]
-
-Functional --> Lifecycle
-Functional --> Allocation
-Functional --> Write
-Functional --> Read
-Functional --> Deallocation
-Functional --> CollectionSafety
-
-Constructor --> CO1["1. Constructor_ShouldCreateDiskManager"]
-Constructor --> CO2["2. Constructor_ShouldInitializeClosedState"]
-Constructor --> CO3["3. Constructor_ShouldInitializeEmptyStorage"]
-
-Lifecycle --> LI1["4. Open_ShouldOpenDiskManager"]
-Lifecycle --> LI2["5. Open_ShouldBeIdempotent"]
-Lifecycle --> LI3["6. Close_ShouldCloseDiskManager"]
-Lifecycle --> LI4["7. Close_ShouldBeIdempotent"]
-
-Allocation --> AL1["8. AllocatePage_ShouldCreatePage"]
-Allocation --> AL2["9. AllocatePage_ShouldGenerateSequentialIds"]
-Allocation --> AL3["10. AllocatePage_ShouldIncreasePageCount"]
-Allocation --> AL4["11. AllocatePage_ShouldRejectWhenClosed"]
-
-Write --> WR1["12. WritePage_ShouldStoreData"]
-Write --> WR2["13. WritePage_ShouldReplaceData"]
-Write --> WR3["14. WritePage_ShouldRejectNullData"]
-Write --> WR4["15. WritePage_ShouldRejectMissingPage"]
-Write --> WR5["16. WritePage_ShouldRejectWhenClosed"]
-
-Read --> RE1["17. ReadPage_ShouldReturnStoredData"]
-Read --> RE2["18. ReadPage_ShouldReturnDefensiveCopy"]
-Read --> RE3["19. ReadPage_ShouldRejectMissingPage"]
-Read --> RE4["20. ReadPage_ShouldRejectWhenClosed"]
-
-Deallocation --> DE1["21. DeallocatePage_ShouldRemoveExistingPage"]
-Deallocation --> DE2["22. DeallocatePage_ShouldReturnFalseForMissingPage"]
-Deallocation --> DE3["23. DeallocatePage_ShouldDecreasePageCount"]
-Deallocation --> DE4["24. DeallocatePage_ShouldRejectWhenClosed"]
-
-CollectionSafety --> CO1["25. GetPages_ShouldReturnUnmodifiableMap"]
-CollectionSafety --> CO2["26. GetPages_ShouldProtectNestedArrays"]
-
-Validation --> V1["State validation"]
-Validation --> V2["Page ID validation"]
-Validation --> V3["Page existence validation"]
-Validation --> V4["Data null validation"]
-
-Exception --> E1["IllegalArgumentException"]
-Exception --> E2["IllegalStateException"]
-Exception --> E3["UnsupportedOperationException"]
-```
-
-## Test count
+# 8. ConstraintTests
 
 ```text
-Constructor: 3
-Lifecycle: 4
-Allocation: 4
-Write: 5
-Read: 4
-Deallocation: 4
-CollectionSafety: 2
-Total: 26
+builder_ShouldCreateBuilder
+constructor_ShouldCreateBuilder
+builder_ShouldReturnNewBuilderEachTime
+name_ShouldStoreConstraintName
+type_ShouldStoreConstraintType
+tableId_ShouldStoreTableId
+columnIds_ShouldStoreColumnIds
+build_ShouldCreateConstraintDefinition
+build_ShouldPreserveRequiredFields
+build_ShouldRejectNullName
+build_ShouldRejectBlankName
+build_ShouldRejectNullType
+build_ShouldRejectNullTableId
+build_ShouldRejectNullColumnIds
+build_ShouldRejectEmptyColumnIds
+build_ShouldProtectColumnIdsFromExternalMutation
+referencedTableId_ShouldStoreReferencedTableId
+referencedColumnIds_ShouldStoreReferencedColumnIds
+buildForeignKey_ShouldCreateValidDefinition
+buildForeignKey_ShouldRejectMissingReferencedTableId
+buildForeignKey_ShouldRejectMissingReferencedColumnIds
+buildForeignKey_ShouldRejectEmptyReferencedColumnIds
+buildForeignKey_ShouldRejectMismatchedColumnCount
+buildForeignKey_ShouldProtectReferencedColumnIds
+expression_ShouldStoreCheckExpression
+buildCheck_ShouldCreateValidDefinition
+buildCheck_ShouldRejectNullExpression
+buildCheck_ShouldRejectBlankExpression
+buildNonCheck_ShouldIgnoreMissingExpression
+factory_ShouldCreatePrimaryKeyConstraint
+factory_ShouldCreateUniqueConstraint
+factory_ShouldCreateNotNullConstraint
+factory_ShouldCreateForeignKeyConstraint
+factory_ShouldCreateCheckConstraint
+factory_ShouldReturnConstraintWithDefinitionName
+factory_ShouldReturnConstraintWithTableId
+factory_ShouldReturnConstraintWithColumnIds
+factory_ShouldRejectNullDefinition
+factory_ShouldRejectUnsupportedConstraintType
+primaryKey_ShouldReturnPrimaryKeyType
+primaryKey_ShouldValidateCompleteDefinition
+primaryKey_ShouldSupportCompositeColumns
+unique_ShouldReturnUniqueType
+unique_ShouldValidateCompleteDefinition
+unique_ShouldSupportCompositeColumns
+notNull_ShouldReturnNotNullType
+notNull_ShouldValidateSingleColumnDefinition
+notNull_ShouldRejectMultipleColumns
+foreignKey_ShouldReturnForeignKeyType
+foreignKey_ShouldValidateCompleteDefinition
+foreignKey_ShouldExposeReferencedTableId
+foreignKey_ShouldExposeReferencedColumnIds
+check_ShouldReturnCheckType
+check_ShouldValidateCompleteDefinition
+check_ShouldExposeExpression
+constraint_ShouldReturnConstraintMetadataType
+constraint_ShouldBeLeafMetadataComponent
+constraint_ShouldReturnEmptyChildren
+constraint_ShouldRejectAddChild
+constraint_ShouldRejectRemoveChild
+copyAs_ShouldCreateDifferentConstraintInstance
+copyAs_ShouldGenerateDifferentConstraintId
+copyAs_ShouldPreserveConstraintName
+copyAs_ShouldPreserveConstraintType
+copyAs_ShouldPreserveDefinitionData
 ```
 
-# 15. BufferPool Testing Roadmap (29 tests)
-
-```mermaid
-graph LR
-
-ROOT["BufferPool Testing — 29 tests"]
-
-ROOT --> Design
-ROOT --> Constructor
-ROOT --> Functional
-ROOT --> Validation
-ROOT --> Exception
-
-Design --> D1["BufferPoolTests"]
-Design --> D2["JUnit 5 Test Fixture"]
-Design --> D3["Nested Test Groups"]
-
-Functional --> Fetch
-Functional --> Update
-Functional --> Flush
-Functional --> Eviction
-Functional --> CollectionSafety
-
-Constructor --> CO1["1. Constructor_ShouldCreateBufferPool"]
-Constructor --> CO2["2. Constructor_ShouldStoreCapacity"]
-Constructor --> CO3["3. Constructor_ShouldInitializeEmptyFrames"]
-Constructor --> CO4["4. Constructor_ShouldRejectInvalidCapacity"]
-Constructor --> CO5["5. Constructor_ShouldRejectNullDiskManager"]
-
-Fetch --> FE1["6. FetchPage_ShouldLoadPageFromDisk"]
-Fetch --> FE2["7. FetchPage_ShouldCacheLoadedPage"]
-Fetch --> FE3["8. FetchPage_ShouldReturnCachedPage"]
-Fetch --> FE4["9. FetchPage_ShouldReturnDefensiveCopy"]
-Fetch --> FE5["10. FetchPage_ShouldRejectInvalidPageId"]
-Fetch --> FE6["11. FetchPage_ShouldPropagateMissingPageError"]
-
-Update --> UP1["12. UpdatePage_ShouldUpdateCachedPage"]
-Update --> UP2["13. UpdatePage_ShouldFetchMissingCachedPage"]
-Update --> UP3["14. UpdatePage_ShouldMarkPageDirty"]
-Update --> UP4["15. UpdatePage_ShouldRejectNullData"]
-Update --> UP5["16. UpdatePage_ShouldRejectInvalidPageId"]
-
-Flush --> FL1["17. FlushPage_ShouldWriteDirtyPageToDisk"]
-Flush --> FL2["18. FlushPage_ShouldClearDirtyState"]
-Flush --> FL3["19. FlushPage_ShouldDoNothingForCleanPage"]
-Flush --> FL4["20. FlushPage_ShouldRejectMissingCachedPage"]
-Flush --> FL5["21. FlushAll_ShouldFlushEveryDirtyPage"]
-
-Eviction --> EV1["22. FetchPage_ShouldEvictEldestPageWhenFull"]
-Eviction --> EV2["23. FetchPage_ShouldRespectRecentAccessOrder"]
-Eviction --> EV3["24. Eviction_ShouldFlushDirtyPageBeforeRemoval"]
-Eviction --> EV4["25. EvictPage_ShouldRemoveSpecificPage"]
-Eviction --> EV5["26. EvictPage_ShouldReturnFalseForMissingPage"]
-
-CollectionSafety --> CO1["27. GetFrames_ShouldReturnUnmodifiableMap"]
-CollectionSafety --> CO2["28. GetFrames_ShouldProtectNestedArrays"]
-CollectionSafety --> CO3["29. Clear_ShouldFlushAndRemoveAllFrames"]
-
-Validation --> V1["State validation"]
-Validation --> V2["Page ID validation"]
-Validation --> V3["Page existence validation"]
-Validation --> V4["Data null validation"]
-
-Exception --> E1["IllegalArgumentException"]
-Exception --> E2["IllegalStateException"]
-Exception --> E3["UnsupportedOperationException"]
-```
-
-## Test count
+# 9. IndexTests
 
 ```text
-Constructor: 5
-Fetch: 6
-Update: 5
-Flush: 5
-Eviction: 5
-CollectionSafety: 3
-Total: 29
-```
-# 16. Parser Testing Roadmap (21 tests)
-
-```mermaid
-graph LR
-
-ROOT["Parser Testing — 21 tests"]
-
-ROOT --> Design
-ROOT --> Constructor
-ROOT --> Functional
-ROOT --> ValidationCoverage
-ROOT --> Exception
-
-Design --> D1["ParserTests"]
-Design --> D2["JUnit 5 Test Fixture"]
-Design --> D3["Nested Test Groups"]
-
-Functional --> Select
-Functional --> Insert
-Functional --> Update
-Functional --> Delete
-Functional --> Validation
-
-Constructor --> C1["1. Constructor_ShouldCreateParser"]
-
-Select --> S1["2. Parse_ShouldParseSelectStatement"]
-Select --> S2["3. ParseSelect_ShouldExtractTableName"]
-Select --> S3["4. ParseSelect_ShouldExtractColumns"]
-Select --> S4["5. ParseSelect_ShouldSupportWildcard"]
-Select --> S5["6. ParseSelect_ShouldNormalizeWhitespace"]
-Select --> S6["7. ParseSelect_ShouldRejectMissingFrom"]
-Select --> S7["8. ParseSelect_ShouldRejectMissingColumns"]
-Select --> S8["9. ParseSelect_ShouldRejectMissingTable"]
-
-Insert --> I1["10. Parse_ShouldParseInsertStatement"]
-Insert --> I2["11. ParseInsert_ShouldExtractTableName"]
-Insert --> I3["12. ParseInsert_ShouldExtractColumns"]
-
-Update --> U1["13. Parse_ShouldParseUpdateStatement"]
-Update --> U2["14. ParseUpdate_ShouldExtractTableName"]
-
-Delete --> D1["15. Parse_ShouldParseDeleteStatement"]
-Delete --> D2["16. ParseDelete_ShouldExtractTableName"]
-
-Validation --> V1["17. Parse_ShouldRejectNullSql"]
-Validation --> V2["18. Parse_ShouldRejectBlankSql"]
-Validation --> V3["19. Parse_ShouldRejectUnsupportedStatement"]
-Validation --> V4["20. GetColumns_ShouldReturnUnmodifiableList"]
-Validation --> V5["21. ParsedQuery_ShouldPreserveRawSql"]
-
-ValidationCoverage --> V1["Null input validation"]
-ValidationCoverage --> V2["Blank input validation"]
-ValidationCoverage --> V3["Missing object validation"]
-ValidationCoverage --> V4["Collection immutability"]
-
-Exception --> E1["IllegalArgumentException"]
-Exception --> E2["UnsupportedOperationException"]
+Constructor_ShouldCreateIndex
+Constructor_ShouldGenerateIndexId
+Constructor_ShouldGenerateUniqueIndexIds
+Constructor_ShouldInitializeMetadata
+Constructor_ShouldEnableIndexByDefault
+Constructor_ShouldInitializeEmptyEntries
+Constructor_ShouldRejectNullName
+Constructor_ShouldRejectNullTableId
+Constructor_ShouldRejectEmptyColumns
+Constructor_ShouldRejectNullType
+Rename_ShouldChangeIndexName
+Rename_ShouldRejectNullName
+Rename_ShouldRejectBlankName
+GetColumnNames_ShouldReturnUnmodifiableList
+IsValidDefinition_ShouldReturnTrueForValidIndex
+Disable_ShouldDisableIndex
+Enable_ShouldEnableIndex
+Disable_ShouldBeIdempotent
+Enable_ShouldBeIdempotent
+Insert_ShouldRejectWhenDisabled
+Delete_ShouldRejectWhenDisabled
+Search_ShouldStillWorkWhenDisabled
+Insert_ShouldStoreKeyAndRowId
+Insert_ShouldIncreaseKeyCount
+Insert_ShouldIncreaseEntryCount
+Insert_ShouldRejectNullKey
+Insert_ShouldRejectNullRowId
+Insert_ShouldAvoidDuplicateRowIdForSameKey
+Insert_ShouldAllowMultipleRowsForNonUniqueIndex
+Insert_ShouldRejectDuplicateKeyForUniqueIndex
+Search_ShouldReturnMatchingRowIds
+Search_ShouldReturnEmptyListForMissingKey
+Search_ShouldRejectNullKey
+Search_ShouldReturnUnmodifiableList
+ContainsKey_ShouldReturnTrueForExistingKey
+ContainsKey_ShouldReturnFalseForMissingKey
+Delete_ShouldRemoveSpecificRowId
+Delete_ShouldReturnFalseForMissingRowId
+Delete_ShouldReturnFalseForMissingKey
+Delete_ShouldRemoveKeyWhenLastRowIdIsDeleted
+DeleteKey_ShouldRemoveEntireKey
+DeleteKey_ShouldReturnFalseForMissingKey
+Clear_ShouldRemoveAllEntries
+GetEntries_ShouldReturnUnmodifiableMap
+GetEntries_ShouldProtectNestedLists
+IsEmpty_ShouldReturnTrueForNewIndex
+IsEmpty_ShouldReturnFalseAfterInsert
+GetKeyCount_ShouldReturnCorrectCount
+GetEntryCount_ShouldReturnCorrectCount
 ```
 
-## Test count
+# 10. BTreeIndexTests
 
 ```text
-Constructor: 1
-Select: 8
-Insert: 3
-Update: 2
-Delete: 2
-Validation: 5
-Total: 21
+CreateBTree
+Insert
+Delete
+Search
+Split
+Merge
+BorrowFromSibling
+Rebalance
+RangeScan
+TreeHeight
+NodeOrder
+KeyOrdering
+DuplicateKey
+CorruptedNode
+ConcurrentInsert
+ConcurrentSearch
+SearchPerformance
+InsertPerformance
 ```
 
-
-# 17. Optimizer Testing Roadmap (19 tests)
-
-```mermaid
-graph LR
-
-ROOT["Optimizer Testing — 19 tests"]
-
-ROOT --> Design
-ROOT --> Constructor
-ROOT --> Functional
-ROOT --> ValidationCoverage
-ROOT --> Exception
-
-Design --> D1["OptimizerTests"]
-Design --> D2["JUnit 5 Test Fixture"]
-Design --> D3["Nested Test Groups"]
-
-Functional --> QueryPlan
-Functional --> Cost
-Functional --> Optimization
-
-Constructor --> C1["1. Constructor_ShouldCreateOptimizer"]
-
-QueryPlan --> Q1["2. QueryPlan_ShouldStoreOperations"]
-QueryPlan --> Q2["3. QueryPlan_ShouldStoreEstimatedCost"]
-QueryPlan --> Q3["4. QueryPlan_ShouldRejectEmptyOperations"]
-QueryPlan --> Q4["5. QueryPlan_ShouldRejectNegativeCost"]
-QueryPlan --> Q5["6. GetOperations_ShouldReturnUnmodifiableList"]
-
-Cost --> C1["7. EstimateCost_ShouldCalculateTableScanCost"]
-Cost --> C2["8. EstimateCost_ShouldCalculateIndexScanCost"]
-Cost --> C3["9. EstimateCost_ShouldCalculateCombinedCost"]
-Cost --> C4["10. EstimateCost_ShouldAssignHighCostToJoin"]
-Cost --> C5["11. EstimateCost_ShouldRejectNullOperations"]
-Cost --> C6["12. EstimateCost_ShouldRejectBlankOperation"]
-
-Optimization --> O1["13. Optimize_ShouldReturnNewPlan"]
-Optimization --> O2["14. Optimize_ShouldMoveFilterBeforeTableScan"]
-Optimization --> O3["15. Optimize_ShouldRemoveDuplicateOperations"]
-Optimization --> O4["16. Optimize_ShouldRemoveRedundantSort"]
-Optimization --> O5["17. Optimize_ShouldReduceCostWhenOperationsRemoved"]
-Optimization --> O6["18. Optimize_ShouldPreserveNonRedundantOperations"]
-Optimization --> O7["19. Optimize_ShouldRejectNullPlan"]
-
-ValidationCoverage --> V1["Null input validation"]
-ValidationCoverage --> V2["Blank input validation"]
-ValidationCoverage --> V3["Missing object validation"]
-ValidationCoverage --> V4["Collection immutability"]
-
-Exception --> E1["IllegalArgumentException"]
-Exception --> E2["UnsupportedOperationException"]
-```
-
-## Test count
+# 11. HashIndexTests
 
 ```text
-Constructor: 1
-QueryPlan: 5
-Cost: 6
-Optimization: 7
-Total: 19
+CreateHashIndex
+Insert
+Delete
+Lookup
+SplitBucket
+Expand
+BucketState
+HashValue
+BucketOverflow
+InvalidHash
+ConcurrentLookup
+ConcurrentInsert
+LookupPerformance
+ExpansionPerformance
 ```
 
-# 18. Executor Testing Roadmap (24 tests)
-```mermaid
-graph LR
-
-ROOT["Executor Testing — 24 tests"]
-
-ROOT --> Design
-ROOT --> Constructor
-ROOT --> Functional
-ROOT --> ValidationCoverage
-ROOT --> Exception
-
-Design --> D1["ExecutorTests"]
-Design --> D2["JUnit 5 Test Fixture"]
-Design --> D3["Nested Test Groups"]
-
-Functional --> TableRegistration
-Functional --> Select
-Functional --> Insert
-Functional --> Update
-Functional --> Delete
-Functional --> Metadata
-
-Constructor --> C1["1. Constructor_ShouldCreateExecutor"]
-
-TableRegistration --> T1["2. RegisterTable_ShouldStoreTable"]
-TableRegistration --> T2["3. RegisterTable_ShouldCopyInputRows"]
-TableRegistration --> T3["4. RegisterTable_ShouldRejectBlankName"]
-TableRegistration --> T4["5. RegisterTable_ShouldRejectNullRows"]
-
-Select --> S1["6. ExecuteSelect_ShouldReturnAllRows"]
-Select --> S2["7. ExecuteSelect_ShouldFilterMatchingRows"]
-Select --> S3["8. ExecuteSelect_ShouldReturnEmptyListWhenNoMatch"]
-Select --> S4["9. ExecuteSelect_ShouldReturnUnmodifiableList"]
-Select --> S5["10. ExecuteSelect_ShouldRejectMissingTable"]
-
-Insert --> I1["11. ExecuteInsert_ShouldAddRow"]
-Insert --> I2["12. ExecuteInsert_ShouldCopyRow"]
-Insert --> I3["13. ExecuteInsert_ShouldRejectNullRow"]
-
-Update --> U1["14. ExecuteUpdate_ShouldUpdateMatchingRows"]
-Update --> U2["15. ExecuteUpdate_ShouldReturnZeroWhenNoMatch"]
-Update --> U3["16. ExecuteUpdate_ShouldUpdateAllRowsWhenMatchValueNull"]
-Update --> U4["17. ExecuteUpdate_ShouldRejectNullColumnName"]
-
-Delete --> D1["18. ExecuteDelete_ShouldDeleteMatchingRows"]
-Delete --> D2["19. ExecuteDelete_ShouldReturnZeroWhenNoMatch"]
-Delete --> D3["20. ExecuteDelete_ShouldDeleteAllRowsWhenColumnNull"]
-
-Metadata --> M1["21. GetRowCount_ShouldReturnCorrectCount"]
-Metadata --> M2["22. ContainsTable_ShouldReturnFalseForMissingTable"]
-Metadata --> M3["23. GetTables_ShouldReturnUnmodifiableMap"]
-Metadata --> M4["24. GetTables_ShouldProtectNestedRows"]
-
-ValidationCoverage --> V1["Null input validation"]
-ValidationCoverage --> V2["Blank input validation"]
-ValidationCoverage --> V3["Missing object validation"]
-ValidationCoverage --> V4["Collection immutability"]
-
-Exception --> E1["IllegalArgumentException"]
-Exception --> E2["UnsupportedOperationException"]
-```
-
-## Test count
+# 12. ViewTests
 
 ```text
-Constructor: 1
-TableRegistration: 4
-Select: 5
-Insert: 3
-Update: 4
-Delete: 3
-Metadata: 4
-Total: 24
+Constructor_ShouldCreateView
+Constructor_ShouldGenerateViewId
+Constructor_ShouldGenerateUniqueViewIds
+Constructor_ShouldInitializeSchemaId
+Constructor_ShouldInitializeDefinition
+Constructor_ShouldInitializeEmptyDependencies
+Constructor_ShouldCreateNonMaterializedViewByDefault
+Constructor_ShouldInitializeValidState
+GetName_ShouldReturnViewName
+Rename_ShouldChangeViewName
+Rename_ShouldRejectNullName
+Rename_ShouldRejectEmptyName
+Rename_ShouldRejectBlankName
+GetDefinition_ShouldReturnDefinition
+UpdateDefinition_ShouldChangeDefinition
+UpdateDefinition_ShouldRejectNullDefinition
+UpdateDefinition_ShouldRejectEmptyDefinition
+UpdateDefinition_ShouldRejectBlankDefinition
+ValidateDefinition_ShouldAcceptValidSelectDefinition
+ValidateDefinition_ShouldRejectInvalidDefinition
+AddDependency_ShouldRegisterDependency
+AddDependency_ShouldIncreaseDependencyCount
+AddDependency_ShouldRejectNullDependencyId
+AddDependency_ShouldIgnoreDuplicateDependency
+ContainsDependency_ShouldReturnTrueForExistingDependency
+ContainsDependency_ShouldReturnFalseForMissingDependency
+RemoveDependency_ShouldRemoveExistingDependency
+RemoveDependency_ShouldReturnFalseForMissingDependency
+GetDependencyIds_ShouldReturnUnmodifiableSet
+HasDependencies_ShouldReturnFalseForNewView
+HasDependencies_ShouldReturnTrueWhenDependencyExists
+ValidateDependencies_ShouldReturnTrueWhenAllDependenciesExist
+ValidateDependencies_ShouldReturnFalseWhenDependencyIsMissing
+ValidateDependencies_ShouldAcceptEmptyDependencyCollection
+HasCircularDependency_ShouldReturnTrueForCycle
+HasCircularDependency_ShouldReturnFalseWithoutCycle
+SetMaterialized_ShouldEnableMaterializedMode
+SetMaterialized_ShouldDisableMaterializedMode
+Refresh_ShouldRefreshMaterializedView
+Refresh_ShouldRejectNonMaterializedView
+Invalidate_ShouldSetValidToFalse
+Validate_ShouldSetValidToTrue
+Invalidate_ShouldBeIdempotent
+Validate_ShouldBeIdempotent
+GetSchemaId_ShouldReturnSchemaId
+SetSchemaId_ShouldUpdateSchemaId
+SetSchemaId_ShouldRejectNullSchemaId
 ```
 
-# 19. TransactionManager Testing Roadmap (18 tests)
-
-```mermaid
-graph LR
-
-ROOT["TransactionManager Testing — 18 tests"]
-
-ROOT --> Design
-ROOT --> Constructor
-ROOT --> Functional
-ROOT --> Validation
-ROOT --> Exception
-
-Design --> D1["TransactionManagerTests"]
-Design --> D2["JUnit 5 Test Fixture"]
-Design --> D3["Nested Test Groups"]
-
-Functional --> Begin
-Functional --> Commit
-Functional --> Rollback
-Functional --> Metadata
-
-Constructor --> C1["1. Constructor_ShouldCreateManager"]
-Constructor --> C2["2. Constructor_ShouldInitializeEmptyTransactions"]
-
-Begin --> B1["3. Begin_ShouldCreateTransaction"]
-Begin --> B2["4. Begin_ShouldGenerateTransactionId"]
-Begin --> B3["5. Begin_ShouldInitializeActiveStatus"]
-Begin --> B4["6. Begin_ShouldIncreaseTransactionCount"]
-Begin --> B5["7. Begin_ShouldGenerateUniqueIds"]
-
-Commit --> C1["8. Commit_ShouldCommitActiveTransaction"]
-Commit --> C2["9. Commit_ShouldRejectMissingTransaction"]
-Commit --> C3["10. Commit_ShouldRejectNullId"]
-Commit --> C4["11. Commit_ShouldRejectAlreadyCommittedTransaction"]
-
-Rollback --> R1["12. Rollback_ShouldRollbackActiveTransaction"]
-Rollback --> R2["13. Rollback_ShouldRejectMissingTransaction"]
-Rollback --> R3["14. Rollback_ShouldRejectAlreadyFinishedTransaction"]
-
-Metadata --> M1["15. GetTransaction_ShouldReturnStoredTransaction"]
-Metadata --> M2["16. ContainsTransaction_ShouldReturnTrueForExistingTransaction"]
-Metadata --> M3["17. ContainsTransaction_ShouldReturnFalseForMissingTransaction"]
-Metadata --> M4["18. GetTransactions_ShouldReturnUnmodifiableMap"]
-
-Validation --> V1["Null input validation"]
-Validation --> V2["Blank input validation"]
-Validation --> V3["Missing object validation"]
-Validation --> V4["State validation"]
-Validation --> V5["Collection immutability"]
-
-Exception --> E1["IllegalArgumentException"]
-Exception --> E2["IllegalStateException"]
-Exception --> E3["UnsupportedOperationException"]
-```
-
-## Test count
+# 13. StorageEngineTests
 
 ```text
-Constructor: 2
-Begin: 5
-Commit: 4
-Rollback: 3
-Metadata: 4
-Total: 18
+Constructor_ShouldCreateStorageEngine
+Constructor_ShouldGenerateStorageEngineId
+Constructor_ShouldGenerateUniqueStorageEngineIds
+Constructor_ShouldInitializeClosedState
+Constructor_ShouldInitializeEmptyPageCollection
+Open_ShouldChangeStateToOpen
+Open_ShouldBeIdempotent
+Close_ShouldChangeStateToClosed
+Close_ShouldBeIdempotent
+Open_ShouldReopenClosedStorageEngine
+AllocatePage_ShouldCreatePage
+AllocatePage_ShouldGenerateSequentialPageIds
+AllocatePage_ShouldRejectWhenClosed
+WritePage_ShouldStorePageData
+WritePage_ShouldReplaceExistingData
+WritePage_ShouldRejectNullData
+WritePage_ShouldRejectMissingPage
+ReadPage_ShouldReturnCopy
+ReadPage_ShouldRejectMissingPage
+DeletePage_ShouldRemoveExistingPage
+DeletePage_ShouldReturnFalseForMissingPage
+GetPages_ShouldReturnUnmodifiableMap
+GetPages_ShouldProtectNestedByteArrays
+Clear_ShouldRemoveAllPages
+Clear_ShouldRejectWhenClosed
 ```
 
-
-# 20. LockManager Testing Roadmap (19 tests)
-
-```mermaid
-graph LR
-
-ROOT["LockManager Testing — 19 tests"]
-
-ROOT --> Design
-ROOT --> Constructor
-ROOT --> Functional
-ROOT --> Validation
-ROOT --> Exception
-
-Design --> D1["LockManagerTests"]
-Design --> D2["JUnit 5 Test Fixture"]
-Design --> D3["Nested Test Groups"]
-
-Functional --> Acquire
-Functional --> Release
-Functional --> Metadata
-
-Constructor --> C1["1. Constructor_ShouldCreateManager"]
-Constructor --> C2["2. Constructor_ShouldInitializeEmptyLocks"]
-
-Acquire --> A1["3. Acquire_ShouldAcquireSharedLock"]
-Acquire --> A2["4. Acquire_ShouldAcquireExclusiveLock"]
-Acquire --> A3["5. Acquire_ShouldStoreOwner"]
-Acquire --> A4["6. Acquire_ShouldStoreMode"]
-Acquire --> A5["7. Acquire_ShouldRejectConflictingOwner"]
-Acquire --> A6["8. Acquire_ShouldAllowSameOwner"]
-Acquire --> A7["9. Acquire_ShouldUpgradeSameOwnerToExclusive"]
-Acquire --> A8["10. Acquire_ShouldRejectBlankResource"]
-Acquire --> A9["11. Acquire_ShouldRejectNullOwner"]
-Acquire --> A10["12. Acquire_ShouldRejectNullMode"]
-
-Release --> R1["13. Release_ShouldRemoveOwnedLock"]
-Release --> R2["14. Release_ShouldReturnFalseForWrongOwner"]
-Release --> R3["15. Release_ShouldReturnFalseForMissingLock"]
-Release --> R4["16. ReleaseAll_ShouldRemoveAllOwnedLocks"]
-
-Metadata --> M1["17. IsLocked_ShouldReturnTrueForExistingLock"]
-Metadata --> M2["18. GetLockMode_ShouldReturnNullForMissingLock"]
-Metadata --> M3["19. GetLocks_ShouldReturnUnmodifiableMap"]
-
-Validation --> V1["Null input validation"]
-Validation --> V2["Blank input validation"]
-Validation --> V3["Missing object validation"]
-Validation --> V4["State validation"]
-Validation --> V5["Collection immutability"]
-
-Exception --> E1["IllegalArgumentException"]
-Exception --> E2["IllegalStateException"]
-Exception --> E3["UnsupportedOperationException"]
-```
-
-## Test count
+# 14. DiskManagerTests
 
 ```text
-Constructor: 2
-Acquire: 10
-Release: 4
-Metadata: 3
-Total: 19
+Constructor_ShouldCreateDiskManager
+Constructor_ShouldInitializeClosedState
+Constructor_ShouldInitializeEmptyStorage
+Open_ShouldOpenDiskManager
+Open_ShouldBeIdempotent
+Close_ShouldCloseDiskManager
+Close_ShouldBeIdempotent
+AllocatePage_ShouldCreatePage
+AllocatePage_ShouldGenerateSequentialIds
+AllocatePage_ShouldIncreasePageCount
+AllocatePage_ShouldRejectWhenClosed
+WritePage_ShouldStoreData
+WritePage_ShouldReplaceData
+WritePage_ShouldRejectNullData
+WritePage_ShouldRejectMissingPage
+WritePage_ShouldRejectWhenClosed
+ReadPage_ShouldReturnStoredData
+ReadPage_ShouldReturnDefensiveCopy
+ReadPage_ShouldRejectMissingPage
+ReadPage_ShouldRejectWhenClosed
+DeallocatePage_ShouldRemoveExistingPage
+DeallocatePage_ShouldReturnFalseForMissingPage
+DeallocatePage_ShouldDecreasePageCount
+DeallocatePage_ShouldRejectWhenClosed
+GetPages_ShouldReturnUnmodifiableMap
+GetPages_ShouldProtectNestedArrays
 ```
 
-# 21. AuthService Testing Roadmap (19 tests)
-
-```mermaid
-graph LR
-
-ROOT["AuthService Testing — 19 tests"]
-
-ROOT --> Design
-ROOT --> Constructor
-ROOT --> Functional
-ROOT --> Validation
-ROOT --> Exception
-
-Design --> D1["AuthServiceTests"]
-Design --> D2["JUnit 5 Test Fixture"]
-Design --> D3["Nested Test Groups"]
-
-Functional --> Registration
-Functional --> Login
-Functional --> Session
-Functional --> Password
-Functional --> Disable
-
-Constructor --> C1["1. Constructor_ShouldCreateAuthService"]
-Constructor --> C2["2. Constructor_ShouldInitializeEmptyUsers"]
-
-Registration --> R1["3. Register_ShouldCreateUser"]
-Registration --> R2["4. Register_ShouldIncreaseUserCount"]
-Registration --> R3["5. Register_ShouldRejectDuplicateUsername"]
-Registration --> R4["6. Register_ShouldRejectBlankUsername"]
-Registration --> R5["7. Register_ShouldRejectShortPassword"]
-
-Login --> L1["8. Login_ShouldCreateSessionToken"]
-Login --> L2["9. Login_ShouldIncreaseSessionCount"]
-Login --> L3["10. Login_ShouldRejectUnknownUser"]
-Login --> L4["11. Login_ShouldRejectWrongPassword"]
-
-Session --> S1["12. IsAuthenticated_ShouldReturnTrueForValidToken"]
-Session --> S2["13. Logout_ShouldRemoveSession"]
-Session --> S3["14. Logout_ShouldReturnFalseForMissingToken"]
-
-Password --> P1["15. ChangePassword_ShouldAllowLoginWithNewPassword"]
-Password --> P2["16. ChangePassword_ShouldRejectWrongOldPassword"]
-
-Disable --> D1["17. DisableUser_ShouldInvalidateSessions"]
-Disable --> D2["18. DisableUser_ShouldRejectFutureLogin"]
-Disable --> D3["19. DisableUser_ShouldRejectMissingUser"]
-
-Validation --> V1["Null input validation"]
-Validation --> V2["Blank input validation"]
-Validation --> V3["Missing object validation"]
-Validation --> V4["State validation"]
-Validation --> V5["Collection immutability"]
-
-Exception --> E1["IllegalArgumentException"]
-Exception --> E2["IllegalStateException"]
-Exception --> E3["UnsupportedOperationException"]
-```
-
-## Test count
+# 15. BufferPoolTests
 
 ```text
-Constructor: 2
-Registration: 5
-Login: 4
-Session: 3
-Password: 2
-Disable: 3
-Total: 19
+Constructor_ShouldCreateBufferPool
+Constructor_ShouldStoreCapacity
+Constructor_ShouldInitializeEmptyFrames
+Constructor_ShouldRejectInvalidCapacity
+Constructor_ShouldRejectNullDiskManager
+FetchPage_ShouldLoadPageFromDisk
+FetchPage_ShouldCacheLoadedPage
+FetchPage_ShouldReturnCachedPage
+FetchPage_ShouldReturnDefensiveCopy
+FetchPage_ShouldRejectInvalidPageId
+FetchPage_ShouldPropagateMissingPageError
+UpdatePage_ShouldUpdateCachedPage
+UpdatePage_ShouldFetchMissingCachedPage
+UpdatePage_ShouldMarkPageDirty
+UpdatePage_ShouldRejectNullData
+UpdatePage_ShouldRejectInvalidPageId
+FlushPage_ShouldWriteDirtyPageToDisk
+FlushPage_ShouldClearDirtyState
+FlushPage_ShouldDoNothingForCleanPage
+FlushPage_ShouldRejectMissingCachedPage
+FlushAll_ShouldFlushEveryDirtyPage
+FetchPage_ShouldEvictEldestPageWhenFull
+FetchPage_ShouldRespectRecentAccessOrder
+Eviction_ShouldFlushDirtyPageBeforeRemoval
+EvictPage_ShouldRemoveSpecificPage
+EvictPage_ShouldReturnFalseForMissingPage
+GetFrames_ShouldReturnUnmodifiableMap
+GetFrames_ShouldProtectNestedArrays
+Clear_ShouldFlushAndRemoveAllFrames
 ```
 
-
-# 22. SecurityManager Testing Roadmap (20 tests)
-
-```mermaid
-graph LR
-
-ROOT["SecurityManager Testing — 20 tests"]
-
-ROOT --> Design
-ROOT --> Constructor
-ROOT --> Functional
-ROOT --> Validation
-ROOT --> Exception
-
-Design --> D1["SecurityManagerTests"]
-Design --> D2["JUnit 5 Test Fixture"]
-Design --> D3["Nested Test Groups"]
-
-Functional --> Role
-Functional --> Permission
-Functional --> Assignment
-Functional --> Authorization
-Functional --> CollectionSafety
-
-Constructor --> C1["1. Constructor_ShouldCreateManager"]
-Constructor --> C2["2. Constructor_ShouldInitializeEmptyRoles"]
-
-Role --> R1["3. CreateRole_ShouldCreateRole"]
-Role --> R2["4. CreateRole_ShouldBeIdempotent"]
-Role --> R3["5. CreateRole_ShouldRejectBlankRole"]
-
-Permission --> P1["6. GrantPermission_ShouldGrantPermission"]
-Permission --> P2["7. GrantPermission_ShouldRejectMissingRole"]
-Permission --> P3["8. GrantPermission_ShouldRejectBlankPermission"]
-Permission --> P4["9. RevokePermission_ShouldRemovePermission"]
-Permission --> P5["10. RevokePermission_ShouldReturnFalseForMissingPermission"]
-
-Assignment --> A1["11. AssignRole_ShouldAssignRole"]
-Assignment --> A2["12. AssignRole_ShouldRejectMissingRole"]
-Assignment --> A3["13. AssignRole_ShouldAvoidDuplicateRole"]
-Assignment --> A4["14. RemoveRole_ShouldRemoveAssignedRole"]
-Assignment --> A5["15. RemoveRole_ShouldReturnFalseForMissingRole"]
-
-Authorization --> A1["16. HasPermission_ShouldReturnFalseWithoutRole"]
-Authorization --> A2["17. HasPermission_ShouldCheckMultipleRoles"]
-
-CollectionSafety --> C1["18. GetUserRoles_ShouldReturnUnmodifiableSet"]
-CollectionSafety --> C2["19. GetRolePermissions_ShouldReturnUnmodifiableMap"]
-CollectionSafety --> C3["20. GetRolePermissions_ShouldProtectNestedSets"]
-
-Validation --> V1["Null input validation"]
-Validation --> V2["Blank input validation"]
-Validation --> V3["Missing object validation"]
-Validation --> V4["State validation"]
-Validation --> V5["Collection immutability"]
-
-Exception --> E1["IllegalArgumentException"]
-Exception --> E2["IllegalStateException"]
-Exception --> E3["UnsupportedOperationException"]
-```
-
-## Test count
+# 16. ParserTests
 
 ```text
-Constructor: 2
-Role: 3
-Permission: 5
-Assignment: 5
-Authorization: 2
-CollectionSafety: 3
-Total: 20
-
+Constructor_ShouldCreateParser
+Parse_ShouldParseSelectStatement
+ParseSelect_ShouldExtractTableName
+ParseSelect_ShouldExtractColumns
+ParseSelect_ShouldSupportWildcard
+ParseSelect_ShouldNormalizeWhitespace
+ParseSelect_ShouldRejectMissingFrom
+ParseSelect_ShouldRejectMissingColumns
+ParseSelect_ShouldRejectMissingTable
+Parse_ShouldParseInsertStatement
+ParseInsert_ShouldExtractTableName
+ParseInsert_ShouldExtractColumns
+Parse_ShouldParseUpdateStatement
+ParseUpdate_ShouldExtractTableName
+Parse_ShouldParseDeleteStatement
+ParseDelete_ShouldExtractTableName
+Parse_ShouldRejectNullSql
+Parse_ShouldRejectBlankSql
+Parse_ShouldRejectUnsupportedStatement
+GetColumns_ShouldReturnUnmodifiableList
+ParsedQuery_ShouldPreserveRawSql
 ```
 
-# 23. Catalog Testing Roadmap (24 tests)
-```mermaid
-graph LR
-
-ROOT["Catalog Testing — 24 tests"]
-
-ROOT --> Design
-ROOT --> Constructor
-ROOT --> SchemaManagement
-ROOT --> TableManagement
-ROOT --> CollectionSafety
-ROOT --> Consistency
-
-Design --> D1["CatalogTests"]
-Design --> D2["JUnit 5 Test Fixture"]
-Design --> D3["Reusable Test Data"]
-Design --> D4["Nested Test Groups"]
-
-Constructor --> C1["1. constructor_ShouldCreateCatalog"]
-Constructor --> C2["2. constructor_ShouldInitializeEmptySchemas"]
-Constructor --> C3["3. constructor_ShouldInitializeEmptyTables"]
-
-SchemaManagement --> S1["4. putSchema_ShouldRegisterSchema"]
-SchemaManagement --> S2["5. putSchema_ShouldRejectNullSchema"]
-SchemaManagement --> S3["6. putSchema_ShouldRejectDuplicateSchemaName"]
-SchemaManagement --> S4["7. getSchema_ShouldReturnExistingSchema"]
-SchemaManagement --> S5["8. getSchema_ShouldReturnNullForMissingSchema"]
-SchemaManagement --> S6["9. removeSchema_ShouldRemoveExistingSchema"]
-SchemaManagement --> S7["10. removeSchema_ShouldReturnNullForMissingSchema"]
-
-TableManagement --> T1["11. putTable_ShouldRegisterTable"]
-TableManagement --> T2["12. putTable_ShouldRejectNullTable"]
-TableManagement --> T3["13. putTable_ShouldRejectDuplicateTableName"]
-TableManagement --> T4["14. getTable_ShouldReturnExistingTable"]
-TableManagement --> T5["15. getTable_ShouldReturnNullForMissingTable"]
-TableManagement --> T6["16. removeTable_ShouldRemoveExistingTable"]
-TableManagement --> T7["17. removeTable_ShouldReturnNullForMissingTable"]
-
-CollectionSafety --> C1["18. getSchemas_ShouldReturnUnmodifiableMap"]
-CollectionSafety --> C2["19. getTables_ShouldReturnUnmodifiableMap"]
-CollectionSafety --> C3["20. getSchemas_ShouldProtectInternalCollection"]
-CollectionSafety --> C4["21. getTables_ShouldProtectInternalCollection"]
-
-Consistency --> C1["22. catalog_ShouldMaintainSchemaTableRelationship"]
-Consistency --> C2["23. catalog_ShouldKeepIndependentCollections"]
-Consistency --> C3["24. clear_ShouldRemoveAllMetadata"]
-```
+# 17. OptimizerTests
 
 ```text
-Test count
-
-Constructor: 3
-SchemaManagement: 7
-TableManagement: 7
-CollectionSafety: 4
-Consistency: 3
-Total: 24
+Constructor_ShouldCreateOptimizer
+QueryPlan_ShouldStoreOperations
+QueryPlan_ShouldStoreEstimatedCost
+QueryPlan_ShouldRejectEmptyOperations
+QueryPlan_ShouldRejectNegativeCost
+GetOperations_ShouldReturnUnmodifiableList
+EstimateCost_ShouldCalculateTableScanCost
+EstimateCost_ShouldCalculateIndexScanCost
+EstimateCost_ShouldCalculateCombinedCost
+EstimateCost_ShouldAssignHighCostToJoin
+EstimateCost_ShouldRejectNullOperations
+EstimateCost_ShouldRejectBlankOperation
+Optimize_ShouldReturnNewPlan
+Optimize_ShouldMoveFilterBeforeTableScan
+Optimize_ShouldRemoveDuplicateOperations
+Optimize_ShouldRemoveRedundantSort
+Optimize_ShouldReduceCostWhenOperationsRemoved
+Optimize_ShouldPreserveNonRedundantOperations
+Optimize_ShouldRejectNullPlan
 ```
-<a name="file-manager-testing"></a>
 
-# 24. FileManager Testing Roadmap (24 tests)
-```mermaid
-graph LR
-
-ROOT["FileManager Testing — 24 tests"]
-
-ROOT --> Design
-ROOT --> Constructor
-ROOT --> FileLifecycle
-ROOT --> Metadata
-ROOT --> Validation
-ROOT --> CollectionSafety
-
-Design --> D1["FileManagerTests"]
-Design --> D2["JUnit 5 Test Fixture"]
-Design --> D3["Reusable Test Data"]
-Design --> D4["Nested Test Groups"]
-
-Constructor --> C1["1. constructor_ShouldCreateFileManager"]
-Constructor --> C2["2. constructor_ShouldStoreBaseDirectory"]
-Constructor --> C3["3. constructor_ShouldRejectNullBaseDirectory"]
-Constructor --> C4["4. constructor_ShouldRejectBlankBaseDirectory"]
-
-FileLifecycle --> F1["5. createFile_ShouldCreateNewFile"]
-FileLifecycle --> F2["6. createFile_ShouldRejectDuplicateFile"]
-FileLifecycle --> F3["7. openFile_ShouldOpenExistingFile"]
-FileLifecycle --> F4["8. openFile_ShouldRejectMissingFile"]
-FileLifecycle --> F5["9. closeFile_ShouldCloseOpenFile"]
-FileLifecycle --> F6["10. closeFile_ShouldBeIdempotent"]
-FileLifecycle --> F7["11. deleteFile_ShouldDeleteExistingFile"]
-FileLifecycle --> F8["12. deleteFile_ShouldRejectOpenFile"]
-FileLifecycle --> F9["13. deleteFile_ShouldReturnFalseForMissingFile"]
-
-Metadata --> M1["14. fileExists_ShouldReturnTrueForExistingFile"]
-Metadata --> M2["15. fileExists_ShouldReturnFalseForMissingFile"]
-Metadata --> M3["16. getOpenFileCount_ShouldReturnCorrectCount"]
-Metadata --> M4["17. listFiles_ShouldReturnCreatedFiles"]
-
-Validation --> V1["18. createFile_ShouldRejectNullName"]
-Validation --> V2["19. createFile_ShouldRejectBlankName"]
-Validation --> V3["20. openFile_ShouldRejectInvalidName"]
-Validation --> V4["21. deleteFile_ShouldRejectInvalidName"]
-
-CollectionSafety --> C1["22. listFiles_ShouldReturnUnmodifiableCollection"]
-CollectionSafety --> C2["23. getOpenFiles_ShouldReturnUnmodifiableMap"]
-CollectionSafety --> C3["24. closeAll_ShouldCloseEveryFile"]
-```
-```text
-Test count
-
-Constructor: 4
-FileLifecycle: 9
-Metadata: 4
-Validation: 4
-CollectionSafety: 3
-Total: 24
-```
-<a name="page-testing"></a>
-
-# 25.Page Testing Roadmap (25 tests)
-```mermaid
-graph LR
-
-ROOT["Page Testing — 25 tests"]
-
-ROOT --> Design
-ROOT --> Constructor
-ROOT --> Data
-ROOT --> DirtyState
-ROOT --> Pinning
-ROOT --> Validation
-ROOT --> CopySafety
-
-Design --> D1["PageTests"]
-Design --> D2["JUnit 5 Test Fixture"]
-Design --> D3["Reusable Test Data"]
-Design --> D4["Nested Test Groups"]
-
-Constructor --> C1["1. constructor_ShouldCreatePage"]
-Constructor --> C2["2. constructor_ShouldStorePageId"]
-Constructor --> C3["3. constructor_ShouldInitializeEmptyData"]
-Constructor --> C4["4. constructor_ShouldInitializeHeader"]
-Constructor --> C5["5. constructor_ShouldInitializeCleanState"]
-Constructor --> C6["6. constructor_ShouldInitializeZeroPinCount"]
-
-Data --> D1["7. setData_ShouldStoreData"]
-Data --> D2["8. getData_ShouldReturnDefensiveCopy"]
-Data --> D3["9. setData_ShouldRejectNullData"]
-Data --> D4["10. setData_ShouldReplaceExistingData"]
-Data --> D5["11. getSize_ShouldReturnDataLength"]
-
-DirtyState --> D1["12. markDirty_ShouldSetDirtyState"]
-DirtyState --> D2["13. unmarkDirty_ShouldClearDirtyState"]
-DirtyState --> D3["14. markDirty_ShouldBeIdempotent"]
-DirtyState --> D4["15. unmarkDirty_ShouldBeIdempotent"]
-
-Pinning --> P1["16. pin_ShouldIncreasePinCount"]
-Pinning --> P2["17. unpin_ShouldDecreasePinCount"]
-Pinning --> P3["18. unpin_ShouldRejectNegativePinCount"]
-Pinning --> P4["19. isPinned_ShouldReturnTrueWhenPinned"]
-Pinning --> P5["20. isPinned_ShouldReturnFalseWhenUnpinned"]
-
-Validation --> V1["21. constructor_ShouldRejectNegativePageId"]
-Validation --> V2["22. setPageId_ShouldRejectNegativePageId"]
-Validation --> V3["23. setPageId_ShouldUpdatePageId"]
-
-CopySafety --> C1["24. copy_ShouldCreateDifferentInstance"]
-CopySafety --> C2["25. copy_ShouldPreservePageData"]
-```
+# 18. ExecutorTests
 
 ```text
-Test count
-
-Constructor: 6
-Data: 5
-DirtyState: 4
-Pinning: 5
-Validation: 3
-CopySafety: 2
-Total: 25
+Constructor_ShouldCreateExecutor
+RegisterTable_ShouldStoreTable
+RegisterTable_ShouldCopyInputRows
+RegisterTable_ShouldRejectBlankName
+RegisterTable_ShouldRejectNullRows
+ExecuteSelect_ShouldReturnAllRows
+ExecuteSelect_ShouldFilterMatchingRows
+ExecuteSelect_ShouldReturnEmptyListWhenNoMatch
+ExecuteSelect_ShouldReturnUnmodifiableList
+ExecuteSelect_ShouldRejectMissingTable
+ExecuteInsert_ShouldAddRow
+ExecuteInsert_ShouldCopyRow
+ExecuteInsert_ShouldRejectNullRow
+ExecuteUpdate_ShouldUpdateMatchingRows
+ExecuteUpdate_ShouldReturnZeroWhenNoMatch
+ExecuteUpdate_ShouldUpdateAllRowsWhenMatchValueNull
+ExecuteUpdate_ShouldRejectNullColumnName
+ExecuteDelete_ShouldDeleteMatchingRows
+ExecuteDelete_ShouldReturnZeroWhenNoMatch
+ExecuteDelete_ShouldDeleteAllRowsWhenColumnNull
+GetRowCount_ShouldReturnCorrectCount
+ContainsTable_ShouldReturnFalseForMissingTable
+GetTables_ShouldReturnUnmodifiableMap
+GetTables_ShouldProtectNestedRows
 ```
-<a name="page-header-testing"></a>
 
-# 26. PageHeader Testing Roadmap (20 tests)
-```mermaid
-graph LR
-
-ROOT["PageHeader Testing — 20 tests"]
-
-ROOT --> Design
-ROOT --> Constructor
-ROOT --> FreeSpace
-ROOT --> Slots
-ROOT --> Checksum
-ROOT --> Validation
-
-Design --> D1["PageHeaderTests"]
-Design --> D2["JUnit 5 Test Fixture"]
-Design --> D3["Reusable Test Data"]
-Design --> D4["Nested Test Groups"]
-
-Constructor --> C1["1. constructor_ShouldCreatePageHeader"]
-Constructor --> C2["2. constructor_ShouldStorePageId"]
-Constructor --> C3["3. constructor_ShouldInitializeFreeSpacePointer"]
-Constructor --> C4["4. constructor_ShouldInitializeZeroSlotCount"]
-Constructor --> C5["5. constructor_ShouldInitializeChecksum"]
-
-FreeSpace --> F1["6. setFreeSpacePointer_ShouldUpdatePointer"]
-FreeSpace --> F2["7. setFreeSpacePointer_ShouldRejectNegativeValue"]
-FreeSpace --> F3["8. setFreeSpacePointer_ShouldRejectValueBeyondPageSize"]
-FreeSpace --> F4["9. getFreeSpacePointer_ShouldReturnCurrentPointer"]
-
-Slots --> S1["10. incrementSlotCount_ShouldIncreaseCount"]
-Slots --> S2["11. decrementSlotCount_ShouldDecreaseCount"]
-Slots --> S3["12. decrementSlotCount_ShouldRejectNegativeCount"]
-Slots --> S4["13. getSlotCount_ShouldReturnCurrentCount"]
-
-Checksum --> C1["14. updateChecksum_ShouldChangeChecksum"]
-Checksum --> C2["15. updateChecksum_ShouldBeDeterministic"]
-Checksum --> C3["16. validateChecksum_ShouldReturnTrueForValidHeader"]
-Checksum --> C4["17. validateChecksum_ShouldReturnFalseAfterCorruption"]
-
-Validation --> V1["18. constructor_ShouldRejectNegativePageId"]
-Validation --> V2["19. setPageId_ShouldUpdatePageId"]
-Validation --> V3["20. setPageId_ShouldRejectNegativePageId"]
-```
+# 19. TransactionManagerTests
 
 ```text
-Test count
-
-Constructor: 5
-FreeSpace: 4
-Slots: 4
-Checksum: 4
-Validation: 3
-Total: 20
+Constructor_ShouldCreateManager
+Constructor_ShouldInitializeEmptyTransactions
+Begin_ShouldCreateTransaction
+Begin_ShouldGenerateTransactionId
+Begin_ShouldInitializeActiveStatus
+Begin_ShouldIncreaseTransactionCount
+Begin_ShouldGenerateUniqueIds
+Commit_ShouldCommitActiveTransaction
+Commit_ShouldRejectMissingTransaction
+Commit_ShouldRejectNullId
+Commit_ShouldRejectAlreadyCommittedTransaction
+Rollback_ShouldRollbackActiveTransaction
+Rollback_ShouldRejectMissingTransaction
+Rollback_ShouldRejectAlreadyFinishedTransaction
+GetTransaction_ShouldReturnStoredTransaction
+ContainsTransaction_ShouldReturnTrueForExistingTransaction
+ContainsTransaction_ShouldReturnFalseForMissingTransaction
+GetTransactions_ShouldReturnUnmodifiableMap
 ```
-<a name="record-manager-testing"></a>
 
-# 27.RecordManager Testing Roadmap (26 tests)
-```mermaid
+# 20. LockManagerTests
 
-graph LR
-
-ROOT["RecordManager Testing — 26 tests"]
-
-ROOT --> Design
-ROOT --> Constructor
-ROOT --> Insert
-ROOT --> Read
-ROOT --> Update
-ROOT --> Delete
-ROOT --> Integration
-
-Design --> D1["RecordManagerTests"]
-Design --> D2["JUnit 5 Test Fixture"]
-Design --> D3["Reusable Test Data"]
-Design --> D4["Nested Test Groups"]
-
-Constructor --> C1["1. constructor_ShouldCreateRecordManager"]
-Constructor --> C2["2. constructor_ShouldInitializeDependencies"]
-Constructor --> C3["3. constructor_ShouldRejectNullDiskManager"]
-
-Insert --> I1["4. insert_ShouldStoreRecord"]
-Insert --> I2["5. insert_ShouldReturnRecordId"]
-Insert --> I3["6. insert_ShouldIncreaseRecordCount"]
-Insert --> I4["7. insert_ShouldRejectNullRecord"]
-Insert --> I5["8. insert_ShouldRejectBlankTableFile"]
-Insert --> I6["9. insert_ShouldAllocatePageWhenRequired"]
-
-Read --> R1["10. getRecord_ShouldReturnExistingRecord"]
-Read --> R2["11. getRecord_ShouldReturnDefensiveCopy"]
-Read --> R3["12. getRecord_ShouldRejectNullRecordId"]
-Read --> R4["13. getRecord_ShouldRejectMissingRecord"]
-Read --> R5["14. getRecord_ShouldRejectBlankTableFile"]
-
-Update --> U1["15. update_ShouldReplaceRecordData"]
-Update --> U2["16. update_ShouldPreserveRecordId"]
-Update --> U3["17. update_ShouldRejectNullRecord"]
-Update --> U4["18. update_ShouldRejectMissingRecord"]
-
-Delete --> D1["19. delete_ShouldMarkRecordDeleted"]
-Delete --> D2["20. delete_ShouldDecreaseActiveRecordCount"]
-Delete --> D3["21. delete_ShouldRejectMissingRecord"]
-Delete --> D4["22. delete_ShouldBeIdempotent"]
-
-Integration --> I1["23. insert_ShouldWriteThroughBufferPool"]
-Integration --> I2["24. getRecord_ShouldReadThroughBufferPool"]
-Integration --> I3["25. update_ShouldMarkPageDirty"]
-Integration --> I4["26. delete_ShouldMaintainPageSlotState"]
-```
 ```text
-Test count
+Constructor_ShouldCreateManager
+Constructor_ShouldInitializeEmptyLocks
+Acquire_ShouldAcquireSharedLock
+Acquire_ShouldAcquireExclusiveLock
+Acquire_ShouldStoreOwner
+Acquire_ShouldStoreMode
+Acquire_ShouldRejectConflictingOwner
+Acquire_ShouldAllowSameOwner
+Acquire_ShouldUpgradeSameOwnerToExclusive
+Acquire_ShouldRejectBlankResource
+Acquire_ShouldRejectNullOwner
+Acquire_ShouldRejectNullMode
+Release_ShouldRemoveOwnedLock
+Release_ShouldReturnFalseForWrongOwner
+Release_ShouldReturnFalseForMissingLock
+ReleaseAll_ShouldRemoveAllOwnedLocks
+IsLocked_ShouldReturnTrueForExistingLock
+GetLockMode_ShouldReturnNullForMissingLock
+GetLocks_ShouldReturnUnmodifiableMap
+```
 
-Constructor: 3
-Insert: 6
-Read: 5
-Update: 4
-Delete: 4
-Integration: 4
-Total: 26
+# 21. AuthServiceTests
+
+```text
+Constructor_ShouldCreateAuthService
+Constructor_ShouldInitializeEmptyUsers
+Register_ShouldCreateUser
+Register_ShouldIncreaseUserCount
+Register_ShouldRejectDuplicateUsername
+Register_ShouldRejectBlankUsername
+Register_ShouldRejectShortPassword
+Login_ShouldCreateSessionToken
+Login_ShouldIncreaseSessionCount
+Login_ShouldRejectUnknownUser
+Login_ShouldRejectWrongPassword
+IsAuthenticated_ShouldReturnTrueForValidToken
+Logout_ShouldRemoveSession
+Logout_ShouldReturnFalseForMissingToken
+ChangePassword_ShouldAllowLoginWithNewPassword
+ChangePassword_ShouldRejectWrongOldPassword
+DisableUser_ShouldInvalidateSessions
+DisableUser_ShouldRejectFutureLogin
+DisableUser_ShouldRejectMissingUser
+```
+
+# 22. SecurityManagerTests
+
+```text
+Constructor_ShouldCreateManager
+Constructor_ShouldInitializeEmptyRoles
+CreateRole_ShouldCreateRole
+CreateRole_ShouldBeIdempotent
+CreateRole_ShouldRejectBlankRole
+GrantPermission_ShouldGrantPermission
+GrantPermission_ShouldRejectMissingRole
+GrantPermission_ShouldRejectBlankPermission
+RevokePermission_ShouldRemovePermission
+RevokePermission_ShouldReturnFalseForMissingPermission
+AssignRole_ShouldAssignRole
+AssignRole_ShouldRejectMissingRole
+AssignRole_ShouldAvoidDuplicateRole
+RemoveRole_ShouldRemoveAssignedRole
+RemoveRole_ShouldReturnFalseForMissingRole
+HasPermission_ShouldReturnFalseWithoutRole
+HasPermission_ShouldCheckMultipleRoles
+GetUserRoles_ShouldReturnUnmodifiableSet
+GetRolePermissions_ShouldReturnUnmodifiableMap
+GetRolePermissions_ShouldProtectNestedSets
+```
+
+# 23. CatalogTests
+
+```text
+constructor_ShouldCreateCatalog
+constructor_ShouldInitializeEmptySchemas
+constructor_ShouldInitializeEmptyTables
+putSchema_ShouldRegisterSchema
+putSchema_ShouldRejectNullSchema
+putSchema_ShouldRejectDuplicateSchemaName
+getSchema_ShouldReturnExistingSchema
+getSchema_ShouldReturnNullForMissingSchema
+removeSchema_ShouldRemoveExistingSchema
+removeSchema_ShouldReturnNullForMissingSchema
+putTable_ShouldRegisterTable
+putTable_ShouldRejectNullTable
+putTable_ShouldRejectDuplicateTableName
+getTable_ShouldReturnExistingTable
+getTable_ShouldReturnNullForMissingTable
+removeTable_ShouldRemoveExistingTable
+removeTable_ShouldReturnNullForMissingTable
+getSchemas_ShouldReturnUnmodifiableMap
+getTables_ShouldReturnUnmodifiableMap
+getSchemas_ShouldProtectInternalCollection
+getTables_ShouldProtectInternalCollection
+catalog_ShouldMaintainSchemaTableRelationship
+catalog_ShouldKeepIndependentCollections
+clear_ShouldRemoveAllMetadata
+```
+
+# 24. FileManagerTests
+
+```text
+constructor_ShouldCreateFileManager
+constructor_ShouldStoreBaseDirectory
+constructor_ShouldRejectNullBaseDirectory
+constructor_ShouldRejectBlankBaseDirectory
+createFile_ShouldCreateNewFile
+createFile_ShouldRejectDuplicateFile
+openFile_ShouldOpenExistingFile
+openFile_ShouldRejectMissingFile
+closeFile_ShouldCloseOpenFile
+closeFile_ShouldBeIdempotent
+deleteFile_ShouldDeleteExistingFile
+deleteFile_ShouldRejectOpenFile
+deleteFile_ShouldReturnFalseForMissingFile
+fileExists_ShouldReturnTrueForExistingFile
+fileExists_ShouldReturnFalseForMissingFile
+getOpenFileCount_ShouldReturnCorrectCount
+listFiles_ShouldReturnCreatedFiles
+createFile_ShouldRejectNullName
+createFile_ShouldRejectBlankName
+openFile_ShouldRejectInvalidName
+deleteFile_ShouldRejectInvalidName
+listFiles_ShouldReturnUnmodifiableCollection
+getOpenFiles_ShouldReturnUnmodifiableMap
+closeAll_ShouldCloseEveryFile
+```
+
+# 25. PageTests
+
+```text
+constructor_ShouldCreatePage
+constructor_ShouldStorePageId
+constructor_ShouldInitializeEmptyData
+constructor_ShouldInitializeHeader
+constructor_ShouldInitializeCleanState
+constructor_ShouldInitializeZeroPinCount
+setData_ShouldStoreData
+getData_ShouldReturnDefensiveCopy
+setData_ShouldRejectNullData
+setData_ShouldReplaceExistingData
+getSize_ShouldReturnDataLength
+markDirty_ShouldSetDirtyState
+unmarkDirty_ShouldClearDirtyState
+markDirty_ShouldBeIdempotent
+unmarkDirty_ShouldBeIdempotent
+pin_ShouldIncreasePinCount
+unpin_ShouldDecreasePinCount
+unpin_ShouldRejectNegativePinCount
+isPinned_ShouldReturnTrueWhenPinned
+isPinned_ShouldReturnFalseWhenUnpinned
+constructor_ShouldRejectNegativePageId
+setPageId_ShouldRejectNegativePageId
+setPageId_ShouldUpdatePageId
+copy_ShouldCreateDifferentInstance
+copy_ShouldPreservePageData
+```
+
+# 26. PageHeaderTests
+
+```text
+constructor_ShouldCreatePageHeader
+constructor_ShouldStorePageId
+constructor_ShouldInitializeFreeSpacePointer
+constructor_ShouldInitializeZeroSlotCount
+constructor_ShouldInitializeChecksum
+setFreeSpacePointer_ShouldUpdatePointer
+setFreeSpacePointer_ShouldRejectNegativeValue
+setFreeSpacePointer_ShouldRejectValueBeyondPageSize
+getFreeSpacePointer_ShouldReturnCurrentPointer
+incrementSlotCount_ShouldIncreaseCount
+decrementSlotCount_ShouldDecreaseCount
+decrementSlotCount_ShouldRejectNegativeCount
+getSlotCount_ShouldReturnCurrentCount
+updateChecksum_ShouldChangeChecksum
+updateChecksum_ShouldBeDeterministic
+validateChecksum_ShouldReturnTrueForValidHeader
+validateChecksum_ShouldReturnFalseAfterCorruption
+constructor_ShouldRejectNegativePageId
+setPageId_ShouldUpdatePageId
+setPageId_ShouldRejectNegativePageId
+```
+
+# 27. RecordManagerTests
+
+```text
+constructor_ShouldCreateRecordManager
+constructor_ShouldInitializeDependencies
+constructor_ShouldRejectNullDiskManager
+insert_ShouldStoreRecord
+insert_ShouldReturnRecordId
+insert_ShouldIncreaseRecordCount
+insert_ShouldRejectNullRecord
+insert_ShouldRejectBlankTableFile
+insert_ShouldAllocatePageWhenRequired
+getRecord_ShouldReturnExistingRecord
+getRecord_ShouldReturnDefensiveCopy
+getRecord_ShouldRejectNullRecordId
+getRecord_ShouldRejectMissingRecord
+getRecord_ShouldRejectBlankTableFile
+update_ShouldReplaceRecordData
+update_ShouldPreserveRecordId
+update_ShouldRejectNullRecord
+update_ShouldRejectMissingRecord
+delete_ShouldMarkRecordDeleted
+delete_ShouldDecreaseActiveRecordCount
+delete_ShouldRejectMissingRecord
+delete_ShouldBeIdempotent
+insert_ShouldWriteThroughBufferPool
+getRecord_ShouldReadThroughBufferPool
+update_ShouldMarkPageDirty
+delete_ShouldMaintainPageSlotState
 ```
 
 # 28. LRUReplacementStrategyTests
