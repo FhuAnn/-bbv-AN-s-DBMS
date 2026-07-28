@@ -1595,7 +1595,7 @@ ScanStrategy ..> ScanContext
 | 20 | Query Processor | `init()`, `next()`, `close()` for execution operators | Iterator ✅ | Query operators return rows incrementally. Iterator provides a consistent pull-based interface and avoids loading the entire result into memory. |
 | 21 | Transaction Management | Manage transaction behavior by statuses that are `ACTIVE`, `COMMITTED`, `ABORTED`   ✅ | State | Transaction behavior depends strongly on its current state. State prevents invalid operations and keeps state-specific behavior organized. |
 | 22 | Transaction Management | `BEGIN`, `COMMIT`, `ROLLBACK`, `SAVEPOINT` ✅ | Command | Transaction operations can be represented as objects, making them easier to execute, log, queue, audit or extend. |
-| 23 | Transaction Management | MVCC, optimistic and pessimistic concurrency | Strategy | Different concurrency-control mechanisms may be selected depending on workload and isolation requirements without modifying transaction management logic. |
+| 23 | Storage Engine | Traverse records in a Page | Iterator  | Records can be traversed sequentially without exposing the internal page structure, slot positions, or deleted-record handling to the client. |
 | 24 | Transaction Management | Transaction commit and rollback events | Observer | Commit and rollback may trigger logging, lock release, cache invalidation, replication and auditing. Observer allows these components to react independently. |
 | 25 | Database & Metadata Management | Store and retrieve `Schema`, `TableMetadata`, `IndexMetadata`, `Constraint` ✅ | Repository | Separates metadata retrieval logic from domain objects and allows switching between in-memory, file-based or persistent storage. |
 | 26 | Storage Engine | Convert external Page format into the internal Page model   ✅ | Adapter | Adapter allows Storage Engine to read page data from another format or library without changing StorageEngine, BufferPool or DiskManager. |
@@ -2001,6 +2001,7 @@ sequenceDiagram
 ### 6. State Design Pattern
 - When we use ? - When object state changing lead to its behavior changing. Therefor, Database is suitable because there is changing in database state (Close, readonly, open).
 - I revised and designed class diagram for this pattern aplying. 
+
 ```mermaid
 classDiagram
 direction LR
@@ -4634,6 +4635,76 @@ MVCCConcurrencyStrategy --> VersionManager
 OptimisticConcurrencyStrategy --> VersionManager
 OptimisticConcurrencyStrategy --> ConflictDetector
 PessimisticConcurrencyStrategy --> LockManager
+```
+
+### 23. Apply Iterator pattern for traversing step by step records in a page
+
+```java
+RecordIterator iterator = page.iterator();
+
+while (iterator.hasNext()) {
+    Record record = iterator.next();
+
+    System.out.println(
+            new String(record.getData())
+    );
+}
+```
+```mermaid
+classDiagram
+direction LR
+
+class Record {
+    -RecordId id
+    -byte[] data
+    -boolean deleted
+
+    +getId() RecordId
+    +getData() byte[]
+    +isDeleted() boolean
+}
+
+class RecordIterator {
+    <<interface>>
+
+    +hasNext() boolean
+    +next() Record
+    +reset() void
+}
+
+class PageRecordIterator {
+    -Page page
+    -int currentPosition
+
+    +PageRecordIterator(Page page)
+    +hasNext() boolean
+    +next() Record
+    +reset() void
+    -findNextValidPosition() int
+}
+
+class Page {
+    -PageId id
+    -List~Record~ records
+
+    +addRecord(Record record) void
+    +getRecord(int position) Record
+    +getRecordCount() int
+    +iterator() RecordIterator
+}
+
+class RecordManager {
+    +scan(Page page) List~Record~
+}
+
+RecordIterator <|.. PageRecordIterator
+
+Page "1" *-- "0..*" Record : contains
+Page --> RecordIterator : creates
+PageRecordIterator --> Page : traverses
+PageRecordIterator --> Record : returns
+RecordManager --> Page
+RecordManager --> RecordIterator
 ```
 # 🧪 Testing Status
 

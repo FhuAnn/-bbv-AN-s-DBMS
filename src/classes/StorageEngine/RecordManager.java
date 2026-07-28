@@ -1,6 +1,10 @@
 package classes.storageengine;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import chain.ConstraintValidationChain;
+import interfaces.storage.record.IRecordIterator;
 
 public class RecordManager {
     private ConstraintValidationChain constraintValidationChain;
@@ -25,5 +29,17 @@ public class RecordManager {
     }
 
     public void delete(RecordId recordId, String tableFile) {
+    }
+
+    public List<Record> scan(Page page) {
+        List<Record> records = new ArrayList<>();
+
+        IRecordIterator iterator = page.iterator();
+
+        while (iterator.hasNext()) {
+            records.add(iterator.next());
+        }
+
+        return records;
     }
 }
