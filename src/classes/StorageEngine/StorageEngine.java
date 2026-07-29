@@ -19,6 +19,7 @@ public class StorageEngine {
     private DiskManager diskManager;
     private RecordManager recordManager;
     private PageAdapter pageAdapter;
+    private final StorageAllocator storageAllocator;
 
     public UUID getId() {
         return id;
