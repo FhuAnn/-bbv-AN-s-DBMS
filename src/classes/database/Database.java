@@ -45,9 +45,11 @@ public class Database extends AbstractMetadataComponent {
          */
         this.state = new ClosedDatabaseState();
     }
+
     public DatabaseStateType getState() {
         return state.getType();
     }
+
     public void open() {
         state.open(this);
     }
@@ -121,7 +123,7 @@ public class Database extends AbstractMetadataComponent {
     /*
      * =====================================================
      * Read operations
-     * Những thao tác đọc không cần delegate qua State.
+     * Những thao tác đọc không cần delegate qua State. 
      * =====================================================
      */
 

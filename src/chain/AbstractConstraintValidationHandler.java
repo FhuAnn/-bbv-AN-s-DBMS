@@ -13,25 +13,21 @@ public abstract class AbstractConstraintValidationHandler
 
     @Override
     public IConstraintValidationHandler setNext(
-            IConstraintValidationHandler next
-    ) {
+            IConstraintValidationHandler next) {
         return null;
     }
 
     @Override
     public IConstraintValidationHandler validate(
-            ConstraintValidationContext context
-    ) {
+            ConstraintValidationContext context) {
         return null;
     }
 
     protected abstract ConstraintValidationResult doValidate(
-            ConstraintValidationContext context
-    );
+            ConstraintValidationContext context);
 
     protected ConstraintValidationResult validateNext(
-            ConstraintValidationContext context
-    ) {
+            ConstraintValidationContext context) {
         return null;
     }
 
