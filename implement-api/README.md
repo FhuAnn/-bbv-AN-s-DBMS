@@ -1,3 +1,563 @@
+# API Project - DBMS
+
+# I. Database Object Management API Design
+
+## 1. Overview
+
+This API provides management operations for the main database objects in An's DBMS.
+
+### Supported objects
+
+```text
+Database
+└── Schema
+    ├── Table
+    │   ├── Column
+    │   ├── Constraint
+    │   └── Index
+    └── View
+```
+
+### Base URL
+
+```text
+/api/v1
+```
+
+### API package structure
+
+```text
+com.an.dbms.api
+├── database
+│   ├── DatabaseController.java
+│   ├── DatabaseService.java
+│   ├── DatabaseMapper.java
+│   └── dto
+├── schema
+│   ├── SchemaController.java
+│   ├── SchemaService.java
+│   ├── SchemaMapper.java
+│   └── dto
+├── table
+│   ├── TableController.java
+│   ├── TableService.java
+│   ├── TableMapper.java
+│   └── dto
+├── column
+│   ├── ColumnController.java
+│   ├── ColumnService.java
+│   ├── ColumnMapper.java
+│   └── dto
+├── view
+│   ├── ViewController.java
+│   ├── ViewService.java
+│   ├── ViewMapper.java
+│   └── dto
+├── index
+│   ├── IndexController.java
+│   ├── IndexService.java
+│   ├── IndexMapper.java
+│   └── dto
+├── constraint
+│   ├── ConstraintController.java
+│   ├── ConstraintService.java
+│   ├── ConstraintMapper.java
+│   └── dto
+└── common
+    ├── ApiError.java
+    ├── ApiResponse.java
+    └── GlobalExceptionHandler.java
+```
+
+---
+
+## 2. General Conventions
+
+| Operation | HTTP method |
+| --- | --- |
+| Create a resource | `POST` |
+| Retrieve a resource | `GET` |
+| Partially update a resource | `PATCH` |
+| Delete a resource | `DELETE` |
+| Execute a resource action | `POST` |
+
+### Common response status codes
+
+| Status | Meaning |
+| --- | --- |
+| `200 OK` | Resource retrieved or updated successfully |
+| `201 Created` | Resource created successfully |
+| `204 No Content` | Resource deleted successfully |
+| `400 Bad Request` | Invalid request |
+| `404 Not Found` | Resource does not exist |
+| `409 Conflict` | Duplicate name or resource conflict |
+| `500 Internal Server Error` | Unexpected server error |
+
+---
+
+# 3. Database API
+
+Base resource:
+
+```text
+/api/v1/databases
+```
+
+| Method | Endpoint | Controller method | Request | Response | Status | Description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `POST` | `/api/v1/databases` | `createDatabase(request)` | `CreateDatabaseRequest` | `DatabaseResponse` | `201` | Create a database |
+| `GET` | `/api/v1/databases/{databaseId}` | `getDatabase(databaseId)` | None | `DatabaseResponse` | `200` | Get a database by ID |
+| `GET` | `/api/v1/databases` | `listDatabases()` | None | `List<DatabaseResponse>` | `200` | List all databases |
+| `PATCH` | `/api/v1/databases/{databaseId}/name` | `renameDatabase(databaseId, request)` | `RenameDatabaseRequest` | `DatabaseResponse` | `200` | Rename a database |
+| `POST` | `/api/v1/databases/{databaseId}/open` | `openDatabase(databaseId)` | None | `DatabaseResponse` | `200` | Open a database |
+| `POST` | `/api/v1/databases/{databaseId}/close` | `closeDatabase(databaseId)` | None | `DatabaseResponse` | `200` | Close a database |
+| `PATCH` | `/api/v1/databases/{databaseId}/read-only` | `setReadOnly(databaseId, request)` | `SetReadOnlyRequest` | `DatabaseResponse` | `200` | Change read-only mode |
+| `DELETE` | `/api/v1/databases/{databaseId}` | `deleteDatabase(databaseId)` | None | None | `204` | Delete a database |
+
+### Main DTOs
+
+```text
+CreateDatabaseRequest
+└── String name
+
+RenameDatabaseRequest
+└── String newName
+
+SetReadOnlyRequest
+└── boolean readOnly
+
+DatabaseResponse
+├── UUID id
+├── String name
+├── DatabaseStateType state
+├── boolean readOnly
+└── int schemaCount
+```
+
+### Java Core mapping
+
+```text
+DatabaseController
+→ DatabaseService
+→ DatabaseMapper
+→ DatabaseManager
+→ Database
+```
+
+---
+
+# 4. Schema API
+
+Collection resource:
+
+```text
+/api/v1/databases/{databaseId}/schemas
+```
+
+Individual resource:
+
+```text
+/api/v1/schemas/{schemaId}
+```
+
+| Method | Endpoint | Controller method | Request | Response | Status | Description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `POST` | `/api/v1/databases/{databaseId}/schemas` | `createSchema(databaseId, request)` | `CreateSchemaRequest` | `SchemaResponse` | `201` | Create a schema |
+| `GET` | `/api/v1/schemas/{schemaId}` | `getSchema(schemaId)` | None | `SchemaResponse` | `200` | Get a schema by ID |
+| `GET` | `/api/v1/databases/{databaseId}/schemas` | `listSchemas(databaseId)` | None | `List<SchemaResponse>` | `200` | List schemas in a database |
+| `PATCH` | `/api/v1/schemas/{schemaId}/name` | `renameSchema(schemaId, request)` | `RenameSchemaRequest` | `SchemaResponse` | `200` | Rename a schema |
+| `POST` | `/api/v1/schemas/{schemaId}/copies` | `copySchema(schemaId, request)` | `CopySchemaRequest` | `SchemaResponse` | `201` | Copy a schema |
+| `DELETE` | `/api/v1/schemas/{schemaId}` | `deleteSchema(schemaId)` | None | None | `204` | Delete a schema |
+
+### Main DTOs
+
+```text
+CreateSchemaRequest
+├── String name
+└── UUID ownerId
+
+RenameSchemaRequest
+└── String newName
+
+CopySchemaRequest
+└── String newName
+
+SchemaResponse
+├── UUID id
+├── UUID databaseId
+├── UUID ownerId
+├── String name
+├── int tableCount
+└── int viewCount
+```
+
+### Java Core mapping
+
+```text
+SchemaController
+→ SchemaService
+→ SchemaMapper
+→ MetadataManager
+→ SchemaRepository
+→ Schema
+```
+
+---
+
+# 5. Table API
+
+Collection resource:
+
+```text
+/api/v1/schemas/{schemaId}/tables
+```
+
+Individual resource:
+
+```text
+/api/v1/tables/{tableId}
+```
+
+| Method | Endpoint | Controller method | Request | Response | Status | Description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `POST` | `/api/v1/schemas/{schemaId}/tables` | `createTable(schemaId, request)` | `CreateTableRequest` | `TableResponse` | `201` | Create a table |
+| `GET` | `/api/v1/tables/{tableId}` | `getTable(tableId)` | None | `TableResponse` | `200` | Get a table by ID |
+| `GET` | `/api/v1/schemas/{schemaId}/tables` | `listTables(schemaId)` | None | `List<TableResponse>` | `200` | List tables in a schema |
+| `PATCH` | `/api/v1/tables/{tableId}/name` | `renameTable(tableId, request)` | `RenameTableRequest` | `TableResponse` | `200` | Rename a table |
+| `POST` | `/api/v1/tables/{tableId}/copies` | `copyTable(tableId, request)` | `CopyTableRequest` | `TableResponse` | `201` | Copy table metadata |
+| `DELETE` | `/api/v1/tables/{tableId}` | `deleteTable(tableId)` | None | None | `204` | Delete a table |
+
+### Main DTOs
+
+```text
+CreateTableRequest
+└── String name
+
+RenameTableRequest
+└── String newName
+
+CopyTableRequest
+├── String newName
+└── UUID targetSchemaId
+
+TableResponse
+├── UUID id
+├── UUID schemaId
+├── String name
+├── List<ColumnResponse> columns
+├── List<ConstraintResponse> constraints
+└── List<IndexResponse> indexes
+```
+
+### Java Core mapping
+
+```text
+TableController
+→ TableService
+→ TableMapper
+→ MetadataManager
+→ TableMetadataRepository
+→ TableMetadata
+```
+
+---
+
+# 6. Column API
+
+Column is a child resource of a table. Therefore, `tableId` is included in every column endpoint.
+
+Collection resource:
+
+```text
+/api/v1/tables/{tableId}/columns
+```
+
+Individual resource:
+
+```text
+/api/v1/tables/{tableId}/columns/{columnId}
+```
+
+| Method | Endpoint | Controller method | Request | Response | Status | Description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `POST` | `/api/v1/tables/{tableId}/columns` | `createColumn(tableId, request)` | `CreateColumnRequest` | `ColumnResponse` | `201` | Add a column to a table |
+| `GET` | `/api/v1/tables/{tableId}/columns/{columnId}` | `getColumn(tableId, columnId)` | None | `ColumnResponse` | `200` | Get a column by ID |
+| `GET` | `/api/v1/tables/{tableId}/columns` | `listColumns(tableId)` | None | `List<ColumnResponse>` | `200` | List columns in a table |
+| `PATCH` | `/api/v1/tables/{tableId}/columns/{columnId}/name` | `renameColumn(tableId, columnId, request)` | `RenameColumnRequest` | `ColumnResponse` | `200` | Rename a column |
+| `PATCH` | `/api/v1/tables/{tableId}/columns/{columnId}` | `updateColumn(tableId, columnId, request)` | `UpdateColumnRequest` | `ColumnResponse` | `200` | Update column metadata |
+| `DELETE` | `/api/v1/tables/{tableId}/columns/{columnId}` | `deleteColumn(tableId, columnId)` | None | None | `204` | Remove a column |
+
+### Main DTOs
+
+```text
+CreateColumnRequest
+├── String name
+├── DataType dataType
+├── boolean nullable
+├── Object defaultValue
+├── int position
+├── Integer length
+├── Integer precision
+├── Integer scale
+└── boolean identity
+
+RenameColumnRequest
+└── String newName
+
+UpdateColumnRequest
+├── DataType dataType
+├── Boolean nullable
+├── Object defaultValue
+├── Integer length
+├── Integer precision
+└── Integer scale
+
+ColumnResponse
+├── UUID id
+├── UUID tableId
+├── String name
+├── DataType dataType
+├── boolean nullable
+├── Object defaultValue
+├── int position
+├── Integer length
+├── Integer precision
+├── Integer scale
+└── boolean identity
+```
+
+### Java Core mapping
+
+```text
+ColumnController
+→ ColumnService
+→ ColumnMapper
+→ ColumnMetadataBuilder
+→ TableMetadataRepository
+→ TableMetadata
+→ ColumnMetadata
+```
+
+---
+
+# 7. View API
+
+View is a child resource of a schema.
+
+Collection resource:
+
+```text
+/api/v1/schemas/{schemaId}/views
+```
+
+Individual resource:
+
+```text
+/api/v1/schemas/{schemaId}/views/{viewId}
+```
+
+| Method | Endpoint | Controller method | Request | Response | Status | Description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `POST` | `/api/v1/schemas/{schemaId}/views` | `createView(schemaId, request)` | `CreateViewRequest` | `ViewResponse` | `201` | Create a view |
+| `GET` | `/api/v1/schemas/{schemaId}/views/{viewId}` | `getView(schemaId, viewId)` | None | `ViewResponse` | `200` | Get a view by ID |
+| `GET` | `/api/v1/schemas/{schemaId}/views` | `listViews(schemaId)` | None | `List<ViewResponse>` | `200` | List views in a schema |
+| `PATCH` | `/api/v1/schemas/{schemaId}/views/{viewId}/name` | `renameView(schemaId, viewId, request)` | `RenameViewRequest` | `ViewResponse` | `200` | Rename a view |
+| `PATCH` | `/api/v1/schemas/{schemaId}/views/{viewId}/definition` | `updateDefinition(schemaId, viewId, request)` | `UpdateViewDefinitionRequest` | `ViewResponse` | `200` | Update the view definition |
+| `POST` | `/api/v1/schemas/{schemaId}/views/{viewId}/refresh` | `refreshView(schemaId, viewId)` | None | `ViewResponse` | `200` | Refresh a materialized view |
+| `DELETE` | `/api/v1/schemas/{schemaId}/views/{viewId}` | `deleteView(schemaId, viewId)` | None | None | `204` | Delete a view |
+
+### Main DTOs
+
+```text
+CreateViewRequest
+├── String name
+├── String definition
+└── boolean materialized
+
+RenameViewRequest
+└── String newName
+
+UpdateViewDefinitionRequest
+└── String definition
+
+ViewResponse
+├── UUID id
+├── UUID schemaId
+├── String name
+├── String definition
+├── Set<UUID> dependencyIds
+├── boolean materialized
+└── boolean valid
+```
+
+### Java Core mapping
+
+```text
+ViewController
+→ ViewService
+→ ViewMapper
+→ MetadataManager
+→ SchemaRepository
+→ Schema
+→ View
+```
+
+---
+
+# 8. Index API
+
+Collection resource:
+
+```text
+/api/v1/tables/{tableId}/indexes
+```
+
+Individual resource:
+
+```text
+/api/v1/indexes/{indexId}
+```
+
+| Method | Endpoint | Controller method | Request | Response | Status | Description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `POST` | `/api/v1/tables/{tableId}/indexes` | `createIndex(tableId, request)` | `CreateIndexRequest` | `IndexResponse` | `201` | Create an index |
+| `GET` | `/api/v1/indexes/{indexId}` | `getIndex(indexId)` | None | `IndexResponse` | `200` | Get an index by ID |
+| `GET` | `/api/v1/tables/{tableId}/indexes` | `listIndexes(tableId)` | None | `List<IndexResponse>` | `200` | List indexes on a table |
+| `PATCH` | `/api/v1/indexes/{indexId}/name` | `renameIndex(indexId, request)` | `RenameIndexRequest` | `IndexResponse` | `200` | Rename an index |
+| `POST` | `/api/v1/indexes/{indexId}/rebuild` | `rebuildIndex(indexId)` | None | `IndexResponse` | `200` | Rebuild an index |
+| `DELETE` | `/api/v1/indexes/{indexId}` | `deleteIndex(indexId)` | None | None | `204` | Delete an index |
+
+### Main DTOs
+
+```text
+CreateIndexRequest
+├── String name
+├── IndexType type
+├── List<UUID> columnIds
+└── boolean unique
+
+RenameIndexRequest
+└── String newName
+
+IndexResponse
+├── UUID id
+├── UUID tableId
+├── String name
+├── IndexType type
+├── List<UUID> columnIds
+└── boolean unique
+```
+
+### Java Core mapping
+
+```text
+IndexController
+→ IndexService
+→ IndexMapper
+→ IndexFactory
+→ MetadataManager
+→ IndexMetadataRepository
+→ IndexMetadata
+```
+
+---
+
+# 9. Constraint API
+
+Foreign key relationships are managed as constraints. A separate relationship API is not required.
+
+Collection resource:
+
+```text
+/api/v1/tables/{tableId}/constraints
+```
+
+Individual resource:
+
+```text
+/api/v1/constraints/{constraintId}
+```
+
+| Method | Endpoint | Controller method | Request | Response | Status | Description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `POST` | `/api/v1/tables/{tableId}/constraints` | `createConstraint(tableId, request)` | `CreateConstraintRequest` | `ConstraintResponse` | `201` | Create a constraint |
+| `GET` | `/api/v1/constraints/{constraintId}` | `getConstraint(constraintId)` | None | `ConstraintResponse` | `200` | Get a constraint by ID |
+| `GET` | `/api/v1/tables/{tableId}/constraints` | `listConstraints(tableId)` | None | `List<ConstraintResponse>` | `200` | List constraints on a table |
+| `PATCH` | `/api/v1/constraints/{constraintId}/name` | `renameConstraint(constraintId, request)` | `RenameConstraintRequest` | `ConstraintResponse` | `200` | Rename a constraint |
+| `POST` | `/api/v1/constraints/{constraintId}/validate` | `validateConstraint(constraintId)` | None | `ConstraintValidationResponse` | `200` | Validate a constraint |
+| `DELETE` | `/api/v1/constraints/{constraintId}` | `deleteConstraint(constraintId)` | None | None | `204` | Delete a constraint |
+
+### Supported constraint types
+
+```text
+PRIMARY_KEY
+FOREIGN_KEY
+UNIQUE
+NOT_NULL
+CHECK
+```
+
+### Main DTOs
+
+```text
+CreateConstraintRequest
+├── String name
+├── ConstraintType type
+├── List<UUID> columnIds
+├── UUID referencedTableId
+├── List<UUID> referencedColumnIds
+└── String expression
+
+RenameConstraintRequest
+└── String newName
+
+ConstraintResponse
+├── UUID id
+├── UUID tableId
+├── String name
+├── ConstraintType type
+├── List<UUID> columnIds
+├── UUID referencedTableId
+├── List<UUID> referencedColumnIds
+└── String expression
+
+ConstraintValidationResponse
+├── UUID constraintId
+├── boolean valid
+├── long violationCount
+└── List<String> violations
+```
+
+### Java Core mapping
+
+```text
+ConstraintController
+→ ConstraintService
+→ ConstraintMapper
+→ ConstraintDefinitionBuilder
+→ ConstraintFactory
+→ MetadataManager
+→ ConstraintRepository
+→ Constraint
+```
+
+---
+
+# 10. Endpoint Summary
+
+| Module | Endpoints |
+| --- | ---: |
+| Database | 8 |
+| Schema | 6 |
+| Table | 6 |
+| Column | 6 |
+| View | 7 |
+| Index | 6 |
+| Constraint | 6 |
+| **Total** | **45** |
+
+---
+# II. Mindmap
 ### 1. API mindmap
 ```mermaid
 flowchart LR
@@ -1719,3 +2279,4 @@ flowchart LR
 ```
 
 ---
+
