@@ -1,10 +1,10 @@
 package core.classes.tx.concurrency;
 
-import classes.tx.LockManager;
-import classes.tx.Resource;
-import classes.tx.Transaction;
-import enums.strategy.ConcurrencyStrategyType;
-import interfaces.tx.IConcurrencyControlStrategy;
+import core.classes.tx.LockManager;
+import core.classes.tx.Resource;
+import core.classes.tx.Transaction;
+import core.enums.strategy.ConcurrencyStrategyType;
+import core.interfaces.tx.IConcurrencyControlStrategy;
 
 public class PessimisticConcurrencyStrategy implements IConcurrencyControlStrategy {
     private LockManager lockManager;

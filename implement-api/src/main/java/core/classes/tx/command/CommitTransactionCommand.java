@@ -2,8 +2,8 @@ package core.classes.tx.command;
 
 import java.util.UUID;
 
-import classes.tx.TransactionManager;
-import enums.transaction.TransactionCommandType;
+import core.classes.tx.TransactionManager;
+import core.enums.transaction.TransactionCommandType;
 
 public class CommitTransactionCommand extends AbstractTransactionCommand {
     public CommitTransactionCommand(

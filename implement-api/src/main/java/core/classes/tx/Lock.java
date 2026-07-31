@@ -1,6 +1,6 @@
 package core.classes.tx;
 
-import enums.LockMode;
+import core.enums.LockMode;
 
 public class Lock {
     public LockMode mode;

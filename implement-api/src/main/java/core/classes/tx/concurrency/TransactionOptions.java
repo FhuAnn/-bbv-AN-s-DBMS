@@ -1,7 +1,7 @@
 package core.classes.tx.concurrency;
 
-import enums.IsolationLevel;
-import enums.strategy.ConcurrencyStrategyType;
+import core.enums.IsolationLevel;
+import core.enums.strategy.ConcurrencyStrategyType;
 
 public class TransactionOptions {
     private IsolationLevel isolationLevel;

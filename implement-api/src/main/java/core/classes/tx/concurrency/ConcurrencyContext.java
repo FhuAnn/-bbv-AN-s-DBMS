@@ -1,7 +1,7 @@
 package core.classes.tx.concurrency;
 
-import classes.storageengine.StorageEngine;
-import classes.tx.LockManager;
+import core.classes.storageengine.StorageEngine;
+import core.classes.tx.LockManager;
 
 public class ConcurrencyContext {
     private StorageEngine storageEngine;
