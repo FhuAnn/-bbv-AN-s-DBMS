@@ -1,0 +1,14 @@
+package core.enums;
+
+public enum DataType {
+    INTEGER,
+    STRING,
+    BOOLEAN,
+    FLOAT,
+    DOUBLE,
+    DATE,
+    VARCHAR,
+    TEXT,
+    DECIMAL,
+    TIMESTAMP
+}

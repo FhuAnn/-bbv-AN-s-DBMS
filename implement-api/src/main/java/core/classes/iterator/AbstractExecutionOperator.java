@@ -1,0 +1,36 @@
+package core.classes.iterator;
+
+import core.classes.metadata.Row;
+import core.interfaces.IExecutionOperator;
+
+public abstract class AbstractExecutionOperator implements IExecutionOperator {
+    private boolean initialized;
+    private boolean closed;
+
+    protected AbstractExecutionOperator() {
+        this.initialized = false;
+        this.closed = false;
+    }
+
+    @Override
+    public void init() {
+        // TODO: Implement
+    }
+
+    @Override
+    public abstract Row next();
+
+    @Override
+    public void close() {
+        // TODO: Implement
+    }
+
+    public boolean isInitialized() {
+        return false;
+    }
+
+    public boolean isClosed() {
+        return false;
+    }
+
+}
