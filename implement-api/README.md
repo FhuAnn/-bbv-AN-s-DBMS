@@ -1,3 +1,563 @@
+# API Project - DBMS
+
+# I. Database Object Management API Design
+
+## 1. Overview
+
+This API provides management operations for the main database objects in An's DBMS.
+
+### Supported objects
+
+```text
+Database
+└── Schema
+    ├── Table
+    │   ├── Column
+    │   ├── Constraint
+    │   └── Index
+    └── View
+```
+
+### Base URL
+
+```text
+/api/v1
+```
+
+### API package structure
+
+```text
+com.an.dbms.api
+├── database
+│   ├── DatabaseController.java
+│   ├── DatabaseService.java
+│   ├── DatabaseMapper.java
+│   └── dto
+├── schema
+│   ├── SchemaController.java
+│   ├── SchemaService.java
+│   ├── SchemaMapper.java
+│   └── dto
+├── table
+│   ├── TableController.java
+│   ├── TableService.java
+│   ├── TableMapper.java
+│   └── dto
+├── column
+│   ├── ColumnController.java
+│   ├── ColumnService.java
+│   ├── ColumnMapper.java
+│   └── dto
+├── view
+│   ├── ViewController.java
+│   ├── ViewService.java
+│   ├── ViewMapper.java
+│   └── dto
+├── index
+│   ├── IndexController.java
+│   ├── IndexService.java
+│   ├── IndexMapper.java
+│   └── dto
+├── constraint
+│   ├── ConstraintController.java
+│   ├── ConstraintService.java
+│   ├── ConstraintMapper.java
+│   └── dto
+└── common
+    ├── ApiError.java
+    ├── ApiResponse.java
+    └── GlobalExceptionHandler.java
+```
+
+---
+
+## 2. General Conventions
+
+| Operation | HTTP method |
+| --- | --- |
+| Create a resource | `POST` |
+| Retrieve a resource | `GET` |
+| Partially update a resource | `PATCH` |
+| Delete a resource | `DELETE` |
+| Execute a resource action | `POST` |
+
+### Common response status codes
+
+| Status | Meaning |
+| --- | --- |
+| `200 OK` | Resource retrieved or updated successfully |
+| `201 Created` | Resource created successfully |
+| `204 No Content` | Resource deleted successfully |
+| `400 Bad Request` | Invalid request |
+| `404 Not Found` | Resource does not exist |
+| `409 Conflict` | Duplicate name or resource conflict |
+| `500 Internal Server Error` | Unexpected server error |
+
+---
+
+# 3. Database API
+
+Base resource:
+
+```text
+/api/v1/databases
+```
+
+| Method | Endpoint | Controller method | Request | Response | Status | Description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `POST` | `/api/v1/databases` | `createDatabase(request)` | `CreateDatabaseRequest` | `DatabaseResponse` | `201` | Create a database |
+| `GET` | `/api/v1/databases/{databaseId}` | `getDatabase(databaseId)` | None | `DatabaseResponse` | `200` | Get a database by ID |
+| `GET` | `/api/v1/databases` | `listDatabases()` | None | `List<DatabaseResponse>` | `200` | List all databases |
+| `PATCH` | `/api/v1/databases/{databaseId}/name` | `renameDatabase(databaseId, request)` | `RenameDatabaseRequest` | `DatabaseResponse` | `200` | Rename a database |
+| `POST` | `/api/v1/databases/{databaseId}/open` | `openDatabase(databaseId)` | None | `DatabaseResponse` | `200` | Open a database |
+| `POST` | `/api/v1/databases/{databaseId}/close` | `closeDatabase(databaseId)` | None | `DatabaseResponse` | `200` | Close a database |
+| `PATCH` | `/api/v1/databases/{databaseId}/read-only` | `setReadOnly(databaseId, request)` | `SetReadOnlyRequest` | `DatabaseResponse` | `200` | Change read-only mode |
+| `DELETE` | `/api/v1/databases/{databaseId}` | `deleteDatabase(databaseId)` | None | None | `204` | Delete a database |
+
+### Main DTOs
+
+```text
+CreateDatabaseRequest
+└── String name
+
+RenameDatabaseRequest
+└── String newName
+
+SetReadOnlyRequest
+└── boolean readOnly
+
+DatabaseResponse
+├── UUID id
+├── String name
+├── DatabaseStateType state
+├── boolean readOnly
+└── int schemaCount
+```
+
+### Java Core mapping
+
+```text
+DatabaseController
+→ DatabaseService
+→ DatabaseMapper
+→ DatabaseManager
+→ Database
+```
+
+---
+
+# 4. Schema API
+
+Collection resource:
+
+```text
+/api/v1/databases/{databaseId}/schemas
+```
+
+Individual resource:
+
+```text
+/api/v1/schemas/{schemaId}
+```
+
+| Method | Endpoint | Controller method | Request | Response | Status | Description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `POST` | `/api/v1/databases/{databaseId}/schemas` | `createSchema(databaseId, request)` | `CreateSchemaRequest` | `SchemaResponse` | `201` | Create a schema |
+| `GET` | `/api/v1/schemas/{schemaId}` | `getSchema(schemaId)` | None | `SchemaResponse` | `200` | Get a schema by ID |
+| `GET` | `/api/v1/databases/{databaseId}/schemas` | `listSchemas(databaseId)` | None | `List<SchemaResponse>` | `200` | List schemas in a database |
+| `PATCH` | `/api/v1/schemas/{schemaId}/name` | `renameSchema(schemaId, request)` | `RenameSchemaRequest` | `SchemaResponse` | `200` | Rename a schema |
+| `POST` | `/api/v1/schemas/{schemaId}/copies` | `copySchema(schemaId, request)` | `CopySchemaRequest` | `SchemaResponse` | `201` | Copy a schema |
+| `DELETE` | `/api/v1/schemas/{schemaId}` | `deleteSchema(schemaId)` | None | None | `204` | Delete a schema |
+
+### Main DTOs
+
+```text
+CreateSchemaRequest
+├── String name
+└── UUID ownerId
+
+RenameSchemaRequest
+└── String newName
+
+CopySchemaRequest
+└── String newName
+
+SchemaResponse
+├── UUID id
+├── UUID databaseId
+├── UUID ownerId
+├── String name
+├── int tableCount
+└── int viewCount
+```
+
+### Java Core mapping
+
+```text
+SchemaController
+→ SchemaService
+→ SchemaMapper
+→ MetadataManager
+→ SchemaRepository
+→ Schema
+```
+
+---
+
+# 5. Table API
+
+Collection resource:
+
+```text
+/api/v1/schemas/{schemaId}/tables
+```
+
+Individual resource:
+
+```text
+/api/v1/tables/{tableId}
+```
+
+| Method | Endpoint | Controller method | Request | Response | Status | Description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `POST` | `/api/v1/schemas/{schemaId}/tables` | `createTable(schemaId, request)` | `CreateTableRequest` | `TableResponse` | `201` | Create a table |
+| `GET` | `/api/v1/tables/{tableId}` | `getTable(tableId)` | None | `TableResponse` | `200` | Get a table by ID |
+| `GET` | `/api/v1/schemas/{schemaId}/tables` | `listTables(schemaId)` | None | `List<TableResponse>` | `200` | List tables in a schema |
+| `PATCH` | `/api/v1/tables/{tableId}/name` | `renameTable(tableId, request)` | `RenameTableRequest` | `TableResponse` | `200` | Rename a table |
+| `POST` | `/api/v1/tables/{tableId}/copies` | `copyTable(tableId, request)` | `CopyTableRequest` | `TableResponse` | `201` | Copy table metadata |
+| `DELETE` | `/api/v1/tables/{tableId}` | `deleteTable(tableId)` | None | None | `204` | Delete a table |
+
+### Main DTOs
+
+```text
+CreateTableRequest
+└── String name
+
+RenameTableRequest
+└── String newName
+
+CopyTableRequest
+├── String newName
+└── UUID targetSchemaId
+
+TableResponse
+├── UUID id
+├── UUID schemaId
+├── String name
+├── List<ColumnResponse> columns
+├── List<ConstraintResponse> constraints
+└── List<IndexResponse> indexes
+```
+
+### Java Core mapping
+
+```text
+TableController
+→ TableService
+→ TableMapper
+→ MetadataManager
+→ TableMetadataRepository
+→ TableMetadata
+```
+
+---
+
+# 6. Column API
+
+Column is a child resource of a table. Therefore, `tableId` is included in every column endpoint.
+
+Collection resource:
+
+```text
+/api/v1/tables/{tableId}/columns
+```
+
+Individual resource:
+
+```text
+/api/v1/tables/{tableId}/columns/{columnId}
+```
+
+| Method | Endpoint | Controller method | Request | Response | Status | Description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `POST` | `/api/v1/tables/{tableId}/columns` | `createColumn(tableId, request)` | `CreateColumnRequest` | `ColumnResponse` | `201` | Add a column to a table |
+| `GET` | `/api/v1/tables/{tableId}/columns/{columnId}` | `getColumn(tableId, columnId)` | None | `ColumnResponse` | `200` | Get a column by ID |
+| `GET` | `/api/v1/tables/{tableId}/columns` | `listColumns(tableId)` | None | `List<ColumnResponse>` | `200` | List columns in a table |
+| `PATCH` | `/api/v1/tables/{tableId}/columns/{columnId}/name` | `renameColumn(tableId, columnId, request)` | `RenameColumnRequest` | `ColumnResponse` | `200` | Rename a column |
+| `PATCH` | `/api/v1/tables/{tableId}/columns/{columnId}` | `updateColumn(tableId, columnId, request)` | `UpdateColumnRequest` | `ColumnResponse` | `200` | Update column metadata |
+| `DELETE` | `/api/v1/tables/{tableId}/columns/{columnId}` | `deleteColumn(tableId, columnId)` | None | None | `204` | Remove a column |
+
+### Main DTOs
+
+```text
+CreateColumnRequest
+├── String name
+├── DataType dataType
+├── boolean nullable
+├── Object defaultValue
+├── int position
+├── Integer length
+├── Integer precision
+├── Integer scale
+└── boolean identity
+
+RenameColumnRequest
+└── String newName
+
+UpdateColumnRequest
+├── DataType dataType
+├── Boolean nullable
+├── Object defaultValue
+├── Integer length
+├── Integer precision
+└── Integer scale
+
+ColumnResponse
+├── UUID id
+├── UUID tableId
+├── String name
+├── DataType dataType
+├── boolean nullable
+├── Object defaultValue
+├── int position
+├── Integer length
+├── Integer precision
+├── Integer scale
+└── boolean identity
+```
+
+### Java Core mapping
+
+```text
+ColumnController
+→ ColumnService
+→ ColumnMapper
+→ ColumnMetadataBuilder
+→ TableMetadataRepository
+→ TableMetadata
+→ ColumnMetadata
+```
+
+---
+
+# 7. View API
+
+View is a child resource of a schema.
+
+Collection resource:
+
+```text
+/api/v1/schemas/{schemaId}/views
+```
+
+Individual resource:
+
+```text
+/api/v1/schemas/{schemaId}/views/{viewId}
+```
+
+| Method | Endpoint | Controller method | Request | Response | Status | Description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `POST` | `/api/v1/schemas/{schemaId}/views` | `createView(schemaId, request)` | `CreateViewRequest` | `ViewResponse` | `201` | Create a view |
+| `GET` | `/api/v1/schemas/{schemaId}/views/{viewId}` | `getView(schemaId, viewId)` | None | `ViewResponse` | `200` | Get a view by ID |
+| `GET` | `/api/v1/schemas/{schemaId}/views` | `listViews(schemaId)` | None | `List<ViewResponse>` | `200` | List views in a schema |
+| `PATCH` | `/api/v1/schemas/{schemaId}/views/{viewId}/name` | `renameView(schemaId, viewId, request)` | `RenameViewRequest` | `ViewResponse` | `200` | Rename a view |
+| `PATCH` | `/api/v1/schemas/{schemaId}/views/{viewId}/definition` | `updateDefinition(schemaId, viewId, request)` | `UpdateViewDefinitionRequest` | `ViewResponse` | `200` | Update the view definition |
+| `POST` | `/api/v1/schemas/{schemaId}/views/{viewId}/refresh` | `refreshView(schemaId, viewId)` | None | `ViewResponse` | `200` | Refresh a materialized view |
+| `DELETE` | `/api/v1/schemas/{schemaId}/views/{viewId}` | `deleteView(schemaId, viewId)` | None | None | `204` | Delete a view |
+
+### Main DTOs
+
+```text
+CreateViewRequest
+├── String name
+├── String definition
+└── boolean materialized
+
+RenameViewRequest
+└── String newName
+
+UpdateViewDefinitionRequest
+└── String definition
+
+ViewResponse
+├── UUID id
+├── UUID schemaId
+├── String name
+├── String definition
+├── Set<UUID> dependencyIds
+├── boolean materialized
+└── boolean valid
+```
+
+### Java Core mapping
+
+```text
+ViewController
+→ ViewService
+→ ViewMapper
+→ MetadataManager
+→ SchemaRepository
+→ Schema
+→ View
+```
+
+---
+
+# 8. Index API
+
+Collection resource:
+
+```text
+/api/v1/tables/{tableId}/indexes
+```
+
+Individual resource:
+
+```text
+/api/v1/indexes/{indexId}
+```
+
+| Method | Endpoint | Controller method | Request | Response | Status | Description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `POST` | `/api/v1/tables/{tableId}/indexes` | `createIndex(tableId, request)` | `CreateIndexRequest` | `IndexResponse` | `201` | Create an index |
+| `GET` | `/api/v1/indexes/{indexId}` | `getIndex(indexId)` | None | `IndexResponse` | `200` | Get an index by ID |
+| `GET` | `/api/v1/tables/{tableId}/indexes` | `listIndexes(tableId)` | None | `List<IndexResponse>` | `200` | List indexes on a table |
+| `PATCH` | `/api/v1/indexes/{indexId}/name` | `renameIndex(indexId, request)` | `RenameIndexRequest` | `IndexResponse` | `200` | Rename an index |
+| `POST` | `/api/v1/indexes/{indexId}/rebuild` | `rebuildIndex(indexId)` | None | `IndexResponse` | `200` | Rebuild an index |
+| `DELETE` | `/api/v1/indexes/{indexId}` | `deleteIndex(indexId)` | None | None | `204` | Delete an index |
+
+### Main DTOs
+
+```text
+CreateIndexRequest
+├── String name
+├── IndexType type
+├── List<UUID> columnIds
+└── boolean unique
+
+RenameIndexRequest
+└── String newName
+
+IndexResponse
+├── UUID id
+├── UUID tableId
+├── String name
+├── IndexType type
+├── List<UUID> columnIds
+└── boolean unique
+```
+
+### Java Core mapping
+
+```text
+IndexController
+→ IndexService
+→ IndexMapper
+→ IndexFactory
+→ MetadataManager
+→ IndexMetadataRepository
+→ IndexMetadata
+```
+
+---
+
+# 9. Constraint API
+
+Foreign key relationships are managed as constraints. A separate relationship API is not required.
+
+Collection resource:
+
+```text
+/api/v1/tables/{tableId}/constraints
+```
+
+Individual resource:
+
+```text
+/api/v1/constraints/{constraintId}
+```
+
+| Method | Endpoint | Controller method | Request | Response | Status | Description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `POST` | `/api/v1/tables/{tableId}/constraints` | `createConstraint(tableId, request)` | `CreateConstraintRequest` | `ConstraintResponse` | `201` | Create a constraint |
+| `GET` | `/api/v1/constraints/{constraintId}` | `getConstraint(constraintId)` | None | `ConstraintResponse` | `200` | Get a constraint by ID |
+| `GET` | `/api/v1/tables/{tableId}/constraints` | `listConstraints(tableId)` | None | `List<ConstraintResponse>` | `200` | List constraints on a table |
+| `PATCH` | `/api/v1/constraints/{constraintId}/name` | `renameConstraint(constraintId, request)` | `RenameConstraintRequest` | `ConstraintResponse` | `200` | Rename a constraint |
+| `POST` | `/api/v1/constraints/{constraintId}/validate` | `validateConstraint(constraintId)` | None | `ConstraintValidationResponse` | `200` | Validate a constraint |
+| `DELETE` | `/api/v1/constraints/{constraintId}` | `deleteConstraint(constraintId)` | None | None | `204` | Delete a constraint |
+
+### Supported constraint types
+
+```text
+PRIMARY_KEY
+FOREIGN_KEY
+UNIQUE
+NOT_NULL
+CHECK
+```
+
+### Main DTOs
+
+```text
+CreateConstraintRequest
+├── String name
+├── ConstraintType type
+├── List<UUID> columnIds
+├── UUID referencedTableId
+├── List<UUID> referencedColumnIds
+└── String expression
+
+RenameConstraintRequest
+└── String newName
+
+ConstraintResponse
+├── UUID id
+├── UUID tableId
+├── String name
+├── ConstraintType type
+├── List<UUID> columnIds
+├── UUID referencedTableId
+├── List<UUID> referencedColumnIds
+└── String expression
+
+ConstraintValidationResponse
+├── UUID constraintId
+├── boolean valid
+├── long violationCount
+└── List<String> violations
+```
+
+### Java Core mapping
+
+```text
+ConstraintController
+→ ConstraintService
+→ ConstraintMapper
+→ ConstraintDefinitionBuilder
+→ ConstraintFactory
+→ MetadataManager
+→ ConstraintRepository
+→ Constraint
+```
+
+---
+
+# 10. Endpoint Summary
+
+| Module | Endpoints |
+| --- | ---: |
+| Database | 8 |
+| Schema | 6 |
+| Table | 6 |
+| Column | 6 |
+| View | 7 |
+| Index | 6 |
+| Constraint | 6 |
+| **Total** | **45** |
+
+---
+# II. Mindmap
 ### 1. API mindmap
 ```mermaid
 flowchart LR
@@ -450,218 +1010,161 @@ flowchart LR
 
 
 # 2. Design class mindmap:
+
+## Database Management
+
 ```mermaid
 flowchart LR
     DatabaseManagement["Database Management"]:::rootStyle
 
-    DatabaseManagementController["Controller"]:::controllerGroup
-    DatabaseManagementControllerDatabaseController["DatabaseController"]:::classLeaf
-    DatabaseManagementControllerDatabaseControllerAttributeDatabaseServicedatabaseService["Attribute: DatabaseService databaseService"]:::attributeLeaf
-    DatabaseManagementControllerDatabaseControllerAttributeDatabaseMapperdatabaseMapper["Attribute: DatabaseMapper databaseMapper"]:::attributeLeaf
-    DatabaseManagementControllerDatabaseControllerMethodcreateDatabaseCreateDatabaseRequestrequest["Method: createDatabase(CreateDatabaseRequest request)"]:::methodLeaf
-    DatabaseManagementControllerDatabaseControllerMethodgetDatabaseUUIDdatabaseId["Method: getDatabase(UUID databaseId)"]:::methodLeaf
-    DatabaseManagementControllerDatabaseControllerMethodlistDatabases["Method: listDatabases()"]:::methodLeaf
-    DatabaseManagementControllerDatabaseControllerMethodrenameDatabaseUUIDdatabaseIdRenameDatabaseRequestrequest["Method: renameDatabase(UUID databaseId, RenameDatabaseRequest request)"]:::methodLeaf
-    DatabaseManagementControllerDatabaseControllerMethodupdateConfigurationUUIDdatabaseIdUpdateDatabaseConfigurationRequestrequest["Method: updateConfiguration(UUID databaseId, UpdateDatabaseConfigurationRequest request)"]:::methodLeaf
-    DatabaseManagementControllerDatabaseControllerMethodopenDatabaseUUIDdatabaseId["Method: openDatabase(UUID databaseId)"]:::methodLeaf
-    DatabaseManagementControllerDatabaseControllerMethodcloseDatabaseUUIDdatabaseId["Method: closeDatabase(UUID databaseId)"]:::methodLeaf
-    DatabaseManagementControllerDatabaseControllerMethoddeleteDatabaseUUIDdatabaseId["Method: deleteDatabase(UUID databaseId)"]:::methodLeaf
-    DatabaseManagementControllerDatabaseControllerMethodgetStatisticsUUIDdatabaseId["Method: getStatistics(UUID databaseId)"]:::methodLeaf
+    Controller["Controller"]:::controllerGroup
+    DTO["DTO"]:::dtoGroup
+    Mapper["Mapper"]:::mapperGroup
 
-    DatabaseManagementDTO["DTO"]:::dtoGroup
-    DatabaseManagementDTOCreateDatabaseRequest["CreateDatabaseRequest"]:::classLeaf
-    DatabaseManagementDTOCreateDatabaseRequestAttributeStringname["Attribute: String name"]:::attributeLeaf
-    DatabaseManagementDTOCreateDatabaseRequestAttributeStringdescription["Attribute: String description"]:::attributeLeaf
-    DatabaseManagementDTOCreateDatabaseRequestAttributeDatabaseConfigurationRequestconfiguration["Attribute: DatabaseConfigurationRequest configuration"]:::attributeLeaf
-    DatabaseManagementDTORenameDatabaseRequest["RenameDatabaseRequest"]:::classLeaf
-    DatabaseManagementDTORenameDatabaseRequestAttributeStringnewName["Attribute: String newName"]:::attributeLeaf
-    DatabaseManagementDTOUpdateDatabaseConfigurationRequest["UpdateDatabaseConfigurationRequest"]:::classLeaf
-    DatabaseManagementDTOUpdateDatabaseConfigurationRequestAttributeBooleanreadOnly["Attribute: Boolean readOnly"]:::attributeLeaf
-    DatabaseManagementDTOUpdateDatabaseConfigurationRequestAttributeIntegerconnectionLimit["Attribute: Integer connectionLimit"]:::attributeLeaf
-    DatabaseManagementDTOUpdateDatabaseConfigurationRequestAttributeStringdefaultSchema["Attribute: String defaultSchema"]:::attributeLeaf
-    DatabaseManagementDTODatabaseResponse["DatabaseResponse"]:::classLeaf
-    DatabaseManagementDTODatabaseResponseAttributeUUIDid["Attribute: UUID id"]:::attributeLeaf
-    DatabaseManagementDTODatabaseResponseAttributeStringname["Attribute: String name"]:::attributeLeaf
-    DatabaseManagementDTODatabaseResponseAttributeStringdescription["Attribute: String description"]:::attributeLeaf
-    DatabaseManagementDTODatabaseResponseAttributeDatabaseStatestate["Attribute: DatabaseState state"]:::attributeLeaf
-    DatabaseManagementDTODatabaseResponseAttributebooleanreadOnly["Attribute: boolean readOnly"]:::attributeLeaf
-    DatabaseManagementDTODatabaseStatisticsResponse["DatabaseStatisticsResponse"]:::classLeaf
-    DatabaseManagementDTODatabaseStatisticsResponseAttributelongschemaCount["Attribute: long schemaCount"]:::attributeLeaf
-    DatabaseManagementDTODatabaseStatisticsResponseAttributelongtableCount["Attribute: long tableCount"]:::attributeLeaf
-    DatabaseManagementDTODatabaseStatisticsResponseAttributelongtotalSize["Attribute: long totalSize"]:::attributeLeaf
-    DatabaseManagementDTODatabaseStatisticsResponseAttributelongactiveConnections["Attribute: long activeConnections"]:::attributeLeaf
+    Service["Service"]:::serviceGroup
+    Core["Java Core"]:::coreGroup
 
-    DatabaseManagementMapper["Mapper"]:::mapperGroup
-    DatabaseManagementMapperDatabaseMapper["DatabaseMapper"]:::classLeaf
-    DatabaseManagementMapperDatabaseMapperMethodtoCreateCommandCreateDatabaseRequestrequest["Method: toCreateCommand(CreateDatabaseRequest request)"]:::methodLeaf
-    DatabaseManagementMapperDatabaseMapperMethodtoResponseDatabasedatabase["Method: toResponse(Database database)"]:::methodLeaf
-    DatabaseManagementMapperDatabaseMapperMethodtoStatisticsResponseDatabaseStatisticsstatistics["Method: toStatisticsResponse(DatabaseStatistics statistics)"]:::methodLeaf
+    DatabaseController["DatabaseController"]:::classLeaf
+    DCService["Attribute: DatabaseService databaseService"]:::attributeLeaf
+    DCMapper["Attribute: DatabaseMapper databaseMapper"]:::attributeLeaf
+    DCCreate["Method: createDatabase(CreateDatabaseRequest request)"]:::methodLeaf
+    DCGet["Method: getDatabase(UUID databaseId)"]:::methodLeaf
+    DCList["Method: listDatabases()"]:::methodLeaf
+    DCRename["Method: renameDatabase(UUID databaseId, RenameDatabaseRequest request)"]:::methodLeaf
+    DCOpen["Method: openDatabase(UUID databaseId)"]:::methodLeaf
+    DCClose["Method: closeDatabase(UUID databaseId)"]:::methodLeaf
+    DCReadOnly["Method: setReadOnly(UUID databaseId, SetReadOnlyRequest request)"]:::methodLeaf
+    DCDelete["Method: deleteDatabase(UUID databaseId)"]:::methodLeaf
 
-    DatabaseManagementService["Service"]:::serviceGroup
-    DatabaseManagementServiceDatabaseService["DatabaseService"]:::classLeaf
-    DatabaseManagementServiceDatabaseServiceAttributeDatabaseCatalogdatabaseCatalog["Attribute: DatabaseCatalog databaseCatalog"]:::attributeLeaf
-    DatabaseManagementServiceDatabaseServiceAttributeDatabaseManagerdatabaseManager["Attribute: DatabaseManager databaseManager"]:::attributeLeaf
-    DatabaseManagementServiceDatabaseServiceMethodcreateDatabaseCreateDatabaseCommandcommand["Method: createDatabase(CreateDatabaseCommand command)"]:::methodLeaf
-    DatabaseManagementServiceDatabaseServiceMethodfindDatabaseUUIDdatabaseId["Method: findDatabase(UUID databaseId)"]:::methodLeaf
-    DatabaseManagementServiceDatabaseServiceMethodfindAllDatabases["Method: findAllDatabases()"]:::methodLeaf
-    DatabaseManagementServiceDatabaseServiceMethodrenameDatabaseUUIDdatabaseIdStringnewName["Method: renameDatabase(UUID databaseId, String newName)"]:::methodLeaf
-    DatabaseManagementServiceDatabaseServiceMethoddeleteDatabaseUUIDdatabaseId["Method: deleteDatabase(UUID databaseId)"]:::methodLeaf
-    DatabaseManagementServiceDatabaseLifecycleService["DatabaseLifecycleService"]:::classLeaf
-    DatabaseManagementServiceDatabaseLifecycleServiceAttributeDatabaseCatalogdatabaseCatalog["Attribute: DatabaseCatalog databaseCatalog"]:::attributeLeaf
-    DatabaseManagementServiceDatabaseLifecycleServiceAttributeDatabaseManagerdatabaseManager["Attribute: DatabaseManager databaseManager"]:::attributeLeaf
-    DatabaseManagementServiceDatabaseLifecycleServiceMethodopenDatabaseUUIDdatabaseId["Method: openDatabase(UUID databaseId)"]:::methodLeaf
-    DatabaseManagementServiceDatabaseLifecycleServiceMethodcloseDatabaseUUIDdatabaseId["Method: closeDatabase(UUID databaseId)"]:::methodLeaf
-    DatabaseManagementServiceDatabaseLifecycleServiceMethodsetReadOnlyUUIDdatabaseIdbooleanreadOnly["Method: setReadOnly(UUID databaseId, boolean readOnly)"]:::methodLeaf
-    DatabaseManagementServiceDatabaseConfigurationService["DatabaseConfigurationService"]:::classLeaf
-    DatabaseManagementServiceDatabaseConfigurationServiceAttributeDatabaseCatalogdatabaseCatalog["Attribute: DatabaseCatalog databaseCatalog"]:::attributeLeaf
-    DatabaseManagementServiceDatabaseConfigurationServiceMethodgetConfigurationUUIDdatabaseId["Method: getConfiguration(UUID databaseId)"]:::methodLeaf
-    DatabaseManagementServiceDatabaseConfigurationServiceMethodupdateConfigurationUUIDdatabaseIdDatabaseConfigurationconfiguration["Method: updateConfiguration(UUID databaseId, DatabaseConfiguration configuration)"]:::methodLeaf
-    DatabaseManagementServiceDatabaseStatisticsService["DatabaseStatisticsService"]:::classLeaf
-    DatabaseManagementServiceDatabaseStatisticsServiceAttributeDatabaseCatalogdatabaseCatalog["Attribute: DatabaseCatalog databaseCatalog"]:::attributeLeaf
-    DatabaseManagementServiceDatabaseStatisticsServiceAttributeStorageEnginestorageEngine["Attribute: StorageEngine storageEngine"]:::attributeLeaf
-    DatabaseManagementServiceDatabaseStatisticsServiceMethodgetStatisticsUUIDdatabaseId["Method: getStatistics(UUID databaseId)"]:::methodLeaf
-    DatabaseManagementServiceDatabaseStatisticsServiceMethodrefreshStatisticsUUIDdatabaseId["Method: refreshStatistics(UUID databaseId)"]:::methodLeaf
+    CreateDatabaseRequest["CreateDatabaseRequest"]:::classLeaf
+    CDRName["Attribute: String name"]:::attributeLeaf
 
-    DatabaseManagementCatalog["Catalog"]:::catalogGroup
-    DatabaseManagementCatalogDatabaseCatalog["DatabaseCatalog"]:::classLeaf
-    DatabaseManagementCatalogDatabaseCatalogAttributeMapUUIDDatabasedatabases["Attribute: Map<UUID, Database> databases"]:::attributeLeaf
-    DatabaseManagementCatalogDatabaseCatalogMethodsaveDatabasedatabase["Method: save(Database database)"]:::methodLeaf
-    DatabaseManagementCatalogDatabaseCatalogMethodfindByIdUUIDdatabaseId["Method: findById(UUID databaseId)"]:::methodLeaf
-    DatabaseManagementCatalogDatabaseCatalogMethodfindByNameStringname["Method: findByName(String name)"]:::methodLeaf
-    DatabaseManagementCatalogDatabaseCatalogMethodfindAll["Method: findAll()"]:::methodLeaf
-    DatabaseManagementCatalogDatabaseCatalogMethodexistsByNameStringname["Method: existsByName(String name)"]:::methodLeaf
-    DatabaseManagementCatalogDatabaseCatalogMethoddeleteUUIDdatabaseId["Method: delete(UUID databaseId)"]:::methodLeaf
-    DatabaseManagementCatalogCatalogManager["CatalogManager"]:::classLeaf
-    DatabaseManagementCatalogCatalogManagerAttributeDatabaseCatalogdatabaseCatalog["Attribute: DatabaseCatalog databaseCatalog"]:::attributeLeaf
-    DatabaseManagementCatalogCatalogManagerAttributeSchemaCatalogschemaCatalog["Attribute: SchemaCatalog schemaCatalog"]:::attributeLeaf
-    DatabaseManagementCatalogCatalogManagerMethodregisterDatabaseDatabasedatabase["Method: registerDatabase(Database database)"]:::methodLeaf
-    DatabaseManagementCatalogCatalogManagerMethodremoveDatabaseUUIDdatabaseId["Method: removeDatabase(UUID databaseId)"]:::methodLeaf
-    DatabaseManagementCatalogCatalogManagerMethodloadDatabaseMetadataUUIDdatabaseId["Method: loadDatabaseMetadata(UUID databaseId)"]:::methodLeaf
+    RenameDatabaseRequest["RenameDatabaseRequest"]:::classLeaf
+    RDRName["Attribute: String newName"]:::attributeLeaf
 
-    DatabaseManagementDBMSCore["DBMS Core"]:::coreGroup
-    DatabaseManagementDBMSCoreDatabaseManager["DatabaseManager"]:::classLeaf
-    DatabaseManagementDBMSCoreDatabaseManagerAttributeCatalogManagercatalogManager["Attribute: CatalogManager catalogManager"]:::attributeLeaf
-    DatabaseManagementDBMSCoreDatabaseManagerAttributeStorageEnginestorageEngine["Attribute: StorageEngine storageEngine"]:::attributeLeaf
-    DatabaseManagementDBMSCoreDatabaseManagerMethodcreateDatabaseDefinitiondefinition["Method: create(DatabaseDefinition definition)"]:::methodLeaf
-    DatabaseManagementDBMSCoreDatabaseManagerMethodopenUUIDdatabaseId["Method: open(UUID databaseId)"]:::methodLeaf
-    DatabaseManagementDBMSCoreDatabaseManagerMethodcloseUUIDdatabaseId["Method: close(UUID databaseId)"]:::methodLeaf
-    DatabaseManagementDBMSCoreDatabaseManagerMethoddropUUIDdatabaseId["Method: drop(UUID databaseId)"]:::methodLeaf
-    DatabaseManagementDBMSCoreStorageEngine["StorageEngine"]:::classLeaf
-    DatabaseManagementDBMSCoreStorageEngineAttributeFileManagerfileManager["Attribute: FileManager fileManager"]:::attributeLeaf
-    DatabaseManagementDBMSCoreStorageEngineAttributeBufferPoolbufferPool["Attribute: BufferPool bufferPool"]:::attributeLeaf
-    DatabaseManagementDBMSCoreStorageEngineAttributeLogManagerlogManager["Attribute: LogManager logManager"]:::attributeLeaf
-    DatabaseManagementDBMSCoreStorageEngineMethodallocateDatabaseStorageUUIDdatabaseId["Method: allocateDatabaseStorage(UUID databaseId)"]:::methodLeaf
-    DatabaseManagementDBMSCoreStorageEngineMethodreleaseDatabaseStorageUUIDdatabaseId["Method: releaseDatabaseStorage(UUID databaseId)"]:::methodLeaf
-    DatabaseManagementDBMSCoreStorageEngineMethodflushDatabaseUUIDdatabaseId["Method: flushDatabase(UUID databaseId)"]:::methodLeaf
+    SetReadOnlyRequest["SetReadOnlyRequest"]:::classLeaf
+    SRRReadOnly["Attribute: boolean readOnly"]:::attributeLeaf
 
-    DatabaseManagementController --> DatabaseManagement
-    DatabaseManagementDTO --> DatabaseManagement
-    DatabaseManagementMapper --> DatabaseManagement
-    DatabaseManagement --> DatabaseManagementService
-    DatabaseManagement --> DatabaseManagementCatalog
-    DatabaseManagement --> DatabaseManagementDBMSCore
+    DatabaseResponse["DatabaseResponse"]:::classLeaf
+    DBRID["Attribute: UUID id"]:::attributeLeaf
+    DBRName["Attribute: String name"]:::attributeLeaf
+    DBRState["Attribute: DatabaseStateType state"]:::attributeLeaf
+    DBRSchemaCount["Attribute: int schemaCount"]:::attributeLeaf
 
-    DatabaseManagementControllerDatabaseController --> DatabaseManagementController
-    DatabaseManagementDTOCreateDatabaseRequest --> DatabaseManagementDTO
-    DatabaseManagementDTORenameDatabaseRequest --> DatabaseManagementDTO
-    DatabaseManagementDTOUpdateDatabaseConfigurationRequest --> DatabaseManagementDTO
-    DatabaseManagementDTODatabaseResponse --> DatabaseManagementDTO
-    DatabaseManagementDTODatabaseStatisticsResponse --> DatabaseManagementDTO
-    DatabaseManagementMapperDatabaseMapper --> DatabaseManagementMapper
-    DatabaseManagementService --> DatabaseManagementServiceDatabaseService
-    DatabaseManagementService --> DatabaseManagementServiceDatabaseLifecycleService
-    DatabaseManagementService --> DatabaseManagementServiceDatabaseConfigurationService
-    DatabaseManagementService --> DatabaseManagementServiceDatabaseStatisticsService
-    DatabaseManagementCatalog --> DatabaseManagementCatalogDatabaseCatalog
-    DatabaseManagementCatalog --> DatabaseManagementCatalogCatalogManager
-    DatabaseManagementDBMSCore --> DatabaseManagementDBMSCoreDatabaseManager
-    DatabaseManagementDBMSCore --> DatabaseManagementDBMSCoreStorageEngine
+    DatabaseMapper["DatabaseMapper"]:::classLeaf
+    DMToDomain["Method: toDomain(CreateDatabaseRequest request)"]:::methodLeaf
+    DMToResponse["Method: toResponse(Database database)"]:::methodLeaf
 
-    DatabaseManagementControllerDatabaseControllerAttributeDatabaseServicedatabaseService --> DatabaseManagementControllerDatabaseController
-    DatabaseManagementControllerDatabaseControllerAttributeDatabaseMapperdatabaseMapper --> DatabaseManagementControllerDatabaseController
-    DatabaseManagementControllerDatabaseControllerMethodcreateDatabaseCreateDatabaseRequestrequest --> DatabaseManagementControllerDatabaseController
-    DatabaseManagementControllerDatabaseControllerMethodgetDatabaseUUIDdatabaseId --> DatabaseManagementControllerDatabaseController
-    DatabaseManagementControllerDatabaseControllerMethodlistDatabases --> DatabaseManagementControllerDatabaseController
-    DatabaseManagementControllerDatabaseControllerMethodrenameDatabaseUUIDdatabaseIdRenameDatabaseRequestrequest --> DatabaseManagementControllerDatabaseController
-    DatabaseManagementControllerDatabaseControllerMethodupdateConfigurationUUIDdatabaseIdUpdateDatabaseConfigurationRequestrequest --> DatabaseManagementControllerDatabaseController
-    DatabaseManagementControllerDatabaseControllerMethodopenDatabaseUUIDdatabaseId --> DatabaseManagementControllerDatabaseController
-    DatabaseManagementControllerDatabaseControllerMethodcloseDatabaseUUIDdatabaseId --> DatabaseManagementControllerDatabaseController
-    DatabaseManagementControllerDatabaseControllerMethoddeleteDatabaseUUIDdatabaseId --> DatabaseManagementControllerDatabaseController
-    DatabaseManagementControllerDatabaseControllerMethodgetStatisticsUUIDdatabaseId --> DatabaseManagementControllerDatabaseController
-    DatabaseManagementDTOCreateDatabaseRequestAttributeStringname --> DatabaseManagementDTOCreateDatabaseRequest
-    DatabaseManagementDTOCreateDatabaseRequestAttributeStringdescription --> DatabaseManagementDTOCreateDatabaseRequest
-    DatabaseManagementDTOCreateDatabaseRequestAttributeDatabaseConfigurationRequestconfiguration --> DatabaseManagementDTOCreateDatabaseRequest
-    DatabaseManagementDTORenameDatabaseRequestAttributeStringnewName --> DatabaseManagementDTORenameDatabaseRequest
-    DatabaseManagementDTOUpdateDatabaseConfigurationRequestAttributeBooleanreadOnly --> DatabaseManagementDTOUpdateDatabaseConfigurationRequest
-    DatabaseManagementDTOUpdateDatabaseConfigurationRequestAttributeIntegerconnectionLimit --> DatabaseManagementDTOUpdateDatabaseConfigurationRequest
-    DatabaseManagementDTOUpdateDatabaseConfigurationRequestAttributeStringdefaultSchema --> DatabaseManagementDTOUpdateDatabaseConfigurationRequest
-    DatabaseManagementDTODatabaseResponseAttributeUUIDid --> DatabaseManagementDTODatabaseResponse
-    DatabaseManagementDTODatabaseResponseAttributeStringname --> DatabaseManagementDTODatabaseResponse
-    DatabaseManagementDTODatabaseResponseAttributeStringdescription --> DatabaseManagementDTODatabaseResponse
-    DatabaseManagementDTODatabaseResponseAttributeDatabaseStatestate --> DatabaseManagementDTODatabaseResponse
-    DatabaseManagementDTODatabaseResponseAttributebooleanreadOnly --> DatabaseManagementDTODatabaseResponse
-    DatabaseManagementDTODatabaseStatisticsResponseAttributelongschemaCount --> DatabaseManagementDTODatabaseStatisticsResponse
-    DatabaseManagementDTODatabaseStatisticsResponseAttributelongtableCount --> DatabaseManagementDTODatabaseStatisticsResponse
-    DatabaseManagementDTODatabaseStatisticsResponseAttributelongtotalSize --> DatabaseManagementDTODatabaseStatisticsResponse
-    DatabaseManagementDTODatabaseStatisticsResponseAttributelongactiveConnections --> DatabaseManagementDTODatabaseStatisticsResponse
-    DatabaseManagementMapperDatabaseMapperMethodtoCreateCommandCreateDatabaseRequestrequest --> DatabaseManagementMapperDatabaseMapper
-    DatabaseManagementMapperDatabaseMapperMethodtoResponseDatabasedatabase --> DatabaseManagementMapperDatabaseMapper
-    DatabaseManagementMapperDatabaseMapperMethodtoStatisticsResponseDatabaseStatisticsstatistics --> DatabaseManagementMapperDatabaseMapper
-    DatabaseManagementServiceDatabaseService --> DatabaseManagementServiceDatabaseServiceAttributeDatabaseCatalogdatabaseCatalog
-    DatabaseManagementServiceDatabaseService --> DatabaseManagementServiceDatabaseServiceAttributeDatabaseManagerdatabaseManager
-    DatabaseManagementServiceDatabaseService --> DatabaseManagementServiceDatabaseServiceMethodcreateDatabaseCreateDatabaseCommandcommand
-    DatabaseManagementServiceDatabaseService --> DatabaseManagementServiceDatabaseServiceMethodfindDatabaseUUIDdatabaseId
-    DatabaseManagementServiceDatabaseService --> DatabaseManagementServiceDatabaseServiceMethodfindAllDatabases
-    DatabaseManagementServiceDatabaseService --> DatabaseManagementServiceDatabaseServiceMethodrenameDatabaseUUIDdatabaseIdStringnewName
-    DatabaseManagementServiceDatabaseService --> DatabaseManagementServiceDatabaseServiceMethoddeleteDatabaseUUIDdatabaseId
-    DatabaseManagementServiceDatabaseLifecycleService --> DatabaseManagementServiceDatabaseLifecycleServiceAttributeDatabaseCatalogdatabaseCatalog
-    DatabaseManagementServiceDatabaseLifecycleService --> DatabaseManagementServiceDatabaseLifecycleServiceAttributeDatabaseManagerdatabaseManager
-    DatabaseManagementServiceDatabaseLifecycleService --> DatabaseManagementServiceDatabaseLifecycleServiceMethodopenDatabaseUUIDdatabaseId
-    DatabaseManagementServiceDatabaseLifecycleService --> DatabaseManagementServiceDatabaseLifecycleServiceMethodcloseDatabaseUUIDdatabaseId
-    DatabaseManagementServiceDatabaseLifecycleService --> DatabaseManagementServiceDatabaseLifecycleServiceMethodsetReadOnlyUUIDdatabaseIdbooleanreadOnly
-    DatabaseManagementServiceDatabaseConfigurationService --> DatabaseManagementServiceDatabaseConfigurationServiceAttributeDatabaseCatalogdatabaseCatalog
-    DatabaseManagementServiceDatabaseConfigurationService --> DatabaseManagementServiceDatabaseConfigurationServiceMethodgetConfigurationUUIDdatabaseId
-    DatabaseManagementServiceDatabaseConfigurationService --> DatabaseManagementServiceDatabaseConfigurationServiceMethodupdateConfigurationUUIDdatabaseIdDatabaseConfigurationconfiguration
-    DatabaseManagementServiceDatabaseStatisticsService --> DatabaseManagementServiceDatabaseStatisticsServiceAttributeDatabaseCatalogdatabaseCatalog
-    DatabaseManagementServiceDatabaseStatisticsService --> DatabaseManagementServiceDatabaseStatisticsServiceAttributeStorageEnginestorageEngine
-    DatabaseManagementServiceDatabaseStatisticsService --> DatabaseManagementServiceDatabaseStatisticsServiceMethodgetStatisticsUUIDdatabaseId
-    DatabaseManagementServiceDatabaseStatisticsService --> DatabaseManagementServiceDatabaseStatisticsServiceMethodrefreshStatisticsUUIDdatabaseId
-    DatabaseManagementCatalogDatabaseCatalog --> DatabaseManagementCatalogDatabaseCatalogAttributeMapUUIDDatabasedatabases
-    DatabaseManagementCatalogDatabaseCatalog --> DatabaseManagementCatalogDatabaseCatalogMethodsaveDatabasedatabase
-    DatabaseManagementCatalogDatabaseCatalog --> DatabaseManagementCatalogDatabaseCatalogMethodfindByIdUUIDdatabaseId
-    DatabaseManagementCatalogDatabaseCatalog --> DatabaseManagementCatalogDatabaseCatalogMethodfindByNameStringname
-    DatabaseManagementCatalogDatabaseCatalog --> DatabaseManagementCatalogDatabaseCatalogMethodfindAll
-    DatabaseManagementCatalogDatabaseCatalog --> DatabaseManagementCatalogDatabaseCatalogMethodexistsByNameStringname
-    DatabaseManagementCatalogDatabaseCatalog --> DatabaseManagementCatalogDatabaseCatalogMethoddeleteUUIDdatabaseId
-    DatabaseManagementCatalogCatalogManager --> DatabaseManagementCatalogCatalogManagerAttributeDatabaseCatalogdatabaseCatalog
-    DatabaseManagementCatalogCatalogManager --> DatabaseManagementCatalogCatalogManagerAttributeSchemaCatalogschemaCatalog
-    DatabaseManagementCatalogCatalogManager --> DatabaseManagementCatalogCatalogManagerMethodregisterDatabaseDatabasedatabase
-    DatabaseManagementCatalogCatalogManager --> DatabaseManagementCatalogCatalogManagerMethodremoveDatabaseUUIDdatabaseId
-    DatabaseManagementCatalogCatalogManager --> DatabaseManagementCatalogCatalogManagerMethodloadDatabaseMetadataUUIDdatabaseId
-    DatabaseManagementDBMSCoreDatabaseManager --> DatabaseManagementDBMSCoreDatabaseManagerAttributeCatalogManagercatalogManager
-    DatabaseManagementDBMSCoreDatabaseManager --> DatabaseManagementDBMSCoreDatabaseManagerAttributeStorageEnginestorageEngine
-    DatabaseManagementDBMSCoreDatabaseManager --> DatabaseManagementDBMSCoreDatabaseManagerMethodcreateDatabaseDefinitiondefinition
-    DatabaseManagementDBMSCoreDatabaseManager --> DatabaseManagementDBMSCoreDatabaseManagerMethodopenUUIDdatabaseId
-    DatabaseManagementDBMSCoreDatabaseManager --> DatabaseManagementDBMSCoreDatabaseManagerMethodcloseUUIDdatabaseId
-    DatabaseManagementDBMSCoreDatabaseManager --> DatabaseManagementDBMSCoreDatabaseManagerMethoddropUUIDdatabaseId
-    DatabaseManagementDBMSCoreStorageEngine --> DatabaseManagementDBMSCoreStorageEngineAttributeFileManagerfileManager
-    DatabaseManagementDBMSCoreStorageEngine --> DatabaseManagementDBMSCoreStorageEngineAttributeBufferPoolbufferPool
-    DatabaseManagementDBMSCoreStorageEngine --> DatabaseManagementDBMSCoreStorageEngineAttributeLogManagerlogManager
-    DatabaseManagementDBMSCoreStorageEngine --> DatabaseManagementDBMSCoreStorageEngineMethodallocateDatabaseStorageUUIDdatabaseId
-    DatabaseManagementDBMSCoreStorageEngine --> DatabaseManagementDBMSCoreStorageEngineMethodreleaseDatabaseStorageUUIDdatabaseId
-    DatabaseManagementDBMSCoreStorageEngine --> DatabaseManagementDBMSCoreStorageEngineMethodflushDatabaseUUIDdatabaseId
+    DatabaseService["DatabaseService"]:::classLeaf
+    DSManager["Attribute: DatabaseManager databaseManager"]:::attributeLeaf
+    DSCreate["Method: createDatabase(CreateDatabaseRequest request)"]:::methodLeaf
+    DSFind["Method: findDatabase(UUID databaseId)"]:::methodLeaf
+    DSFindAll["Method: findAllDatabases()"]:::methodLeaf
+    DSRename["Method: renameDatabase(UUID databaseId, String newName)"]:::methodLeaf
+    DSOpen["Method: openDatabase(UUID databaseId)"]:::methodLeaf
+    DSClose["Method: closeDatabase(UUID databaseId)"]:::methodLeaf
+    DSReadOnly["Method: setReadOnly(UUID databaseId, boolean readOnly)"]:::methodLeaf
+    DSDelete["Method: deleteDatabase(UUID databaseId)"]:::methodLeaf
 
-    classDef rootStyle fill:#1d3557,stroke:#457b9d,stroke-width:4px,color:#ffffff,font-weight:bold,font-size:17px;
+    DatabaseManager["DatabaseManager"]:::classLeaf
+    DMDatabaseMap["Attribute: Map<UUID, Database> databases"]:::attributeLeaf
+    DMCreate["Method: createDatabase(String name)"]:::methodLeaf
+    DMFind["Method: findDatabase(UUID databaseId)"]:::methodLeaf
+    DMFindAll["Method: listDatabases()"]:::methodLeaf
+    DMDrop["Method: dropDatabase(UUID databaseId)"]:::methodLeaf
+
+    Database["Database"]:::classLeaf
+    DBId["Attribute: UUID id"]:::attributeLeaf
+    DBName["Attribute: String name"]:::attributeLeaf
+    DBCatalog["Attribute: Catalog catalog"]:::attributeLeaf
+    DBState["Attribute: DatabaseState state"]:::attributeLeaf
+    DBOpen["Method: open()"]:::methodLeaf
+    DBClose["Method: close()"]:::methodLeaf
+    DBSetReadOnly["Method: setReadOnly(boolean readOnly)"]:::methodLeaf
+    DBRename["Method: rename(String newName)"]:::methodLeaf
+    DBAddSchema["Method: addSchema(Schema schema)"]:::methodLeaf
+    DBRemoveSchema["Method: removeSchema(String name)"]:::methodLeaf
+
+    Controller --> DatabaseManagement
+    DTO --> DatabaseManagement
+    Mapper --> DatabaseManagement
+
+    DatabaseManagement --> Service
+    DatabaseManagement --> Core
+
+    DatabaseController --> Controller
+    CreateDatabaseRequest --> DTO
+    RenameDatabaseRequest --> DTO
+    SetReadOnlyRequest --> DTO
+    DatabaseResponse --> DTO
+    DatabaseMapper --> Mapper
+
+    Service --> DatabaseService
+    Core --> DatabaseManager
+    Core --> Database
+
+    DCService --> DatabaseController
+    DCMapper --> DatabaseController
+    DCCreate --> DatabaseController
+    DCGet --> DatabaseController
+    DCList --> DatabaseController
+    DCRename --> DatabaseController
+    DCOpen --> DatabaseController
+    DCClose --> DatabaseController
+    DCReadOnly --> DatabaseController
+    DCDelete --> DatabaseController
+
+    CDRName --> CreateDatabaseRequest
+    RDRName --> RenameDatabaseRequest
+    SRRReadOnly --> SetReadOnlyRequest
+
+    DBRID --> DatabaseResponse
+    DBRName --> DatabaseResponse
+    DBRState --> DatabaseResponse
+    DBRSchemaCount --> DatabaseResponse
+
+    DMToDomain --> DatabaseMapper
+    DMToResponse --> DatabaseMapper
+
+    DatabaseService --> DSManager
+    DatabaseService --> DSCreate
+    DatabaseService --> DSFind
+    DatabaseService --> DSFindAll
+    DatabaseService --> DSRename
+    DatabaseService --> DSOpen
+    DatabaseService --> DSClose
+    DatabaseService --> DSReadOnly
+    DatabaseService --> DSDelete
+
+    DatabaseManager --> DMDatabaseMap
+    DatabaseManager --> DMCreate
+    DatabaseManager --> DMFind
+    DatabaseManager --> DMFindAll
+    DatabaseManager --> DMDrop
+
+    Database --> DBId
+    Database --> DBName
+    Database --> DBCatalog
+    Database --> DBState
+    Database --> DBOpen
+    Database --> DBClose
+    Database --> DBSetReadOnly
+    Database --> DBRename
+    Database --> DBAddSchema
+    Database --> DBRemoveSchema
+
+    classDef rootStyle fill:#1d3557,stroke:#457b9d,stroke-width:4px,color:#ffffff,font-weight:bold;
     classDef controllerGroup fill:#00a6a6,stroke:#007f7f,stroke-width:3px,color:#ffffff,font-weight:bold;
     classDef dtoGroup fill:#1976d2,stroke:#0d47a1,stroke-width:3px,color:#ffffff,font-weight:bold;
     classDef mapperGroup fill:#7b61c9,stroke:#5e43ad,stroke-width:3px,color:#ffffff,font-weight:bold;
     classDef serviceGroup fill:#f9a825,stroke:#d88c00,stroke-width:3px,color:#ffffff,font-weight:bold;
-    classDef catalogGroup fill:#e65100,stroke:#bf360c,stroke-width:3px,color:#ffffff,font-weight:bold;
     classDef coreGroup fill:#d84315,stroke:#bf360c,stroke-width:3px,color:#ffffff,font-weight:bold;
     classDef classLeaf fill:#ffffff,stroke:#607d8b,stroke-width:2px,color:#263238,font-weight:bold;
     classDef attributeLeaf fill:#eef7ff,stroke:#64b5f6,stroke-width:1px,color:#0d47a1;
     classDef methodLeaf fill:#f3f8e9,stroke:#8bc34a,stroke-width:1px,color:#33691e;
 ```
+
+---
 
 ## Schema Management
 
@@ -669,1109 +1172,559 @@ flowchart LR
 flowchart LR
     SchemaManagement["Schema Management"]:::rootStyle
 
-    SchemaManagementController["Controller"]:::controllerGroup
-    SchemaManagementControllerSchemaController["SchemaController"]:::classLeaf
-    SchemaManagementControllerSchemaControllerAttributeSchemaServiceschemaService["Attribute: SchemaService schemaService"]:::attributeLeaf
-    SchemaManagementControllerSchemaControllerAttributeSchemaMapperschemaMapper["Attribute: SchemaMapper schemaMapper"]:::attributeLeaf
-    SchemaManagementControllerSchemaControllerMethodcreateSchemaUUIDdatabaseIdCreateSchemaRequestrequest["Method: createSchema(UUID databaseId, CreateSchemaRequest request)"]:::methodLeaf
-    SchemaManagementControllerSchemaControllerMethodgetSchemaUUIDschemaId["Method: getSchema(UUID schemaId)"]:::methodLeaf
-    SchemaManagementControllerSchemaControllerMethodlistSchemasUUIDdatabaseId["Method: listSchemas(UUID databaseId)"]:::methodLeaf
-    SchemaManagementControllerSchemaControllerMethodrenameSchemaUUIDschemaIdRenameSchemaRequestrequest["Method: renameSchema(UUID schemaId, RenameSchemaRequest request)"]:::methodLeaf
-    SchemaManagementControllerSchemaControllerMethoddeleteSchemaUUIDschemaId["Method: deleteSchema(UUID schemaId)"]:::methodLeaf
-    SchemaManagementControllerSchemaControllerMethodlistSchemaObjectsUUIDschemaId["Method: listSchemaObjects(UUID schemaId)"]:::methodLeaf
+    Controller["Controller"]:::controllerGroup
+    DTO["DTO"]:::dtoGroup
+    Mapper["Mapper"]:::mapperGroup
 
-    SchemaManagementDTO["DTO"]:::dtoGroup
-    SchemaManagementDTOCreateSchemaRequest["CreateSchemaRequest"]:::classLeaf
-    SchemaManagementDTOCreateSchemaRequestAttributeStringname["Attribute: String name"]:::attributeLeaf
-    SchemaManagementDTOCreateSchemaRequestAttributeStringdescription["Attribute: String description"]:::attributeLeaf
-    SchemaManagementDTORenameSchemaRequest["RenameSchemaRequest"]:::classLeaf
-    SchemaManagementDTORenameSchemaRequestAttributeStringnewName["Attribute: String newName"]:::attributeLeaf
-    SchemaManagementDTOSchemaResponse["SchemaResponse"]:::classLeaf
-    SchemaManagementDTOSchemaResponseAttributeUUIDid["Attribute: UUID id"]:::attributeLeaf
-    SchemaManagementDTOSchemaResponseAttributeUUIDdatabaseId["Attribute: UUID databaseId"]:::attributeLeaf
-    SchemaManagementDTOSchemaResponseAttributeStringname["Attribute: String name"]:::attributeLeaf
-    SchemaManagementDTOSchemaResponseAttributeStringdescription["Attribute: String description"]:::attributeLeaf
-    SchemaManagementDTOSchemaObjectsResponse["SchemaObjectsResponse"]:::classLeaf
-    SchemaManagementDTOSchemaObjectsResponseAttributeListTableSummarytables["Attribute: List<TableSummary> tables"]:::attributeLeaf
-    SchemaManagementDTOSchemaObjectsResponseAttributeListViewSummaryviews["Attribute: List<ViewSummary> views"]:::attributeLeaf
-    SchemaManagementDTOSchemaObjectsResponseAttributeListSequenceSummarysequences["Attribute: List<SequenceSummary> sequences"]:::attributeLeaf
+    Service["Service"]:::serviceGroup
+    Repository["Repository"]:::repositoryGroup
+    Core["Java Core"]:::coreGroup
 
-    SchemaManagementMapper["Mapper"]:::mapperGroup
-    SchemaManagementMapperSchemaMapper["SchemaMapper"]:::classLeaf
-    SchemaManagementMapperSchemaMapperMethodtoCreateCommandUUIDdatabaseIdCreateSchemaRequestrequest["Method: toCreateCommand(UUID databaseId, CreateSchemaRequest request)"]:::methodLeaf
-    SchemaManagementMapperSchemaMapperMethodtoResponseSchemaschema["Method: toResponse(Schema schema)"]:::methodLeaf
-    SchemaManagementMapperSchemaMapperMethodtoObjectsResponseSchemaschema["Method: toObjectsResponse(Schema schema)"]:::methodLeaf
+    SchemaController["SchemaController"]:::classLeaf
+    SCService["Attribute: SchemaService schemaService"]:::attributeLeaf
+    SCMapper["Attribute: SchemaMapper schemaMapper"]:::attributeLeaf
+    SCCreate["Method: createSchema(UUID databaseId, CreateSchemaRequest request)"]:::methodLeaf
+    SCGet["Method: getSchema(UUID schemaId)"]:::methodLeaf
+    SCList["Method: listSchemas(UUID databaseId)"]:::methodLeaf
+    SCRename["Method: renameSchema(UUID schemaId, RenameSchemaRequest request)"]:::methodLeaf
+    SCCopy["Method: copySchema(UUID schemaId, CopySchemaRequest request)"]:::methodLeaf
+    SCDelete["Method: deleteSchema(UUID schemaId)"]:::methodLeaf
 
-    SchemaManagementService["Service"]:::serviceGroup
-    SchemaManagementServiceSchemaService["SchemaService"]:::classLeaf
-    SchemaManagementServiceSchemaServiceAttributeSchemaCatalogschemaCatalog["Attribute: SchemaCatalog schemaCatalog"]:::attributeLeaf
-    SchemaManagementServiceSchemaServiceAttributeSchemaManagerschemaManager["Attribute: SchemaManager schemaManager"]:::attributeLeaf
-    SchemaManagementServiceSchemaServiceMethodcreateSchemaCreateSchemaCommandcommand["Method: createSchema(CreateSchemaCommand command)"]:::methodLeaf
-    SchemaManagementServiceSchemaServiceMethodfindSchemaUUIDschemaId["Method: findSchema(UUID schemaId)"]:::methodLeaf
-    SchemaManagementServiceSchemaServiceMethodfindSchemasUUIDdatabaseId["Method: findSchemas(UUID databaseId)"]:::methodLeaf
-    SchemaManagementServiceSchemaServiceMethodrenameSchemaUUIDschemaIdStringnewName["Method: renameSchema(UUID schemaId, String newName)"]:::methodLeaf
-    SchemaManagementServiceSchemaServiceMethoddeleteSchemaUUIDschemaId["Method: deleteSchema(UUID schemaId)"]:::methodLeaf
-    SchemaManagementServiceSchemaObjectService["SchemaObjectService"]:::classLeaf
-    SchemaManagementServiceSchemaObjectServiceAttributeSchemaCatalogschemaCatalog["Attribute: SchemaCatalog schemaCatalog"]:::attributeLeaf
-    SchemaManagementServiceSchemaObjectServiceMethodlistObjectsUUIDschemaId["Method: listObjects(UUID schemaId)"]:::methodLeaf
-    SchemaManagementServiceSchemaObjectServiceMethodcontainsObjectUUIDschemaIdStringobjectName["Method: containsObject(UUID schemaId, String objectName)"]:::methodLeaf
-    SchemaManagementServiceSchemaDependencyService["SchemaDependencyService"]:::classLeaf
-    SchemaManagementServiceSchemaDependencyServiceAttributeDependencyManagerdependencyManager["Attribute: DependencyManager dependencyManager"]:::attributeLeaf
-    SchemaManagementServiceSchemaDependencyServiceMethodgetDependenciesUUIDschemaId["Method: getDependencies(UUID schemaId)"]:::methodLeaf
-    SchemaManagementServiceSchemaDependencyServiceMethodvalidateDropUUIDschemaId["Method: validateDrop(UUID schemaId)"]:::methodLeaf
+    CreateSchemaRequest["CreateSchemaRequest"]:::classLeaf
+    CSRName["Attribute: String name"]:::attributeLeaf
+    CSROwner["Attribute: UUID ownerId"]:::attributeLeaf
 
-    SchemaManagementCatalog["Catalog"]:::catalogGroup
-    SchemaManagementCatalogSchemaCatalog["SchemaCatalog"]:::classLeaf
-    SchemaManagementCatalogSchemaCatalogAttributeMapUUIDSchemaschemas["Attribute: Map<UUID, Schema> schemas"]:::attributeLeaf
-    SchemaManagementCatalogSchemaCatalogMethodsaveSchemaschema["Method: save(Schema schema)"]:::methodLeaf
-    SchemaManagementCatalogSchemaCatalogMethodfindByIdUUIDschemaId["Method: findById(UUID schemaId)"]:::methodLeaf
-    SchemaManagementCatalogSchemaCatalogMethodfindByDatabaseIdUUIDdatabaseId["Method: findByDatabaseId(UUID databaseId)"]:::methodLeaf
-    SchemaManagementCatalogSchemaCatalogMethodexistsByNameUUIDdatabaseIdStringname["Method: existsByName(UUID databaseId, String name)"]:::methodLeaf
-    SchemaManagementCatalogSchemaCatalogMethoddeleteUUIDschemaId["Method: delete(UUID schemaId)"]:::methodLeaf
+    RenameSchemaRequest["RenameSchemaRequest"]:::classLeaf
+    RSRName["Attribute: String newName"]:::attributeLeaf
 
-    SchemaManagementDBMSCore["DBMS Core"]:::coreGroup
-    SchemaManagementDBMSCoreSchemaManager["SchemaManager"]:::classLeaf
-    SchemaManagementDBMSCoreSchemaManagerAttributeCatalogManagercatalogManager["Attribute: CatalogManager catalogManager"]:::attributeLeaf
-    SchemaManagementDBMSCoreSchemaManagerMethodcreateUUIDdatabaseIdSchemaDefinitiondefinition["Method: create(UUID databaseId, SchemaDefinition definition)"]:::methodLeaf
-    SchemaManagementDBMSCoreSchemaManagerMethodrenameUUIDschemaIdStringnewName["Method: rename(UUID schemaId, String newName)"]:::methodLeaf
-    SchemaManagementDBMSCoreSchemaManagerMethoddropUUIDschemaId["Method: drop(UUID schemaId)"]:::methodLeaf
-    SchemaManagementDBMSCoreDependencyManager["DependencyManager"]:::classLeaf
-    SchemaManagementDBMSCoreDependencyManagerAttributeDependencyGraphdependencyGraph["Attribute: DependencyGraph dependencyGraph"]:::attributeLeaf
-    SchemaManagementDBMSCoreDependencyManagerMethodfindDependenciesUUIDobjectId["Method: findDependencies(UUID objectId)"]:::methodLeaf
-    SchemaManagementDBMSCoreDependencyManagerMethodaddDependencyUUIDsourceIdUUIDtargetId["Method: addDependency(UUID sourceId, UUID targetId)"]:::methodLeaf
-    SchemaManagementDBMSCoreDependencyManagerMethodremoveDependenciesUUIDobjectId["Method: removeDependencies(UUID objectId)"]:::methodLeaf
+    CopySchemaRequest["CopySchemaRequest"]:::classLeaf
+    CPSName["Attribute: String newName"]:::attributeLeaf
 
-    SchemaManagementController --> SchemaManagement
-    SchemaManagementDTO --> SchemaManagement
-    SchemaManagementMapper --> SchemaManagement
-    SchemaManagement --> SchemaManagementService
-    SchemaManagement --> SchemaManagementCatalog
-    SchemaManagement --> SchemaManagementDBMSCore
+    SchemaResponse["SchemaResponse"]:::classLeaf
+    SRId["Attribute: UUID id"]:::attributeLeaf
+    SRDatabaseId["Attribute: UUID databaseId"]:::attributeLeaf
+    SROwnerId["Attribute: UUID ownerId"]:::attributeLeaf
+    SRName["Attribute: String name"]:::attributeLeaf
+    SRTableCount["Attribute: int tableCount"]:::attributeLeaf
+    SRViewCount["Attribute: int viewCount"]:::attributeLeaf
 
-    SchemaManagementControllerSchemaController --> SchemaManagementController
-    SchemaManagementDTOCreateSchemaRequest --> SchemaManagementDTO
-    SchemaManagementDTORenameSchemaRequest --> SchemaManagementDTO
-    SchemaManagementDTOSchemaResponse --> SchemaManagementDTO
-    SchemaManagementDTOSchemaObjectsResponse --> SchemaManagementDTO
-    SchemaManagementMapperSchemaMapper --> SchemaManagementMapper
-    SchemaManagementService --> SchemaManagementServiceSchemaService
-    SchemaManagementService --> SchemaManagementServiceSchemaObjectService
-    SchemaManagementService --> SchemaManagementServiceSchemaDependencyService
-    SchemaManagementCatalog --> SchemaManagementCatalogSchemaCatalog
-    SchemaManagementDBMSCore --> SchemaManagementDBMSCoreSchemaManager
-    SchemaManagementDBMSCore --> SchemaManagementDBMSCoreDependencyManager
+    SchemaMapper["SchemaMapper"]:::classLeaf
+    SMToDomain["Method: toDomain(UUID databaseId, CreateSchemaRequest request)"]:::methodLeaf
+    SMToResponse["Method: toResponse(Schema schema)"]:::methodLeaf
 
-    SchemaManagementControllerSchemaControllerAttributeSchemaServiceschemaService --> SchemaManagementControllerSchemaController
-    SchemaManagementControllerSchemaControllerAttributeSchemaMapperschemaMapper --> SchemaManagementControllerSchemaController
-    SchemaManagementControllerSchemaControllerMethodcreateSchemaUUIDdatabaseIdCreateSchemaRequestrequest --> SchemaManagementControllerSchemaController
-    SchemaManagementControllerSchemaControllerMethodgetSchemaUUIDschemaId --> SchemaManagementControllerSchemaController
-    SchemaManagementControllerSchemaControllerMethodlistSchemasUUIDdatabaseId --> SchemaManagementControllerSchemaController
-    SchemaManagementControllerSchemaControllerMethodrenameSchemaUUIDschemaIdRenameSchemaRequestrequest --> SchemaManagementControllerSchemaController
-    SchemaManagementControllerSchemaControllerMethoddeleteSchemaUUIDschemaId --> SchemaManagementControllerSchemaController
-    SchemaManagementControllerSchemaControllerMethodlistSchemaObjectsUUIDschemaId --> SchemaManagementControllerSchemaController
-    SchemaManagementDTOCreateSchemaRequestAttributeStringname --> SchemaManagementDTOCreateSchemaRequest
-    SchemaManagementDTOCreateSchemaRequestAttributeStringdescription --> SchemaManagementDTOCreateSchemaRequest
-    SchemaManagementDTORenameSchemaRequestAttributeStringnewName --> SchemaManagementDTORenameSchemaRequest
-    SchemaManagementDTOSchemaResponseAttributeUUIDid --> SchemaManagementDTOSchemaResponse
-    SchemaManagementDTOSchemaResponseAttributeUUIDdatabaseId --> SchemaManagementDTOSchemaResponse
-    SchemaManagementDTOSchemaResponseAttributeStringname --> SchemaManagementDTOSchemaResponse
-    SchemaManagementDTOSchemaResponseAttributeStringdescription --> SchemaManagementDTOSchemaResponse
-    SchemaManagementDTOSchemaObjectsResponseAttributeListTableSummarytables --> SchemaManagementDTOSchemaObjectsResponse
-    SchemaManagementDTOSchemaObjectsResponseAttributeListViewSummaryviews --> SchemaManagementDTOSchemaObjectsResponse
-    SchemaManagementDTOSchemaObjectsResponseAttributeListSequenceSummarysequences --> SchemaManagementDTOSchemaObjectsResponse
-    SchemaManagementMapperSchemaMapperMethodtoCreateCommandUUIDdatabaseIdCreateSchemaRequestrequest --> SchemaManagementMapperSchemaMapper
-    SchemaManagementMapperSchemaMapperMethodtoResponseSchemaschema --> SchemaManagementMapperSchemaMapper
-    SchemaManagementMapperSchemaMapperMethodtoObjectsResponseSchemaschema --> SchemaManagementMapperSchemaMapper
-    SchemaManagementServiceSchemaService --> SchemaManagementServiceSchemaServiceAttributeSchemaCatalogschemaCatalog
-    SchemaManagementServiceSchemaService --> SchemaManagementServiceSchemaServiceAttributeSchemaManagerschemaManager
-    SchemaManagementServiceSchemaService --> SchemaManagementServiceSchemaServiceMethodcreateSchemaCreateSchemaCommandcommand
-    SchemaManagementServiceSchemaService --> SchemaManagementServiceSchemaServiceMethodfindSchemaUUIDschemaId
-    SchemaManagementServiceSchemaService --> SchemaManagementServiceSchemaServiceMethodfindSchemasUUIDdatabaseId
-    SchemaManagementServiceSchemaService --> SchemaManagementServiceSchemaServiceMethodrenameSchemaUUIDschemaIdStringnewName
-    SchemaManagementServiceSchemaService --> SchemaManagementServiceSchemaServiceMethoddeleteSchemaUUIDschemaId
-    SchemaManagementServiceSchemaObjectService --> SchemaManagementServiceSchemaObjectServiceAttributeSchemaCatalogschemaCatalog
-    SchemaManagementServiceSchemaObjectService --> SchemaManagementServiceSchemaObjectServiceMethodlistObjectsUUIDschemaId
-    SchemaManagementServiceSchemaObjectService --> SchemaManagementServiceSchemaObjectServiceMethodcontainsObjectUUIDschemaIdStringobjectName
-    SchemaManagementServiceSchemaDependencyService --> SchemaManagementServiceSchemaDependencyServiceAttributeDependencyManagerdependencyManager
-    SchemaManagementServiceSchemaDependencyService --> SchemaManagementServiceSchemaDependencyServiceMethodgetDependenciesUUIDschemaId
-    SchemaManagementServiceSchemaDependencyService --> SchemaManagementServiceSchemaDependencyServiceMethodvalidateDropUUIDschemaId
-    SchemaManagementCatalogSchemaCatalog --> SchemaManagementCatalogSchemaCatalogAttributeMapUUIDSchemaschemas
-    SchemaManagementCatalogSchemaCatalog --> SchemaManagementCatalogSchemaCatalogMethodsaveSchemaschema
-    SchemaManagementCatalogSchemaCatalog --> SchemaManagementCatalogSchemaCatalogMethodfindByIdUUIDschemaId
-    SchemaManagementCatalogSchemaCatalog --> SchemaManagementCatalogSchemaCatalogMethodfindByDatabaseIdUUIDdatabaseId
-    SchemaManagementCatalogSchemaCatalog --> SchemaManagementCatalogSchemaCatalogMethodexistsByNameUUIDdatabaseIdStringname
-    SchemaManagementCatalogSchemaCatalog --> SchemaManagementCatalogSchemaCatalogMethoddeleteUUIDschemaId
-    SchemaManagementDBMSCoreSchemaManager --> SchemaManagementDBMSCoreSchemaManagerAttributeCatalogManagercatalogManager
-    SchemaManagementDBMSCoreSchemaManager --> SchemaManagementDBMSCoreSchemaManagerMethodcreateUUIDdatabaseIdSchemaDefinitiondefinition
-    SchemaManagementDBMSCoreSchemaManager --> SchemaManagementDBMSCoreSchemaManagerMethodrenameUUIDschemaIdStringnewName
-    SchemaManagementDBMSCoreSchemaManager --> SchemaManagementDBMSCoreSchemaManagerMethoddropUUIDschemaId
-    SchemaManagementDBMSCoreDependencyManager --> SchemaManagementDBMSCoreDependencyManagerAttributeDependencyGraphdependencyGraph
-    SchemaManagementDBMSCoreDependencyManager --> SchemaManagementDBMSCoreDependencyManagerMethodfindDependenciesUUIDobjectId
-    SchemaManagementDBMSCoreDependencyManager --> SchemaManagementDBMSCoreDependencyManagerMethodaddDependencyUUIDsourceIdUUIDtargetId
-    SchemaManagementDBMSCoreDependencyManager --> SchemaManagementDBMSCoreDependencyManagerMethodremoveDependenciesUUIDobjectId
+    SchemaService["SchemaService"]:::classLeaf
+    SSManager["Attribute: MetadataManager metadataManager"]:::attributeLeaf
+    SSRepository["Attribute: SchemaRepository schemaRepository"]:::attributeLeaf
+    SSCreate["Method: createSchema(UUID databaseId, CreateSchemaRequest request)"]:::methodLeaf
+    SSFind["Method: findSchema(UUID schemaId)"]:::methodLeaf
+    SSFindAll["Method: findSchemas(UUID databaseId)"]:::methodLeaf
+    SSRename["Method: renameSchema(UUID schemaId, String newName)"]:::methodLeaf
+    SSCopy["Method: copySchema(UUID schemaId, String newName)"]:::methodLeaf
+    SSDelete["Method: deleteSchema(UUID schemaId)"]:::methodLeaf
 
-    classDef rootStyle fill:#1d3557,stroke:#457b9d,stroke-width:4px,color:#ffffff,font-weight:bold,font-size:17px;
+    SchemaRepository["SchemaRepository"]:::classLeaf
+    SRepoSave["Method: save(Schema schema)"]:::methodLeaf
+    SRepoFindId["Method: findById(UUID schemaId)"]:::methodLeaf
+    SRepoFindDatabase["Method: findByDatabaseId(UUID databaseId)"]:::methodLeaf
+    SRepoFindName["Method: findByDatabaseIdAndName(UUID databaseId, String name)"]:::methodLeaf
+    SRepoDelete["Method: deleteById(UUID schemaId)"]:::methodLeaf
+
+    MetadataManager["MetadataManager"]:::classLeaf
+    MMCreate["Method: createSchema(String name, UUID ownerId)"]:::methodLeaf
+    MMFind["Method: findSchema(UUID schemaId)"]:::methodLeaf
+
+    Schema["Schema"]:::classLeaf
+    SchemaId["Attribute: UUID id"]:::attributeLeaf
+    SchemaName["Attribute: String name"]:::attributeLeaf
+    SchemaDatabase["Attribute: UUID databaseId"]:::attributeLeaf
+    SchemaOwner["Attribute: UUID ownerId"]:::attributeLeaf
+    SchemaTables["Attribute: List<TableMetadata> tables"]:::attributeLeaf
+    SchemaViews["Attribute: List<View> views"]:::attributeLeaf
+    SchemaRename["Method: rename(String newName)"]:::methodLeaf
+    SchemaAddTable["Method: addTable(TableMetadata table)"]:::methodLeaf
+    SchemaRemoveTable["Method: removeTable(String name)"]:::methodLeaf
+    SchemaCopy["Method: copy()"]:::methodLeaf
+
+    Controller --> SchemaManagement
+    DTO --> SchemaManagement
+    Mapper --> SchemaManagement
+
+    SchemaManagement --> Service
+    SchemaManagement --> Repository
+    SchemaManagement --> Core
+
+    SchemaController --> Controller
+    CreateSchemaRequest --> DTO
+    RenameSchemaRequest --> DTO
+    CopySchemaRequest --> DTO
+    SchemaResponse --> DTO
+    SchemaMapper --> Mapper
+
+    Service --> SchemaService
+    Repository --> SchemaRepository
+    Core --> MetadataManager
+    Core --> Schema
+
+    SCService --> SchemaController
+    SCMapper --> SchemaController
+    SCCreate --> SchemaController
+    SCGet --> SchemaController
+    SCList --> SchemaController
+    SCRename --> SchemaController
+    SCCopy --> SchemaController
+    SCDelete --> SchemaController
+
+    CSRName --> CreateSchemaRequest
+    CSROwner --> CreateSchemaRequest
+    RSRName --> RenameSchemaRequest
+    CPSName --> CopySchemaRequest
+
+    SRId --> SchemaResponse
+    SRDatabaseId --> SchemaResponse
+    SROwnerId --> SchemaResponse
+    SRName --> SchemaResponse
+    SRTableCount --> SchemaResponse
+    SRViewCount --> SchemaResponse
+
+    SMToDomain --> SchemaMapper
+    SMToResponse --> SchemaMapper
+
+    SchemaService --> SSManager
+    SchemaService --> SSRepository
+    SchemaService --> SSCreate
+    SchemaService --> SSFind
+    SchemaService --> SSFindAll
+    SchemaService --> SSRename
+    SchemaService --> SSCopy
+    SchemaService --> SSDelete
+
+    SchemaRepository --> SRepoSave
+    SchemaRepository --> SRepoFindId
+    SchemaRepository --> SRepoFindDatabase
+    SchemaRepository --> SRepoFindName
+    SchemaRepository --> SRepoDelete
+
+    MetadataManager --> MMCreate
+    MetadataManager --> MMFind
+
+    Schema --> SchemaId
+    Schema --> SchemaName
+    Schema --> SchemaDatabase
+    Schema --> SchemaOwner
+    Schema --> SchemaTables
+    Schema --> SchemaViews
+    Schema --> SchemaRename
+    Schema --> SchemaAddTable
+    Schema --> SchemaRemoveTable
+    Schema --> SchemaCopy
+
+    classDef rootStyle fill:#1d3557,stroke:#457b9d,stroke-width:4px,color:#ffffff,font-weight:bold;
     classDef controllerGroup fill:#00a6a6,stroke:#007f7f,stroke-width:3px,color:#ffffff,font-weight:bold;
     classDef dtoGroup fill:#1976d2,stroke:#0d47a1,stroke-width:3px,color:#ffffff,font-weight:bold;
     classDef mapperGroup fill:#7b61c9,stroke:#5e43ad,stroke-width:3px,color:#ffffff,font-weight:bold;
     classDef serviceGroup fill:#f9a825,stroke:#d88c00,stroke-width:3px,color:#ffffff,font-weight:bold;
-    classDef catalogGroup fill:#e65100,stroke:#bf360c,stroke-width:3px,color:#ffffff,font-weight:bold;
+    classDef repositoryGroup fill:#e65100,stroke:#bf360c,stroke-width:3px,color:#ffffff,font-weight:bold;
     classDef coreGroup fill:#d84315,stroke:#bf360c,stroke-width:3px,color:#ffffff,font-weight:bold;
     classDef classLeaf fill:#ffffff,stroke:#607d8b,stroke-width:2px,color:#263238,font-weight:bold;
     classDef attributeLeaf fill:#eef7ff,stroke:#64b5f6,stroke-width:1px,color:#0d47a1;
     classDef methodLeaf fill:#f3f8e9,stroke:#8bc34a,stroke-width:1px,color:#33691e;
 ```
+
+---
 
 ## Table Metadata Management
 
 ```mermaid
 flowchart LR
-    TableMetadataManagement["Table Metadata Management"]:::rootStyle
+    TableManagement["Table Metadata Management"]:::rootStyle
 
-    TableMetadataManagementController["Controller"]:::controllerGroup
-    TableMetadataManagementControllerTableController["TableController"]:::classLeaf
-    TableMetadataManagementControllerTableControllerAttributeTableServicetableService["Attribute: TableService tableService"]:::attributeLeaf
-    TableMetadataManagementControllerTableControllerAttributeTableMappertableMapper["Attribute: TableMapper tableMapper"]:::attributeLeaf
-    TableMetadataManagementControllerTableControllerMethodcreateTableUUIDschemaIdCreateTableRequestrequest["Method: createTable(UUID schemaId, CreateTableRequest request)"]:::methodLeaf
-    TableMetadataManagementControllerTableControllerMethodgetTableUUIDtableId["Method: getTable(UUID tableId)"]:::methodLeaf
-    TableMetadataManagementControllerTableControllerMethodlistTablesUUIDschemaId["Method: listTables(UUID schemaId)"]:::methodLeaf
-    TableMetadataManagementControllerTableControllerMethodrenameTableUUIDtableIdRenameTableRequestrequest["Method: renameTable(UUID tableId, RenameTableRequest request)"]:::methodLeaf
-    TableMetadataManagementControllerTableControllerMethodupdatePropertiesUUIDtableIdUpdateTablePropertiesRequestrequest["Method: updateProperties(UUID tableId, UpdateTablePropertiesRequest request)"]:::methodLeaf
-    TableMetadataManagementControllerTableControllerMethodtruncateTableUUIDtableId["Method: truncateTable(UUID tableId)"]:::methodLeaf
-    TableMetadataManagementControllerTableControllerMethoddropTableUUIDtableId["Method: dropTable(UUID tableId)"]:::methodLeaf
-    TableMetadataManagementControllerTableControllerMethodgetStatisticsUUIDtableId["Method: getStatistics(UUID tableId)"]:::methodLeaf
+    Controller["Controller"]:::controllerGroup
+    DTO["DTO"]:::dtoGroup
+    Mapper["Mapper"]:::mapperGroup
 
-    TableMetadataManagementDTO["DTO"]:::dtoGroup
-    TableMetadataManagementDTOCreateTableRequest["CreateTableRequest"]:::classLeaf
-    TableMetadataManagementDTOCreateTableRequestAttributeStringname["Attribute: String name"]:::attributeLeaf
-    TableMetadataManagementDTOCreateTableRequestAttributeListCreateColumnRequestcolumns["Attribute: List<CreateColumnRequest> columns"]:::attributeLeaf
-    TableMetadataManagementDTOCreateTableRequestAttributeListCreateConstraintRequestconstraints["Attribute: List<CreateConstraintRequest> constraints"]:::attributeLeaf
-    TableMetadataManagementDTOCreateTableRequestAttributeTablePropertiesRequestproperties["Attribute: TablePropertiesRequest properties"]:::attributeLeaf
-    TableMetadataManagementDTORenameTableRequest["RenameTableRequest"]:::classLeaf
-    TableMetadataManagementDTORenameTableRequestAttributeStringnewName["Attribute: String newName"]:::attributeLeaf
-    TableMetadataManagementDTOUpdateTablePropertiesRequest["UpdateTablePropertiesRequest"]:::classLeaf
-    TableMetadataManagementDTOUpdateTablePropertiesRequestAttributeStringdescription["Attribute: String description"]:::attributeLeaf
-    TableMetadataManagementDTOUpdateTablePropertiesRequestAttributeStorageTypestorageType["Attribute: StorageType storageType"]:::attributeLeaf
-    TableMetadataManagementDTOUpdateTablePropertiesRequestAttributeMapStringStringoptions["Attribute: Map<String, String> options"]:::attributeLeaf
-    TableMetadataManagementDTOTableResponse["TableResponse"]:::classLeaf
-    TableMetadataManagementDTOTableResponseAttributeUUIDid["Attribute: UUID id"]:::attributeLeaf
-    TableMetadataManagementDTOTableResponseAttributeUUIDschemaId["Attribute: UUID schemaId"]:::attributeLeaf
-    TableMetadataManagementDTOTableResponseAttributeStringname["Attribute: String name"]:::attributeLeaf
-    TableMetadataManagementDTOTableResponseAttributeListColumnResponsecolumns["Attribute: List<ColumnResponse> columns"]:::attributeLeaf
-    TableMetadataManagementDTOTableResponseAttributeTablePropertiesproperties["Attribute: TableProperties properties"]:::attributeLeaf
-    TableMetadataManagementDTOTableStatisticsResponse["TableStatisticsResponse"]:::classLeaf
-    TableMetadataManagementDTOTableStatisticsResponseAttributelongrowCount["Attribute: long rowCount"]:::attributeLeaf
-    TableMetadataManagementDTOTableStatisticsResponseAttributelongpageCount["Attribute: long pageCount"]:::attributeLeaf
-    TableMetadataManagementDTOTableStatisticsResponseAttributelongtotalSize["Attribute: long totalSize"]:::attributeLeaf
-    TableMetadataManagementDTOTableStatisticsResponseAttributeInstantlastAnalyzedAt["Attribute: Instant lastAnalyzedAt"]:::attributeLeaf
+    Service["Service"]:::serviceGroup
+    Repository["Repository"]:::repositoryGroup
+    Core["Java Core"]:::coreGroup
 
-    TableMetadataManagementMapper["Mapper"]:::mapperGroup
-    TableMetadataManagementMapperTableMapper["TableMapper"]:::classLeaf
-    TableMetadataManagementMapperTableMapperMethodtoCreateCommandUUIDschemaIdCreateTableRequestrequest["Method: toCreateCommand(UUID schemaId, CreateTableRequest request)"]:::methodLeaf
-    TableMetadataManagementMapperTableMapperMethodtoResponseTableMetadatatable["Method: toResponse(TableMetadata table)"]:::methodLeaf
-    TableMetadataManagementMapperTableMapperMethodtoStatisticsResponseTableStatisticsstatistics["Method: toStatisticsResponse(TableStatistics statistics)"]:::methodLeaf
+    TableController["TableController"]:::classLeaf
+    TCService["Attribute: TableService tableService"]:::attributeLeaf
+    TCMapper["Attribute: TableMapper tableMapper"]:::attributeLeaf
+    TCCreate["Method: createTable(UUID schemaId, CreateTableRequest request)"]:::methodLeaf
+    TCGet["Method: getTable(UUID tableId)"]:::methodLeaf
+    TCList["Method: listTables(UUID schemaId)"]:::methodLeaf
+    TCRename["Method: renameTable(UUID tableId, RenameTableRequest request)"]:::methodLeaf
+    TCCopy["Method: copyTable(UUID tableId, CopyTableRequest request)"]:::methodLeaf
+    TCDrop["Method: deleteTable(UUID tableId)"]:::methodLeaf
 
-    TableMetadataManagementService["Service"]:::serviceGroup
-    TableMetadataManagementServiceTableService["TableService"]:::classLeaf
-    TableMetadataManagementServiceTableServiceAttributeTableCatalogtableCatalog["Attribute: TableCatalog tableCatalog"]:::attributeLeaf
-    TableMetadataManagementServiceTableServiceAttributeTableManagertableManager["Attribute: TableManager tableManager"]:::attributeLeaf
-    TableMetadataManagementServiceTableServiceMethodcreateTableCreateTableCommandcommand["Method: createTable(CreateTableCommand command)"]:::methodLeaf
-    TableMetadataManagementServiceTableServiceMethodfindTableUUIDtableId["Method: findTable(UUID tableId)"]:::methodLeaf
-    TableMetadataManagementServiceTableServiceMethodfindTablesUUIDschemaId["Method: findTables(UUID schemaId)"]:::methodLeaf
-    TableMetadataManagementServiceTableServiceMethodrenameTableUUIDtableIdStringnewName["Method: renameTable(UUID tableId, String newName)"]:::methodLeaf
-    TableMetadataManagementServiceTableServiceMethoddropTableUUIDtableId["Method: dropTable(UUID tableId)"]:::methodLeaf
-    TableMetadataManagementServiceTableDefinitionService["TableDefinitionService"]:::classLeaf
-    TableMetadataManagementServiceTableDefinitionServiceAttributeTableCatalogtableCatalog["Attribute: TableCatalog tableCatalog"]:::attributeLeaf
-    TableMetadataManagementServiceTableDefinitionServiceMethodgetDefinitionUUIDtableId["Method: getDefinition(UUID tableId)"]:::methodLeaf
-    TableMetadataManagementServiceTableDefinitionServiceMethodupdatePropertiesUUIDtableIdTablePropertiesproperties["Method: updateProperties(UUID tableId, TableProperties properties)"]:::methodLeaf
-    TableMetadataManagementServiceTableLifecycleService["TableLifecycleService"]:::classLeaf
-    TableMetadataManagementServiceTableLifecycleServiceAttributeTableManagertableManager["Attribute: TableManager tableManager"]:::attributeLeaf
-    TableMetadataManagementServiceTableLifecycleServiceMethodtruncateTableUUIDtableId["Method: truncateTable(UUID tableId)"]:::methodLeaf
-    TableMetadataManagementServiceTableLifecycleServiceMethodvalidateDropUUIDtableId["Method: validateDrop(UUID tableId)"]:::methodLeaf
-    TableMetadataManagementServiceTableStatisticsService["TableStatisticsService"]:::classLeaf
-    TableMetadataManagementServiceTableStatisticsServiceAttributeTableCatalogtableCatalog["Attribute: TableCatalog tableCatalog"]:::attributeLeaf
-    TableMetadataManagementServiceTableStatisticsServiceAttributeRecordManagerrecordManager["Attribute: RecordManager recordManager"]:::attributeLeaf
-    TableMetadataManagementServiceTableStatisticsServiceMethodgetStatisticsUUIDtableId["Method: getStatistics(UUID tableId)"]:::methodLeaf
-    TableMetadataManagementServiceTableStatisticsServiceMethodrefreshStatisticsUUIDtableId["Method: refreshStatistics(UUID tableId)"]:::methodLeaf
+    CreateTableRequest["CreateTableRequest"]:::classLeaf
+    CTRName["Attribute: String name"]:::attributeLeaf
 
-    TableMetadataManagementCatalog["Catalog"]:::catalogGroup
-    TableMetadataManagementCatalogTableCatalog["TableCatalog"]:::classLeaf
-    TableMetadataManagementCatalogTableCatalogAttributeMapUUIDTableMetadatatables["Attribute: Map<UUID, TableMetadata> tables"]:::attributeLeaf
-    TableMetadataManagementCatalogTableCatalogMethodsaveTableMetadatatable["Method: save(TableMetadata table)"]:::methodLeaf
-    TableMetadataManagementCatalogTableCatalogMethodfindByIdUUIDtableId["Method: findById(UUID tableId)"]:::methodLeaf
-    TableMetadataManagementCatalogTableCatalogMethodfindBySchemaIdUUIDschemaId["Method: findBySchemaId(UUID schemaId)"]:::methodLeaf
-    TableMetadataManagementCatalogTableCatalogMethodexistsByNameUUIDschemaIdStringname["Method: existsByName(UUID schemaId, String name)"]:::methodLeaf
-    TableMetadataManagementCatalogTableCatalogMethoddeleteUUIDtableId["Method: delete(UUID tableId)"]:::methodLeaf
+    RenameTableRequest["RenameTableRequest"]:::classLeaf
+    RTRName["Attribute: String newName"]:::attributeLeaf
 
-    TableMetadataManagementDBMSCore["DBMS Core"]:::coreGroup
-    TableMetadataManagementDBMSCoreTableManager["TableManager"]:::classLeaf
-    TableMetadataManagementDBMSCoreTableManagerAttributeStorageEnginestorageEngine["Attribute: StorageEngine storageEngine"]:::attributeLeaf
-    TableMetadataManagementDBMSCoreTableManagerAttributeRecordManagerrecordManager["Attribute: RecordManager recordManager"]:::attributeLeaf
-    TableMetadataManagementDBMSCoreTableManagerMethodcreateTableDefinitiondefinition["Method: create(TableDefinition definition)"]:::methodLeaf
-    TableMetadataManagementDBMSCoreTableManagerMethodtruncateUUIDtableId["Method: truncate(UUID tableId)"]:::methodLeaf
-    TableMetadataManagementDBMSCoreTableManagerMethoddropUUIDtableId["Method: drop(UUID tableId)"]:::methodLeaf
-    TableMetadataManagementDBMSCoreStorageEngine["StorageEngine"]:::classLeaf
-    TableMetadataManagementDBMSCoreStorageEngineAttributePageManagerpageManager["Attribute: PageManager pageManager"]:::attributeLeaf
-    TableMetadataManagementDBMSCoreStorageEngineAttributeFileManagerfileManager["Attribute: FileManager fileManager"]:::attributeLeaf
-    TableMetadataManagementDBMSCoreStorageEngineMethodallocateTableStorageUUIDtableId["Method: allocateTableStorage(UUID tableId)"]:::methodLeaf
-    TableMetadataManagementDBMSCoreStorageEngineMethodreleaseTableStorageUUIDtableId["Method: releaseTableStorage(UUID tableId)"]:::methodLeaf
-    TableMetadataManagementDBMSCoreRecordManager["RecordManager"]:::classLeaf
-    TableMetadataManagementDBMSCoreRecordManagerAttributeBufferPoolbufferPool["Attribute: BufferPool bufferPool"]:::attributeLeaf
-    TableMetadataManagementDBMSCoreRecordManagerMethodcountRecordsUUIDtableId["Method: countRecords(UUID tableId)"]:::methodLeaf
-    TableMetadataManagementDBMSCoreRecordManagerMethoddeleteAllUUIDtableId["Method: deleteAll(UUID tableId)"]:::methodLeaf
-    TableMetadataManagementDBMSCoreRecordManagerMethodscanUUIDtableId["Method: scan(UUID tableId)"]:::methodLeaf
+    CopyTableRequest["CopyTableRequest"]:::classLeaf
+    CPTRName["Attribute: String newName"]:::attributeLeaf
 
-    TableMetadataManagementController --> TableMetadataManagement
-    TableMetadataManagementDTO --> TableMetadataManagement
-    TableMetadataManagementMapper --> TableMetadataManagement
-    TableMetadataManagement --> TableMetadataManagementService
-    TableMetadataManagement --> TableMetadataManagementCatalog
-    TableMetadataManagement --> TableMetadataManagementDBMSCore
+    TableResponse["TableResponse"]:::classLeaf
+    TRId["Attribute: UUID id"]:::attributeLeaf
+    TRSchemaId["Attribute: UUID schemaId"]:::attributeLeaf
+    TRName["Attribute: String name"]:::attributeLeaf
+    TRColumns["Attribute: List<ColumnResponse> columns"]:::attributeLeaf
+    TRConstraints["Attribute: List<ConstraintResponse> constraints"]:::attributeLeaf
+    TRIndexes["Attribute: List<IndexResponse> indexes"]:::attributeLeaf
+    TRStats["Attribute: TableStats stats"]:::attributeLeaf
 
-    TableMetadataManagementControllerTableController --> TableMetadataManagementController
-    TableMetadataManagementDTOCreateTableRequest --> TableMetadataManagementDTO
-    TableMetadataManagementDTORenameTableRequest --> TableMetadataManagementDTO
-    TableMetadataManagementDTOUpdateTablePropertiesRequest --> TableMetadataManagementDTO
-    TableMetadataManagementDTOTableResponse --> TableMetadataManagementDTO
-    TableMetadataManagementDTOTableStatisticsResponse --> TableMetadataManagementDTO
-    TableMetadataManagementMapperTableMapper --> TableMetadataManagementMapper
-    TableMetadataManagementService --> TableMetadataManagementServiceTableService
-    TableMetadataManagementService --> TableMetadataManagementServiceTableDefinitionService
-    TableMetadataManagementService --> TableMetadataManagementServiceTableLifecycleService
-    TableMetadataManagementService --> TableMetadataManagementServiceTableStatisticsService
-    TableMetadataManagementCatalog --> TableMetadataManagementCatalogTableCatalog
-    TableMetadataManagementDBMSCore --> TableMetadataManagementDBMSCoreTableManager
-    TableMetadataManagementDBMSCore --> TableMetadataManagementDBMSCoreStorageEngine
-    TableMetadataManagementDBMSCore --> TableMetadataManagementDBMSCoreRecordManager
+    TableMapper["TableMapper"]:::classLeaf
+    TMToDomain["Method: toDomain(UUID schemaId, CreateTableRequest request)"]:::methodLeaf
+    TMToResponse["Method: toResponse(TableMetadata table)"]:::methodLeaf
 
-    TableMetadataManagementControllerTableControllerAttributeTableServicetableService --> TableMetadataManagementControllerTableController
-    TableMetadataManagementControllerTableControllerAttributeTableMappertableMapper --> TableMetadataManagementControllerTableController
-    TableMetadataManagementControllerTableControllerMethodcreateTableUUIDschemaIdCreateTableRequestrequest --> TableMetadataManagementControllerTableController
-    TableMetadataManagementControllerTableControllerMethodgetTableUUIDtableId --> TableMetadataManagementControllerTableController
-    TableMetadataManagementControllerTableControllerMethodlistTablesUUIDschemaId --> TableMetadataManagementControllerTableController
-    TableMetadataManagementControllerTableControllerMethodrenameTableUUIDtableIdRenameTableRequestrequest --> TableMetadataManagementControllerTableController
-    TableMetadataManagementControllerTableControllerMethodupdatePropertiesUUIDtableIdUpdateTablePropertiesRequestrequest --> TableMetadataManagementControllerTableController
-    TableMetadataManagementControllerTableControllerMethodtruncateTableUUIDtableId --> TableMetadataManagementControllerTableController
-    TableMetadataManagementControllerTableControllerMethoddropTableUUIDtableId --> TableMetadataManagementControllerTableController
-    TableMetadataManagementControllerTableControllerMethodgetStatisticsUUIDtableId --> TableMetadataManagementControllerTableController
-    TableMetadataManagementDTOCreateTableRequestAttributeStringname --> TableMetadataManagementDTOCreateTableRequest
-    TableMetadataManagementDTOCreateTableRequestAttributeListCreateColumnRequestcolumns --> TableMetadataManagementDTOCreateTableRequest
-    TableMetadataManagementDTOCreateTableRequestAttributeListCreateConstraintRequestconstraints --> TableMetadataManagementDTOCreateTableRequest
-    TableMetadataManagementDTOCreateTableRequestAttributeTablePropertiesRequestproperties --> TableMetadataManagementDTOCreateTableRequest
-    TableMetadataManagementDTORenameTableRequestAttributeStringnewName --> TableMetadataManagementDTORenameTableRequest
-    TableMetadataManagementDTOUpdateTablePropertiesRequestAttributeStringdescription --> TableMetadataManagementDTOUpdateTablePropertiesRequest
-    TableMetadataManagementDTOUpdateTablePropertiesRequestAttributeStorageTypestorageType --> TableMetadataManagementDTOUpdateTablePropertiesRequest
-    TableMetadataManagementDTOUpdateTablePropertiesRequestAttributeMapStringStringoptions --> TableMetadataManagementDTOUpdateTablePropertiesRequest
-    TableMetadataManagementDTOTableResponseAttributeUUIDid --> TableMetadataManagementDTOTableResponse
-    TableMetadataManagementDTOTableResponseAttributeUUIDschemaId --> TableMetadataManagementDTOTableResponse
-    TableMetadataManagementDTOTableResponseAttributeStringname --> TableMetadataManagementDTOTableResponse
-    TableMetadataManagementDTOTableResponseAttributeListColumnResponsecolumns --> TableMetadataManagementDTOTableResponse
-    TableMetadataManagementDTOTableResponseAttributeTablePropertiesproperties --> TableMetadataManagementDTOTableResponse
-    TableMetadataManagementDTOTableStatisticsResponseAttributelongrowCount --> TableMetadataManagementDTOTableStatisticsResponse
-    TableMetadataManagementDTOTableStatisticsResponseAttributelongpageCount --> TableMetadataManagementDTOTableStatisticsResponse
-    TableMetadataManagementDTOTableStatisticsResponseAttributelongtotalSize --> TableMetadataManagementDTOTableStatisticsResponse
-    TableMetadataManagementDTOTableStatisticsResponseAttributeInstantlastAnalyzedAt --> TableMetadataManagementDTOTableStatisticsResponse
-    TableMetadataManagementMapperTableMapperMethodtoCreateCommandUUIDschemaIdCreateTableRequestrequest --> TableMetadataManagementMapperTableMapper
-    TableMetadataManagementMapperTableMapperMethodtoResponseTableMetadatatable --> TableMetadataManagementMapperTableMapper
-    TableMetadataManagementMapperTableMapperMethodtoStatisticsResponseTableStatisticsstatistics --> TableMetadataManagementMapperTableMapper
-    TableMetadataManagementServiceTableService --> TableMetadataManagementServiceTableServiceAttributeTableCatalogtableCatalog
-    TableMetadataManagementServiceTableService --> TableMetadataManagementServiceTableServiceAttributeTableManagertableManager
-    TableMetadataManagementServiceTableService --> TableMetadataManagementServiceTableServiceMethodcreateTableCreateTableCommandcommand
-    TableMetadataManagementServiceTableService --> TableMetadataManagementServiceTableServiceMethodfindTableUUIDtableId
-    TableMetadataManagementServiceTableService --> TableMetadataManagementServiceTableServiceMethodfindTablesUUIDschemaId
-    TableMetadataManagementServiceTableService --> TableMetadataManagementServiceTableServiceMethodrenameTableUUIDtableIdStringnewName
-    TableMetadataManagementServiceTableService --> TableMetadataManagementServiceTableServiceMethoddropTableUUIDtableId
-    TableMetadataManagementServiceTableDefinitionService --> TableMetadataManagementServiceTableDefinitionServiceAttributeTableCatalogtableCatalog
-    TableMetadataManagementServiceTableDefinitionService --> TableMetadataManagementServiceTableDefinitionServiceMethodgetDefinitionUUIDtableId
-    TableMetadataManagementServiceTableDefinitionService --> TableMetadataManagementServiceTableDefinitionServiceMethodupdatePropertiesUUIDtableIdTablePropertiesproperties
-    TableMetadataManagementServiceTableLifecycleService --> TableMetadataManagementServiceTableLifecycleServiceAttributeTableManagertableManager
-    TableMetadataManagementServiceTableLifecycleService --> TableMetadataManagementServiceTableLifecycleServiceMethodtruncateTableUUIDtableId
-    TableMetadataManagementServiceTableLifecycleService --> TableMetadataManagementServiceTableLifecycleServiceMethodvalidateDropUUIDtableId
-    TableMetadataManagementServiceTableStatisticsService --> TableMetadataManagementServiceTableStatisticsServiceAttributeTableCatalogtableCatalog
-    TableMetadataManagementServiceTableStatisticsService --> TableMetadataManagementServiceTableStatisticsServiceAttributeRecordManagerrecordManager
-    TableMetadataManagementServiceTableStatisticsService --> TableMetadataManagementServiceTableStatisticsServiceMethodgetStatisticsUUIDtableId
-    TableMetadataManagementServiceTableStatisticsService --> TableMetadataManagementServiceTableStatisticsServiceMethodrefreshStatisticsUUIDtableId
-    TableMetadataManagementCatalogTableCatalog --> TableMetadataManagementCatalogTableCatalogAttributeMapUUIDTableMetadatatables
-    TableMetadataManagementCatalogTableCatalog --> TableMetadataManagementCatalogTableCatalogMethodsaveTableMetadatatable
-    TableMetadataManagementCatalogTableCatalog --> TableMetadataManagementCatalogTableCatalogMethodfindByIdUUIDtableId
-    TableMetadataManagementCatalogTableCatalog --> TableMetadataManagementCatalogTableCatalogMethodfindBySchemaIdUUIDschemaId
-    TableMetadataManagementCatalogTableCatalog --> TableMetadataManagementCatalogTableCatalogMethodexistsByNameUUIDschemaIdStringname
-    TableMetadataManagementCatalogTableCatalog --> TableMetadataManagementCatalogTableCatalogMethoddeleteUUIDtableId
-    TableMetadataManagementDBMSCoreTableManager --> TableMetadataManagementDBMSCoreTableManagerAttributeStorageEnginestorageEngine
-    TableMetadataManagementDBMSCoreTableManager --> TableMetadataManagementDBMSCoreTableManagerAttributeRecordManagerrecordManager
-    TableMetadataManagementDBMSCoreTableManager --> TableMetadataManagementDBMSCoreTableManagerMethodcreateTableDefinitiondefinition
-    TableMetadataManagementDBMSCoreTableManager --> TableMetadataManagementDBMSCoreTableManagerMethodtruncateUUIDtableId
-    TableMetadataManagementDBMSCoreTableManager --> TableMetadataManagementDBMSCoreTableManagerMethoddropUUIDtableId
-    TableMetadataManagementDBMSCoreStorageEngine --> TableMetadataManagementDBMSCoreStorageEngineAttributePageManagerpageManager
-    TableMetadataManagementDBMSCoreStorageEngine --> TableMetadataManagementDBMSCoreStorageEngineAttributeFileManagerfileManager
-    TableMetadataManagementDBMSCoreStorageEngine --> TableMetadataManagementDBMSCoreStorageEngineMethodallocateTableStorageUUIDtableId
-    TableMetadataManagementDBMSCoreStorageEngine --> TableMetadataManagementDBMSCoreStorageEngineMethodreleaseTableStorageUUIDtableId
-    TableMetadataManagementDBMSCoreRecordManager --> TableMetadataManagementDBMSCoreRecordManagerAttributeBufferPoolbufferPool
-    TableMetadataManagementDBMSCoreRecordManager --> TableMetadataManagementDBMSCoreRecordManagerMethodcountRecordsUUIDtableId
-    TableMetadataManagementDBMSCoreRecordManager --> TableMetadataManagementDBMSCoreRecordManagerMethoddeleteAllUUIDtableId
-    TableMetadataManagementDBMSCoreRecordManager --> TableMetadataManagementDBMSCoreRecordManagerMethodscanUUIDtableId
+    TableService["TableService"]:::classLeaf
+    TSManager["Attribute: MetadataManager metadataManager"]:::attributeLeaf
+    TSRepository["Attribute: TableMetadataRepository tableRepository"]:::attributeLeaf
+    TSCreate["Method: createTable(UUID schemaId, String name)"]:::methodLeaf
+    TSFind["Method: findTable(UUID tableId)"]:::methodLeaf
+    TSFindAll["Method: findTables(UUID schemaId)"]:::methodLeaf
+    TSRename["Method: renameTable(UUID tableId, String newName)"]:::methodLeaf
+    TSCopy["Method: copyTable(UUID tableId, String newName)"]:::methodLeaf
+    TSDelete["Method: deleteTable(UUID tableId)"]:::methodLeaf
 
-    classDef rootStyle fill:#1d3557,stroke:#457b9d,stroke-width:4px,color:#ffffff,font-weight:bold,font-size:17px;
+    TableRepository["TableMetadataRepository"]:::classLeaf
+    TRepoSave["Method: save(TableMetadata table)"]:::methodLeaf
+    TRepoFindId["Method: findById(UUID tableId)"]:::methodLeaf
+    TRepoFindSchema["Method: findBySchemaId(UUID schemaId)"]:::methodLeaf
+    TRepoFindName["Method: findBySchemaIdAndName(UUID schemaId, String name)"]:::methodLeaf
+    TRepoDelete["Method: deleteById(UUID tableId)"]:::methodLeaf
+
+    MetadataManager["MetadataManager"]:::classLeaf
+    MMCreate["Method: createTable(UUID schemaId, String name)"]:::methodLeaf
+    MMFind["Method: findTable(UUID tableId)"]:::methodLeaf
+    MMRemove["Method: removeTable(UUID schemaId, String tableName)"]:::methodLeaf
+
+    TableMetadata["TableMetadata"]:::classLeaf
+    TableId["Attribute: UUID id"]:::attributeLeaf
+    TableName["Attribute: String name"]:::attributeLeaf
+    TableSchema["Attribute: UUID schemaId"]:::attributeLeaf
+    TableColumns["Attribute: List<ColumnMetadata> columns"]:::attributeLeaf
+    TableConstraints["Attribute: List<Constraint> constraints"]:::attributeLeaf
+    TableIndexes["Attribute: List<IndexMetadata> indexes"]:::attributeLeaf
+    TableStorage["Attribute: StorageInfo storageInfo"]:::attributeLeaf
+    TableStats["Attribute: TableStats stats"]:::attributeLeaf
+    TableRename["Method: rename(String newName)"]:::methodLeaf
+    TableAddColumn["Method: addColumn(ColumnMetadata column)"]:::methodLeaf
+    TableRemoveColumn["Method: removeColumn(String name)"]:::methodLeaf
+    TableAddConstraint["Method: addConstraint(Constraint constraint)"]:::methodLeaf
+    TableAddIndex["Method: addIndex(IndexMetadata index)"]:::methodLeaf
+    TableCopy["Method: copy()"]:::methodLeaf
+
+    Controller --> TableManagement
+    DTO --> TableManagement
+    Mapper --> TableManagement
+
+    TableManagement --> Service
+    TableManagement --> Repository
+    TableManagement --> Core
+
+    TableController --> Controller
+    CreateTableRequest --> DTO
+    RenameTableRequest --> DTO
+    CopyTableRequest --> DTO
+    TableResponse --> DTO
+    TableMapper --> Mapper
+
+    Service --> TableService
+    Repository --> TableRepository
+    Core --> MetadataManager
+    Core --> TableMetadata
+
+    TCService --> TableController
+    TCMapper --> TableController
+    TCCreate --> TableController
+    TCGet --> TableController
+    TCList --> TableController
+    TCRename --> TableController
+    TCCopy --> TableController
+    TCDrop --> TableController
+
+    CTRName --> CreateTableRequest
+    RTRName --> RenameTableRequest
+    CPTRName --> CopyTableRequest
+
+    TRId --> TableResponse
+    TRSchemaId --> TableResponse
+    TRName --> TableResponse
+    TRColumns --> TableResponse
+    TRConstraints --> TableResponse
+    TRIndexes --> TableResponse
+    TRStats --> TableResponse
+
+    TMToDomain --> TableMapper
+    TMToResponse --> TableMapper
+
+    TableService --> TSManager
+    TableService --> TSRepository
+    TableService --> TSCreate
+    TableService --> TSFind
+    TableService --> TSFindAll
+    TableService --> TSRename
+    TableService --> TSCopy
+    TableService --> TSDelete
+
+    TableRepository --> TRepoSave
+    TableRepository --> TRepoFindId
+    TableRepository --> TRepoFindSchema
+    TableRepository --> TRepoFindName
+    TableRepository --> TRepoDelete
+
+    MetadataManager --> MMCreate
+    MetadataManager --> MMFind
+    MetadataManager --> MMRemove
+
+    TableMetadata --> TableId
+    TableMetadata --> TableName
+    TableMetadata --> TableSchema
+    TableMetadata --> TableColumns
+    TableMetadata --> TableConstraints
+    TableMetadata --> TableIndexes
+    TableMetadata --> TableStorage
+    TableMetadata --> TableStats
+    TableMetadata --> TableRename
+    TableMetadata --> TableAddColumn
+    TableMetadata --> TableRemoveColumn
+    TableMetadata --> TableAddConstraint
+    TableMetadata --> TableAddIndex
+    TableMetadata --> TableCopy
+
+    classDef rootStyle fill:#1d3557,stroke:#457b9d,stroke-width:4px,color:#ffffff,font-weight:bold;
     classDef controllerGroup fill:#00a6a6,stroke:#007f7f,stroke-width:3px,color:#ffffff,font-weight:bold;
     classDef dtoGroup fill:#1976d2,stroke:#0d47a1,stroke-width:3px,color:#ffffff,font-weight:bold;
     classDef mapperGroup fill:#7b61c9,stroke:#5e43ad,stroke-width:3px,color:#ffffff,font-weight:bold;
     classDef serviceGroup fill:#f9a825,stroke:#d88c00,stroke-width:3px,color:#ffffff,font-weight:bold;
-    classDef catalogGroup fill:#e65100,stroke:#bf360c,stroke-width:3px,color:#ffffff,font-weight:bold;
+    classDef repositoryGroup fill:#e65100,stroke:#bf360c,stroke-width:3px,color:#ffffff,font-weight:bold;
     classDef coreGroup fill:#d84315,stroke:#bf360c,stroke-width:3px,color:#ffffff,font-weight:bold;
     classDef classLeaf fill:#ffffff,stroke:#607d8b,stroke-width:2px,color:#263238,font-weight:bold;
     classDef attributeLeaf fill:#eef7ff,stroke:#64b5f6,stroke-width:1px,color:#0d47a1;
     classDef methodLeaf fill:#f3f8e9,stroke:#8bc34a,stroke-width:1px,color:#33691e;
 ```
+
+---
 
 ## Column Metadata Management
 
 ```mermaid
 flowchart LR
-    ColumnMetadataManagement["Column Metadata Management"]:::rootStyle
+    ColumnManagement["Column Metadata Management"]:::rootStyle
 
-    ColumnMetadataManagementController["Controller"]:::controllerGroup
-    ColumnMetadataManagementControllerColumnController["ColumnController"]:::classLeaf
-    ColumnMetadataManagementControllerColumnControllerAttributeColumnServicecolumnService["Attribute: ColumnService columnService"]:::attributeLeaf
-    ColumnMetadataManagementControllerColumnControllerAttributeColumnMappercolumnMapper["Attribute: ColumnMapper columnMapper"]:::attributeLeaf
-    ColumnMetadataManagementControllerColumnControllerMethodaddColumnUUIDtableIdCreateColumnRequestrequest["Method: addColumn(UUID tableId, CreateColumnRequest request)"]:::methodLeaf
-    ColumnMetadataManagementControllerColumnControllerMethodgetColumnUUIDcolumnId["Method: getColumn(UUID columnId)"]:::methodLeaf
-    ColumnMetadataManagementControllerColumnControllerMethodlistColumnsUUIDtableId["Method: listColumns(UUID tableId)"]:::methodLeaf
-    ColumnMetadataManagementControllerColumnControllerMethodrenameColumnUUIDcolumnIdRenameColumnRequestrequest["Method: renameColumn(UUID columnId, RenameColumnRequest request)"]:::methodLeaf
-    ColumnMetadataManagementControllerColumnControllerMethodchangeTypeUUIDcolumnIdChangeColumnTypeRequestrequest["Method: changeType(UUID columnId, ChangeColumnTypeRequest request)"]:::methodLeaf
-    ColumnMetadataManagementControllerColumnControllerMethodsetDefaultUUIDcolumnIdSetColumnDefaultRequestrequest["Method: setDefault(UUID columnId, SetColumnDefaultRequest request)"]:::methodLeaf
-    ColumnMetadataManagementControllerColumnControllerMethoddropColumnUUIDcolumnId["Method: dropColumn(UUID columnId)"]:::methodLeaf
+    Controller["Controller"]:::controllerGroup
+    DTO["DTO"]:::dtoGroup
+    Mapper["Mapper"]:::mapperGroup
 
-    ColumnMetadataManagementDTO["DTO"]:::dtoGroup
-    ColumnMetadataManagementDTOCreateColumnRequest["CreateColumnRequest"]:::classLeaf
-    ColumnMetadataManagementDTOCreateColumnRequestAttributeStringname["Attribute: String name"]:::attributeLeaf
-    ColumnMetadataManagementDTOCreateColumnRequestAttributeDataTypeDefinitiondataType["Attribute: DataTypeDefinition dataType"]:::attributeLeaf
-    ColumnMetadataManagementDTOCreateColumnRequestAttributebooleannullable["Attribute: boolean nullable"]:::attributeLeaf
-    ColumnMetadataManagementDTOCreateColumnRequestAttributeObjectdefaultValue["Attribute: Object defaultValue"]:::attributeLeaf
-    ColumnMetadataManagementDTORenameColumnRequest["RenameColumnRequest"]:::classLeaf
-    ColumnMetadataManagementDTORenameColumnRequestAttributeStringnewName["Attribute: String newName"]:::attributeLeaf
-    ColumnMetadataManagementDTOChangeColumnTypeRequest["ChangeColumnTypeRequest"]:::classLeaf
-    ColumnMetadataManagementDTOChangeColumnTypeRequestAttributeDataTypeDefinitionnewType["Attribute: DataTypeDefinition newType"]:::attributeLeaf
-    ColumnMetadataManagementDTOChangeColumnTypeRequestAttributebooleanallowDataLoss["Attribute: boolean allowDataLoss"]:::attributeLeaf
-    ColumnMetadataManagementDTOSetColumnDefaultRequest["SetColumnDefaultRequest"]:::classLeaf
-    ColumnMetadataManagementDTOSetColumnDefaultRequestAttributeObjectdefaultValue["Attribute: Object defaultValue"]:::attributeLeaf
-    ColumnMetadataManagementDTOColumnResponse["ColumnResponse"]:::classLeaf
-    ColumnMetadataManagementDTOColumnResponseAttributeUUIDid["Attribute: UUID id"]:::attributeLeaf
-    ColumnMetadataManagementDTOColumnResponseAttributeUUIDtableId["Attribute: UUID tableId"]:::attributeLeaf
-    ColumnMetadataManagementDTOColumnResponseAttributeStringname["Attribute: String name"]:::attributeLeaf
-    ColumnMetadataManagementDTOColumnResponseAttributeDataTypeDefinitiondataType["Attribute: DataTypeDefinition dataType"]:::attributeLeaf
-    ColumnMetadataManagementDTOColumnResponseAttributebooleannullable["Attribute: boolean nullable"]:::attributeLeaf
-    ColumnMetadataManagementDTOColumnResponseAttributeObjectdefaultValue["Attribute: Object defaultValue"]:::attributeLeaf
+    Service["Service"]:::serviceGroup
+    Builder["Builder"]:::builderGroup
+    Core["Java Core"]:::coreGroup
 
-    ColumnMetadataManagementMapper["Mapper"]:::mapperGroup
-    ColumnMetadataManagementMapperColumnMapper["ColumnMapper"]:::classLeaf
-    ColumnMetadataManagementMapperColumnMapperMethodtoCreateCommandUUIDtableIdCreateColumnRequestrequest["Method: toCreateCommand(UUID tableId, CreateColumnRequest request)"]:::methodLeaf
-    ColumnMetadataManagementMapperColumnMapperMethodtoResponseColumnMetadatacolumn["Method: toResponse(ColumnMetadata column)"]:::methodLeaf
+    ColumnController["ColumnController"]:::classLeaf
+    CCService["Attribute: ColumnService columnService"]:::attributeLeaf
+    CCMapper["Attribute: ColumnMapper columnMapper"]:::attributeLeaf
+    CCCreate["Method: createColumn(UUID tableId, CreateColumnRequest request)"]:::methodLeaf
+    CCGet["Method: getColumn(UUID tableId, UUID columnId)"]:::methodLeaf
+    CCList["Method: listColumns(UUID tableId)"]:::methodLeaf
+    CCRename["Method: renameColumn(UUID tableId, UUID columnId, RenameColumnRequest request)"]:::methodLeaf
+    CCUpdate["Method: updateColumn(UUID tableId, UUID columnId, UpdateColumnRequest request)"]:::methodLeaf
+    CCDelete["Method: deleteColumn(UUID tableId, UUID columnId)"]:::methodLeaf
 
-    ColumnMetadataManagementService["Service"]:::serviceGroup
-    ColumnMetadataManagementServiceColumnService["ColumnService"]:::classLeaf
-    ColumnMetadataManagementServiceColumnServiceAttributeColumnCatalogcolumnCatalog["Attribute: ColumnCatalog columnCatalog"]:::attributeLeaf
-    ColumnMetadataManagementServiceColumnServiceAttributeColumnManagercolumnManager["Attribute: ColumnManager columnManager"]:::attributeLeaf
-    ColumnMetadataManagementServiceColumnServiceMethodaddColumnCreateColumnCommandcommand["Method: addColumn(CreateColumnCommand command)"]:::methodLeaf
-    ColumnMetadataManagementServiceColumnServiceMethodfindColumnUUIDcolumnId["Method: findColumn(UUID columnId)"]:::methodLeaf
-    ColumnMetadataManagementServiceColumnServiceMethodfindColumnsUUIDtableId["Method: findColumns(UUID tableId)"]:::methodLeaf
-    ColumnMetadataManagementServiceColumnServiceMethodrenameColumnUUIDcolumnIdStringnewName["Method: renameColumn(UUID columnId, String newName)"]:::methodLeaf
-    ColumnMetadataManagementServiceColumnServiceMethoddropColumnUUIDcolumnId["Method: dropColumn(UUID columnId)"]:::methodLeaf
-    ColumnMetadataManagementServiceColumnDefinitionService["ColumnDefinitionService"]:::classLeaf
-    ColumnMetadataManagementServiceColumnDefinitionServiceAttributeColumnCatalogcolumnCatalog["Attribute: ColumnCatalog columnCatalog"]:::attributeLeaf
-    ColumnMetadataManagementServiceColumnDefinitionServiceMethodchangeTypeUUIDcolumnIdDataTypeDefinitiontype["Method: changeType(UUID columnId, DataTypeDefinition type)"]:::methodLeaf
-    ColumnMetadataManagementServiceColumnDefinitionServiceMethodsetDefaultUUIDcolumnIdObjectvalue["Method: setDefault(UUID columnId, Object value)"]:::methodLeaf
-    ColumnMetadataManagementServiceColumnDefinitionServiceMethodremoveDefaultUUIDcolumnId["Method: removeDefault(UUID columnId)"]:::methodLeaf
-    ColumnMetadataManagementServiceColumnValidationService["ColumnValidationService"]:::classLeaf
-    ColumnMetadataManagementServiceColumnValidationServiceAttributeDataTypeRegistrydataTypeRegistry["Attribute: DataTypeRegistry dataTypeRegistry"]:::attributeLeaf
-    ColumnMetadataManagementServiceColumnValidationServiceAttributeConstraintManagerconstraintManager["Attribute: ConstraintManager constraintManager"]:::attributeLeaf
-    ColumnMetadataManagementServiceColumnValidationServiceMethodvalidateDefinitionColumnDefinitiondefinition["Method: validateDefinition(ColumnDefinition definition)"]:::methodLeaf
-    ColumnMetadataManagementServiceColumnValidationServiceMethodvalidateTypeChangeUUIDcolumnIdDataTypeDefinitionnewType["Method: validateTypeChange(UUID columnId, DataTypeDefinition newType)"]:::methodLeaf
-    ColumnMetadataManagementServiceColumnStatisticsService["ColumnStatisticsService"]:::classLeaf
-    ColumnMetadataManagementServiceColumnStatisticsServiceAttributeColumnCatalogcolumnCatalog["Attribute: ColumnCatalog columnCatalog"]:::attributeLeaf
-    ColumnMetadataManagementServiceColumnStatisticsServiceMethodgetStatisticsUUIDcolumnId["Method: getStatistics(UUID columnId)"]:::methodLeaf
-    ColumnMetadataManagementServiceColumnStatisticsServiceMethodrefreshStatisticsUUIDcolumnId["Method: refreshStatistics(UUID columnId)"]:::methodLeaf
+    CreateColumnRequest["CreateColumnRequest"]:::classLeaf
+    CCRName["Attribute: String name"]:::attributeLeaf
+    CCRType["Attribute: DataType dataType"]:::attributeLeaf
+    CCRNullable["Attribute: boolean nullable"]:::attributeLeaf
+    CCRDefault["Attribute: Object defaultValue"]:::attributeLeaf
+    CCRPosition["Attribute: int position"]:::attributeLeaf
+    CCRLength["Attribute: Integer length"]:::attributeLeaf
+    CCRPrecision["Attribute: Integer precision"]:::attributeLeaf
+    CCRScale["Attribute: Integer scale"]:::attributeLeaf
+    CCRIdentity["Attribute: boolean identity"]:::attributeLeaf
 
-    ColumnMetadataManagementCatalog["Catalog"]:::catalogGroup
-    ColumnMetadataManagementCatalogColumnCatalog["ColumnCatalog"]:::classLeaf
-    ColumnMetadataManagementCatalogColumnCatalogAttributeMapUUIDColumnMetadatacolumns["Attribute: Map<UUID, ColumnMetadata> columns"]:::attributeLeaf
-    ColumnMetadataManagementCatalogColumnCatalogMethodsaveColumnMetadatacolumn["Method: save(ColumnMetadata column)"]:::methodLeaf
-    ColumnMetadataManagementCatalogColumnCatalogMethodfindByIdUUIDcolumnId["Method: findById(UUID columnId)"]:::methodLeaf
-    ColumnMetadataManagementCatalogColumnCatalogMethodfindByTableIdUUIDtableId["Method: findByTableId(UUID tableId)"]:::methodLeaf
-    ColumnMetadataManagementCatalogColumnCatalogMethodexistsByNameUUIDtableIdStringname["Method: existsByName(UUID tableId, String name)"]:::methodLeaf
-    ColumnMetadataManagementCatalogColumnCatalogMethoddeleteUUIDcolumnId["Method: delete(UUID columnId)"]:::methodLeaf
+    RenameColumnRequest["RenameColumnRequest"]:::classLeaf
+    RCRName["Attribute: String newName"]:::attributeLeaf
 
-    ColumnMetadataManagementDBMSCore["DBMS Core"]:::coreGroup
-    ColumnMetadataManagementDBMSCoreColumnManager["ColumnManager"]:::classLeaf
-    ColumnMetadataManagementDBMSCoreColumnManagerAttributeTableManagertableManager["Attribute: TableManager tableManager"]:::attributeLeaf
-    ColumnMetadataManagementDBMSCoreColumnManagerMethodaddUUIDtableIdColumnDefinitiondefinition["Method: add(UUID tableId, ColumnDefinition definition)"]:::methodLeaf
-    ColumnMetadataManagementDBMSCoreColumnManagerMethodalterUUIDcolumnIdColumnDefinitiondefinition["Method: alter(UUID columnId, ColumnDefinition definition)"]:::methodLeaf
-    ColumnMetadataManagementDBMSCoreColumnManagerMethoddropUUIDcolumnId["Method: drop(UUID columnId)"]:::methodLeaf
-    ColumnMetadataManagementDBMSCoreDataTypeRegistry["DataTypeRegistry"]:::classLeaf
-    ColumnMetadataManagementDBMSCoreDataTypeRegistryAttributeMapStringDataTypetypes["Attribute: Map<String, DataType> types"]:::attributeLeaf
-    ColumnMetadataManagementDBMSCoreDataTypeRegistryMethodfindByNameStringname["Method: findByName(String name)"]:::methodLeaf
-    ColumnMetadataManagementDBMSCoreDataTypeRegistryMethodsupportsDataTypeDefinitiondefinition["Method: supports(DataTypeDefinition definition)"]:::methodLeaf
-    ColumnMetadataManagementDBMSCoreDataTypeRegistryMethodvalidateValueDataTypeDefinitiontypeObjectvalue["Method: validateValue(DataTypeDefinition type, Object value)"]:::methodLeaf
-    ColumnMetadataManagementDBMSCoreConstraintManager["ConstraintManager"]:::classLeaf
-    ColumnMetadataManagementDBMSCoreConstraintManagerAttributeConstraintCatalogconstraintCatalog["Attribute: ConstraintCatalog constraintCatalog"]:::attributeLeaf
-    ColumnMetadataManagementDBMSCoreConstraintManagerMethodfindByColumnUUIDcolumnId["Method: findByColumn(UUID columnId)"]:::methodLeaf
-    ColumnMetadataManagementDBMSCoreConstraintManagerMethodvalidateColumnDropUUIDcolumnId["Method: validateColumnDrop(UUID columnId)"]:::methodLeaf
+    UpdateColumnRequest["UpdateColumnRequest"]:::classLeaf
+    UCRType["Attribute: DataType dataType"]:::attributeLeaf
+    UCRNullable["Attribute: Boolean nullable"]:::attributeLeaf
+    UCRDefault["Attribute: Object defaultValue"]:::attributeLeaf
+    UCRLength["Attribute: Integer length"]:::attributeLeaf
+    UCRPrecision["Attribute: Integer precision"]:::attributeLeaf
+    UCRScale["Attribute: Integer scale"]:::attributeLeaf
 
-    ColumnMetadataManagementController --> ColumnMetadataManagement
-    ColumnMetadataManagementDTO --> ColumnMetadataManagement
-    ColumnMetadataManagementMapper --> ColumnMetadataManagement
-    ColumnMetadataManagement --> ColumnMetadataManagementService
-    ColumnMetadataManagement --> ColumnMetadataManagementCatalog
-    ColumnMetadataManagement --> ColumnMetadataManagementDBMSCore
+    ColumnResponse["ColumnResponse"]:::classLeaf
+    CRId["Attribute: UUID id"]:::attributeLeaf
+    CRName["Attribute: String name"]:::attributeLeaf
+    CRType["Attribute: DataType dataType"]:::attributeLeaf
+    CRNullable["Attribute: boolean nullable"]:::attributeLeaf
+    CRDefault["Attribute: Object defaultValue"]:::attributeLeaf
+    CRPosition["Attribute: int position"]:::attributeLeaf
+    CRLength["Attribute: Integer length"]:::attributeLeaf
+    CRPrecision["Attribute: Integer precision"]:::attributeLeaf
+    CRScale["Attribute: Integer scale"]:::attributeLeaf
+    CRIdentity["Attribute: boolean identity"]:::attributeLeaf
 
-    ColumnMetadataManagementControllerColumnController --> ColumnMetadataManagementController
-    ColumnMetadataManagementDTOCreateColumnRequest --> ColumnMetadataManagementDTO
-    ColumnMetadataManagementDTORenameColumnRequest --> ColumnMetadataManagementDTO
-    ColumnMetadataManagementDTOChangeColumnTypeRequest --> ColumnMetadataManagementDTO
-    ColumnMetadataManagementDTOSetColumnDefaultRequest --> ColumnMetadataManagementDTO
-    ColumnMetadataManagementDTOColumnResponse --> ColumnMetadataManagementDTO
-    ColumnMetadataManagementMapperColumnMapper --> ColumnMetadataManagementMapper
-    ColumnMetadataManagementService --> ColumnMetadataManagementServiceColumnService
-    ColumnMetadataManagementService --> ColumnMetadataManagementServiceColumnDefinitionService
-    ColumnMetadataManagementService --> ColumnMetadataManagementServiceColumnValidationService
-    ColumnMetadataManagementService --> ColumnMetadataManagementServiceColumnStatisticsService
-    ColumnMetadataManagementCatalog --> ColumnMetadataManagementCatalogColumnCatalog
-    ColumnMetadataManagementDBMSCore --> ColumnMetadataManagementDBMSCoreColumnManager
-    ColumnMetadataManagementDBMSCore --> ColumnMetadataManagementDBMSCoreDataTypeRegistry
-    ColumnMetadataManagementDBMSCore --> ColumnMetadataManagementDBMSCoreConstraintManager
+    ColumnMapper["ColumnMapper"]:::classLeaf
+    CMToBuilder["Method: toBuilder(CreateColumnRequest request)"]:::methodLeaf
+    CMToResponse["Method: toResponse(ColumnMetadata column)"]:::methodLeaf
 
-    ColumnMetadataManagementControllerColumnControllerAttributeColumnServicecolumnService --> ColumnMetadataManagementControllerColumnController
-    ColumnMetadataManagementControllerColumnControllerAttributeColumnMappercolumnMapper --> ColumnMetadataManagementControllerColumnController
-    ColumnMetadataManagementControllerColumnControllerMethodaddColumnUUIDtableIdCreateColumnRequestrequest --> ColumnMetadataManagementControllerColumnController
-    ColumnMetadataManagementControllerColumnControllerMethodgetColumnUUIDcolumnId --> ColumnMetadataManagementControllerColumnController
-    ColumnMetadataManagementControllerColumnControllerMethodlistColumnsUUIDtableId --> ColumnMetadataManagementControllerColumnController
-    ColumnMetadataManagementControllerColumnControllerMethodrenameColumnUUIDcolumnIdRenameColumnRequestrequest --> ColumnMetadataManagementControllerColumnController
-    ColumnMetadataManagementControllerColumnControllerMethodchangeTypeUUIDcolumnIdChangeColumnTypeRequestrequest --> ColumnMetadataManagementControllerColumnController
-    ColumnMetadataManagementControllerColumnControllerMethodsetDefaultUUIDcolumnIdSetColumnDefaultRequestrequest --> ColumnMetadataManagementControllerColumnController
-    ColumnMetadataManagementControllerColumnControllerMethoddropColumnUUIDcolumnId --> ColumnMetadataManagementControllerColumnController
-    ColumnMetadataManagementDTOCreateColumnRequestAttributeStringname --> ColumnMetadataManagementDTOCreateColumnRequest
-    ColumnMetadataManagementDTOCreateColumnRequestAttributeDataTypeDefinitiondataType --> ColumnMetadataManagementDTOCreateColumnRequest
-    ColumnMetadataManagementDTOCreateColumnRequestAttributebooleannullable --> ColumnMetadataManagementDTOCreateColumnRequest
-    ColumnMetadataManagementDTOCreateColumnRequestAttributeObjectdefaultValue --> ColumnMetadataManagementDTOCreateColumnRequest
-    ColumnMetadataManagementDTORenameColumnRequestAttributeStringnewName --> ColumnMetadataManagementDTORenameColumnRequest
-    ColumnMetadataManagementDTOChangeColumnTypeRequestAttributeDataTypeDefinitionnewType --> ColumnMetadataManagementDTOChangeColumnTypeRequest
-    ColumnMetadataManagementDTOChangeColumnTypeRequestAttributebooleanallowDataLoss --> ColumnMetadataManagementDTOChangeColumnTypeRequest
-    ColumnMetadataManagementDTOSetColumnDefaultRequestAttributeObjectdefaultValue --> ColumnMetadataManagementDTOSetColumnDefaultRequest
-    ColumnMetadataManagementDTOColumnResponseAttributeUUIDid --> ColumnMetadataManagementDTOColumnResponse
-    ColumnMetadataManagementDTOColumnResponseAttributeUUIDtableId --> ColumnMetadataManagementDTOColumnResponse
-    ColumnMetadataManagementDTOColumnResponseAttributeStringname --> ColumnMetadataManagementDTOColumnResponse
-    ColumnMetadataManagementDTOColumnResponseAttributeDataTypeDefinitiondataType --> ColumnMetadataManagementDTOColumnResponse
-    ColumnMetadataManagementDTOColumnResponseAttributebooleannullable --> ColumnMetadataManagementDTOColumnResponse
-    ColumnMetadataManagementDTOColumnResponseAttributeObjectdefaultValue --> ColumnMetadataManagementDTOColumnResponse
-    ColumnMetadataManagementMapperColumnMapperMethodtoCreateCommandUUIDtableIdCreateColumnRequestrequest --> ColumnMetadataManagementMapperColumnMapper
-    ColumnMetadataManagementMapperColumnMapperMethodtoResponseColumnMetadatacolumn --> ColumnMetadataManagementMapperColumnMapper
-    ColumnMetadataManagementServiceColumnService --> ColumnMetadataManagementServiceColumnServiceAttributeColumnCatalogcolumnCatalog
-    ColumnMetadataManagementServiceColumnService --> ColumnMetadataManagementServiceColumnServiceAttributeColumnManagercolumnManager
-    ColumnMetadataManagementServiceColumnService --> ColumnMetadataManagementServiceColumnServiceMethodaddColumnCreateColumnCommandcommand
-    ColumnMetadataManagementServiceColumnService --> ColumnMetadataManagementServiceColumnServiceMethodfindColumnUUIDcolumnId
-    ColumnMetadataManagementServiceColumnService --> ColumnMetadataManagementServiceColumnServiceMethodfindColumnsUUIDtableId
-    ColumnMetadataManagementServiceColumnService --> ColumnMetadataManagementServiceColumnServiceMethodrenameColumnUUIDcolumnIdStringnewName
-    ColumnMetadataManagementServiceColumnService --> ColumnMetadataManagementServiceColumnServiceMethoddropColumnUUIDcolumnId
-    ColumnMetadataManagementServiceColumnDefinitionService --> ColumnMetadataManagementServiceColumnDefinitionServiceAttributeColumnCatalogcolumnCatalog
-    ColumnMetadataManagementServiceColumnDefinitionService --> ColumnMetadataManagementServiceColumnDefinitionServiceMethodchangeTypeUUIDcolumnIdDataTypeDefinitiontype
-    ColumnMetadataManagementServiceColumnDefinitionService --> ColumnMetadataManagementServiceColumnDefinitionServiceMethodsetDefaultUUIDcolumnIdObjectvalue
-    ColumnMetadataManagementServiceColumnDefinitionService --> ColumnMetadataManagementServiceColumnDefinitionServiceMethodremoveDefaultUUIDcolumnId
-    ColumnMetadataManagementServiceColumnValidationService --> ColumnMetadataManagementServiceColumnValidationServiceAttributeDataTypeRegistrydataTypeRegistry
-    ColumnMetadataManagementServiceColumnValidationService --> ColumnMetadataManagementServiceColumnValidationServiceAttributeConstraintManagerconstraintManager
-    ColumnMetadataManagementServiceColumnValidationService --> ColumnMetadataManagementServiceColumnValidationServiceMethodvalidateDefinitionColumnDefinitiondefinition
-    ColumnMetadataManagementServiceColumnValidationService --> ColumnMetadataManagementServiceColumnValidationServiceMethodvalidateTypeChangeUUIDcolumnIdDataTypeDefinitionnewType
-    ColumnMetadataManagementServiceColumnStatisticsService --> ColumnMetadataManagementServiceColumnStatisticsServiceAttributeColumnCatalogcolumnCatalog
-    ColumnMetadataManagementServiceColumnStatisticsService --> ColumnMetadataManagementServiceColumnStatisticsServiceMethodgetStatisticsUUIDcolumnId
-    ColumnMetadataManagementServiceColumnStatisticsService --> ColumnMetadataManagementServiceColumnStatisticsServiceMethodrefreshStatisticsUUIDcolumnId
-    ColumnMetadataManagementCatalogColumnCatalog --> ColumnMetadataManagementCatalogColumnCatalogAttributeMapUUIDColumnMetadatacolumns
-    ColumnMetadataManagementCatalogColumnCatalog --> ColumnMetadataManagementCatalogColumnCatalogMethodsaveColumnMetadatacolumn
-    ColumnMetadataManagementCatalogColumnCatalog --> ColumnMetadataManagementCatalogColumnCatalogMethodfindByIdUUIDcolumnId
-    ColumnMetadataManagementCatalogColumnCatalog --> ColumnMetadataManagementCatalogColumnCatalogMethodfindByTableIdUUIDtableId
-    ColumnMetadataManagementCatalogColumnCatalog --> ColumnMetadataManagementCatalogColumnCatalogMethodexistsByNameUUIDtableIdStringname
-    ColumnMetadataManagementCatalogColumnCatalog --> ColumnMetadataManagementCatalogColumnCatalogMethoddeleteUUIDcolumnId
-    ColumnMetadataManagementDBMSCoreColumnManager --> ColumnMetadataManagementDBMSCoreColumnManagerAttributeTableManagertableManager
-    ColumnMetadataManagementDBMSCoreColumnManager --> ColumnMetadataManagementDBMSCoreColumnManagerMethodaddUUIDtableIdColumnDefinitiondefinition
-    ColumnMetadataManagementDBMSCoreColumnManager --> ColumnMetadataManagementDBMSCoreColumnManagerMethodalterUUIDcolumnIdColumnDefinitiondefinition
-    ColumnMetadataManagementDBMSCoreColumnManager --> ColumnMetadataManagementDBMSCoreColumnManagerMethoddropUUIDcolumnId
-    ColumnMetadataManagementDBMSCoreDataTypeRegistry --> ColumnMetadataManagementDBMSCoreDataTypeRegistryAttributeMapStringDataTypetypes
-    ColumnMetadataManagementDBMSCoreDataTypeRegistry --> ColumnMetadataManagementDBMSCoreDataTypeRegistryMethodfindByNameStringname
-    ColumnMetadataManagementDBMSCoreDataTypeRegistry --> ColumnMetadataManagementDBMSCoreDataTypeRegistryMethodsupportsDataTypeDefinitiondefinition
-    ColumnMetadataManagementDBMSCoreDataTypeRegistry --> ColumnMetadataManagementDBMSCoreDataTypeRegistryMethodvalidateValueDataTypeDefinitiontypeObjectvalue
-    ColumnMetadataManagementDBMSCoreConstraintManager --> ColumnMetadataManagementDBMSCoreConstraintManagerAttributeConstraintCatalogconstraintCatalog
-    ColumnMetadataManagementDBMSCoreConstraintManager --> ColumnMetadataManagementDBMSCoreConstraintManagerMethodfindByColumnUUIDcolumnId
-    ColumnMetadataManagementDBMSCoreConstraintManager --> ColumnMetadataManagementDBMSCoreConstraintManagerMethodvalidateColumnDropUUIDcolumnId
+    ColumnService["ColumnService"]:::classLeaf
+    CSManager["Attribute: MetadataManager metadataManager"]:::attributeLeaf
+    CSTableRepo["Attribute: TableMetadataRepository tableRepository"]:::attributeLeaf
+    CSCreate["Method: createColumn(UUID tableId, CreateColumnRequest request)"]:::methodLeaf
+    CSFind["Method: findColumn(UUID tableId, UUID columnId)"]:::methodLeaf
+    CSFindAll["Method: findColumns(UUID tableId)"]:::methodLeaf
+    CSRename["Method: renameColumn(UUID tableId, UUID columnId, String newName)"]:::methodLeaf
+    CSUpdate["Method: updateColumn(UUID tableId, UUID columnId, UpdateColumnRequest request)"]:::methodLeaf
+    CSDelete["Method: deleteColumn(UUID tableId, UUID columnId)"]:::methodLeaf
 
-    classDef rootStyle fill:#1d3557,stroke:#457b9d,stroke-width:4px,color:#ffffff,font-weight:bold,font-size:17px;
+    ColumnBuilder["ColumnMetadataBuilder"]:::classLeaf
+    CBBuilder["Method: builder()"]:::methodLeaf
+    CBName["Method: name(String name)"]:::methodLeaf
+    CBType["Method: dataType(DataType dataType)"]:::methodLeaf
+    CBNullable["Method: nullable(boolean nullable)"]:::methodLeaf
+    CBDefault["Method: defaultValue(Object value)"]:::methodLeaf
+    CBPosition["Method: position(int position)"]:::methodLeaf
+    CBLength["Method: length(Integer length)"]:::methodLeaf
+    CBPrecision["Method: precision(Integer precision)"]:::methodLeaf
+    CBScale["Method: scale(Integer scale)"]:::methodLeaf
+    CBIdentity["Method: identity(boolean identity)"]:::methodLeaf
+    CBBuild["Method: build()"]:::methodLeaf
+
+    TableMetadata["TableMetadata"]:::classLeaf
+    TMColumns["Attribute: List<ColumnMetadata> columns"]:::attributeLeaf
+    TMAdd["Method: addColumn(ColumnMetadata column)"]:::methodLeaf
+    TMRemove["Method: removeColumn(String name)"]:::methodLeaf
+    TMGet["Method: getColumn(String name)"]:::methodLeaf
+
+    ColumnMetadata["ColumnMetadata"]:::classLeaf
+    ColumnId["Attribute: UUID id"]:::attributeLeaf
+    ColumnName["Attribute: String name"]:::attributeLeaf
+    ColumnType["Attribute: DataType dataType"]:::attributeLeaf
+    ColumnNullable["Attribute: boolean nullable"]:::attributeLeaf
+    ColumnDefault["Attribute: Object defaultValue"]:::attributeLeaf
+    ColumnPosition["Attribute: int position"]:::attributeLeaf
+    ColumnRename["Method: rename(String newName)"]:::methodLeaf
+    ColumnSetNullable["Method: setNullable(boolean nullable)"]:::methodLeaf
+    ColumnSetDefault["Method: setDefaultValue(Object value)"]:::methodLeaf
+    ColumnValidate["Method: isValidDefinition()"]:::methodLeaf
+    ColumnCopy["Method: copy()"]:::methodLeaf
+
+    Controller --> ColumnManagement
+    DTO --> ColumnManagement
+    Mapper --> ColumnManagement
+
+    ColumnManagement --> Service
+    ColumnManagement --> Builder
+    ColumnManagement --> Core
+
+    ColumnController --> Controller
+    CreateColumnRequest --> DTO
+    RenameColumnRequest --> DTO
+    UpdateColumnRequest --> DTO
+    ColumnResponse --> DTO
+    ColumnMapper --> Mapper
+
+    Service --> ColumnService
+    Builder --> ColumnBuilder
+    Core --> TableMetadata
+    Core --> ColumnMetadata
+
+    CCService --> ColumnController
+    CCMapper --> ColumnController
+    CCCreate --> ColumnController
+    CCGet --> ColumnController
+    CCList --> ColumnController
+    CCRename --> ColumnController
+    CCUpdate --> ColumnController
+    CCDelete --> ColumnController
+
+    CCRName --> CreateColumnRequest
+    CCRType --> CreateColumnRequest
+    CCRNullable --> CreateColumnRequest
+    CCRDefault --> CreateColumnRequest
+    CCRPosition --> CreateColumnRequest
+    CCRLength --> CreateColumnRequest
+    CCRPrecision --> CreateColumnRequest
+    CCRScale --> CreateColumnRequest
+    CCRIdentity --> CreateColumnRequest
+
+    RCRName --> RenameColumnRequest
+
+    UCRType --> UpdateColumnRequest
+    UCRNullable --> UpdateColumnRequest
+    UCRDefault --> UpdateColumnRequest
+    UCRLength --> UpdateColumnRequest
+    UCRPrecision --> UpdateColumnRequest
+    UCRScale --> UpdateColumnRequest
+
+    CRId --> ColumnResponse
+    CRName --> ColumnResponse
+    CRType --> ColumnResponse
+    CRNullable --> ColumnResponse
+    CRDefault --> ColumnResponse
+    CRPosition --> ColumnResponse
+    CRLength --> ColumnResponse
+    CRPrecision --> ColumnResponse
+    CRScale --> ColumnResponse
+    CRIdentity --> ColumnResponse
+
+    CMToBuilder --> ColumnMapper
+    CMToResponse --> ColumnMapper
+
+    ColumnService --> CSManager
+    ColumnService --> CSTableRepo
+    ColumnService --> CSCreate
+    ColumnService --> CSFind
+    ColumnService --> CSFindAll
+    ColumnService --> CSRename
+    ColumnService --> CSUpdate
+    ColumnService --> CSDelete
+
+    ColumnBuilder --> CBBuilder
+    ColumnBuilder --> CBName
+    ColumnBuilder --> CBType
+    ColumnBuilder --> CBNullable
+    ColumnBuilder --> CBDefault
+    ColumnBuilder --> CBPosition
+    ColumnBuilder --> CBLength
+    ColumnBuilder --> CBPrecision
+    ColumnBuilder --> CBScale
+    ColumnBuilder --> CBIdentity
+    ColumnBuilder --> CBBuild
+
+    TableMetadata --> TMColumns
+    TableMetadata --> TMAdd
+    TableMetadata --> TMRemove
+    TableMetadata --> TMGet
+
+    ColumnMetadata --> ColumnId
+    ColumnMetadata --> ColumnName
+    ColumnMetadata --> ColumnType
+    ColumnMetadata --> ColumnNullable
+    ColumnMetadata --> ColumnDefault
+    ColumnMetadata --> ColumnPosition
+    ColumnMetadata --> ColumnRename
+    ColumnMetadata --> ColumnSetNullable
+    ColumnMetadata --> ColumnSetDefault
+    ColumnMetadata --> ColumnValidate
+    ColumnMetadata --> ColumnCopy
+
+    classDef rootStyle fill:#1d3557,stroke:#457b9d,stroke-width:4px,color:#ffffff,font-weight:bold;
     classDef controllerGroup fill:#00a6a6,stroke:#007f7f,stroke-width:3px,color:#ffffff,font-weight:bold;
     classDef dtoGroup fill:#1976d2,stroke:#0d47a1,stroke-width:3px,color:#ffffff,font-weight:bold;
     classDef mapperGroup fill:#7b61c9,stroke:#5e43ad,stroke-width:3px,color:#ffffff,font-weight:bold;
     classDef serviceGroup fill:#f9a825,stroke:#d88c00,stroke-width:3px,color:#ffffff,font-weight:bold;
-    classDef catalogGroup fill:#e65100,stroke:#bf360c,stroke-width:3px,color:#ffffff,font-weight:bold;
+    classDef builderGroup fill:#8e24aa,stroke:#6a1b9a,stroke-width:3px,color:#ffffff,font-weight:bold;
     classDef coreGroup fill:#d84315,stroke:#bf360c,stroke-width:3px,color:#ffffff,font-weight:bold;
     classDef classLeaf fill:#ffffff,stroke:#607d8b,stroke-width:2px,color:#263238,font-weight:bold;
     classDef attributeLeaf fill:#eef7ff,stroke:#64b5f6,stroke-width:1px,color:#0d47a1;
     classDef methodLeaf fill:#f3f8e9,stroke:#8bc34a,stroke-width:1px,color:#33691e;
 ```
 
-## Data Type Management
-
-```mermaid
-flowchart LR
-    DataTypeManagement["Data Type Management"]:::rootStyle
-
-    DataTypeManagementController["Controller"]:::controllerGroup
-    DataTypeManagementControllerDataTypeController["DataTypeController"]:::classLeaf
-    DataTypeManagementControllerDataTypeControllerAttributeDataTypeServicedataTypeService["Attribute: DataTypeService dataTypeService"]:::attributeLeaf
-    DataTypeManagementControllerDataTypeControllerAttributeDataTypeMapperdataTypeMapper["Attribute: DataTypeMapper dataTypeMapper"]:::attributeLeaf
-    DataTypeManagementControllerDataTypeControllerMethodlistDataTypes["Method: listDataTypes()"]:::methodLeaf
-    DataTypeManagementControllerDataTypeControllerMethodgetDataTypeStringtypeName["Method: getDataType(String typeName)"]:::methodLeaf
-    DataTypeManagementControllerDataTypeControllerMethodvalidateDefinitionValidateDataTypeRequestrequest["Method: validateDefinition(ValidateDataTypeRequest request)"]:::methodLeaf
-    DataTypeManagementControllerDataTypeControllerMethodvalidateConversionValidateTypeConversionRequestrequest["Method: validateConversion(ValidateTypeConversionRequest request)"]:::methodLeaf
-
-    DataTypeManagementDTO["DTO"]:::dtoGroup
-    DataTypeManagementDTOValidateDataTypeRequest["ValidateDataTypeRequest"]:::classLeaf
-    DataTypeManagementDTOValidateDataTypeRequestAttributeStringtypeName["Attribute: String typeName"]:::attributeLeaf
-    DataTypeManagementDTOValidateDataTypeRequestAttributeIntegerlength["Attribute: Integer length"]:::attributeLeaf
-    DataTypeManagementDTOValidateDataTypeRequestAttributeIntegerprecision["Attribute: Integer precision"]:::attributeLeaf
-    DataTypeManagementDTOValidateDataTypeRequestAttributeIntegerscale["Attribute: Integer scale"]:::attributeLeaf
-    DataTypeManagementDTOValidateTypeConversionRequest["ValidateTypeConversionRequest"]:::classLeaf
-    DataTypeManagementDTOValidateTypeConversionRequestAttributeStringsourceType["Attribute: String sourceType"]:::attributeLeaf
-    DataTypeManagementDTOValidateTypeConversionRequestAttributeStringtargetType["Attribute: String targetType"]:::attributeLeaf
-    DataTypeManagementDTOValidateTypeConversionRequestAttributeObjectsampleValue["Attribute: Object sampleValue"]:::attributeLeaf
-    DataTypeManagementDTODataTypeResponse["DataTypeResponse"]:::classLeaf
-    DataTypeManagementDTODataTypeResponseAttributeStringname["Attribute: String name"]:::attributeLeaf
-    DataTypeManagementDTODataTypeResponseAttributeTypeCategorycategory["Attribute: TypeCategory category"]:::attributeLeaf
-    DataTypeManagementDTODataTypeResponseAttributebooleansupportsLength["Attribute: boolean supportsLength"]:::attributeLeaf
-    DataTypeManagementDTODataTypeResponseAttributebooleansupportsPrecision["Attribute: boolean supportsPrecision"]:::attributeLeaf
-    DataTypeManagementDTODataTypeResponseAttributebooleansupportsScale["Attribute: boolean supportsScale"]:::attributeLeaf
-    DataTypeManagementDTOTypeConversionResponse["TypeConversionResponse"]:::classLeaf
-    DataTypeManagementDTOTypeConversionResponseAttributebooleanallowed["Attribute: boolean allowed"]:::attributeLeaf
-    DataTypeManagementDTOTypeConversionResponseAttributebooleanlossy["Attribute: boolean lossy"]:::attributeLeaf
-    DataTypeManagementDTOTypeConversionResponseAttributeStringreason["Attribute: String reason"]:::attributeLeaf
-
-    DataTypeManagementMapper["Mapper"]:::mapperGroup
-    DataTypeManagementMapperDataTypeMapper["DataTypeMapper"]:::classLeaf
-    DataTypeManagementMapperDataTypeMapperMethodtoDefinitionValidateDataTypeRequestrequest["Method: toDefinition(ValidateDataTypeRequest request)"]:::methodLeaf
-    DataTypeManagementMapperDataTypeMapperMethodtoResponseDataTypedataType["Method: toResponse(DataType dataType)"]:::methodLeaf
-    DataTypeManagementMapperDataTypeMapperMethodtoConversionResponseTypeConversionResultresult["Method: toConversionResponse(TypeConversionResult result)"]:::methodLeaf
-
-    DataTypeManagementService["Service"]:::serviceGroup
-    DataTypeManagementServiceDataTypeService["DataTypeService"]:::classLeaf
-    DataTypeManagementServiceDataTypeServiceAttributeDataTypeRegistrydataTypeRegistry["Attribute: DataTypeRegistry dataTypeRegistry"]:::attributeLeaf
-    DataTypeManagementServiceDataTypeServiceMethodfindAll["Method: findAll()"]:::methodLeaf
-    DataTypeManagementServiceDataTypeServiceMethodfindByNameStringtypeName["Method: findByName(String typeName)"]:::methodLeaf
-    DataTypeManagementServiceDataTypeServiceMethodvalidateDataTypeDefinitiondefinition["Method: validate(DataTypeDefinition definition)"]:::methodLeaf
-    DataTypeManagementServiceTypeValidationService["TypeValidationService"]:::classLeaf
-    DataTypeManagementServiceTypeValidationServiceAttributeTypeValidatortypeValidator["Attribute: TypeValidator typeValidator"]:::attributeLeaf
-    DataTypeManagementServiceTypeValidationServiceMethodvalidateDefinitionDataTypeDefinitiondefinition["Method: validateDefinition(DataTypeDefinition definition)"]:::methodLeaf
-    DataTypeManagementServiceTypeValidationServiceMethodvalidateValueDataTypeDefinitiondefinitionObjectvalue["Method: validateValue(DataTypeDefinition definition, Object value)"]:::methodLeaf
-    DataTypeManagementServiceTypeConversionService["TypeConversionService"]:::classLeaf
-    DataTypeManagementServiceTypeConversionServiceAttributeTypeConvertertypeConverter["Attribute: TypeConverter typeConverter"]:::attributeLeaf
-    DataTypeManagementServiceTypeConversionServiceMethodvalidateConversionDataTypesourceDataTypetarget["Method: validateConversion(DataType source, DataType target)"]:::methodLeaf
-    DataTypeManagementServiceTypeConversionServiceMethodconvertObjectvalueDataTypesourceDataTypetarget["Method: convert(Object value, DataType source, DataType target)"]:::methodLeaf
-
-    DataTypeManagementRegistry["Registry"]:::catalogGroup
-    DataTypeManagementRegistryDataTypeRegistry["DataTypeRegistry"]:::classLeaf
-    DataTypeManagementRegistryDataTypeRegistryAttributeMapStringDataTyperegisteredTypes["Attribute: Map<String, DataType> registeredTypes"]:::attributeLeaf
-    DataTypeManagementRegistryDataTypeRegistryMethodregisterDataTypedataType["Method: register(DataType dataType)"]:::methodLeaf
-    DataTypeManagementRegistryDataTypeRegistryMethodfindByNameStringname["Method: findByName(String name)"]:::methodLeaf
-    DataTypeManagementRegistryDataTypeRegistryMethodfindAll["Method: findAll()"]:::methodLeaf
-    DataTypeManagementRegistryDataTypeRegistryMethodsupportsStringname["Method: supports(String name)"]:::methodLeaf
-    DataTypeManagementRegistryBuiltInTypeRegistry["BuiltInTypeRegistry"]:::classLeaf
-    DataTypeManagementRegistryBuiltInTypeRegistryAttributeListDataTypebuiltInTypes["Attribute: List<DataType> builtInTypes"]:::attributeLeaf
-    DataTypeManagementRegistryBuiltInTypeRegistryMethodinitialize["Method: initialize()"]:::methodLeaf
-    DataTypeManagementRegistryBuiltInTypeRegistryMethodregisterBuiltInTypesDataTypeRegistryregistry["Method: registerBuiltInTypes(DataTypeRegistry registry)"]:::methodLeaf
-
-    DataTypeManagementDBMSCore["DBMS Core"]:::coreGroup
-    DataTypeManagementDBMSCoreTypeValidator["TypeValidator"]:::classLeaf
-    DataTypeManagementDBMSCoreTypeValidatorMethodvalidateLengthDataTypeDefinitiondefinition["Method: validateLength(DataTypeDefinition definition)"]:::methodLeaf
-    DataTypeManagementDBMSCoreTypeValidatorMethodvalidatePrecisionDataTypeDefinitiondefinition["Method: validatePrecision(DataTypeDefinition definition)"]:::methodLeaf
-    DataTypeManagementDBMSCoreTypeValidatorMethodvalidateScaleDataTypeDefinitiondefinition["Method: validateScale(DataTypeDefinition definition)"]:::methodLeaf
-    DataTypeManagementDBMSCoreTypeConverter["TypeConverter"]:::classLeaf
-    DataTypeManagementDBMSCoreTypeConverterAttributeMapTypePairConversionRulerules["Attribute: Map<TypePair, ConversionRule> rules"]:::attributeLeaf
-    DataTypeManagementDBMSCoreTypeConverterMethodcanConvertDataTypesourceDataTypetarget["Method: canConvert(DataType source, DataType target)"]:::methodLeaf
-    DataTypeManagementDBMSCoreTypeConverterMethodconvertObjectvalueDataTypesourceDataTypetarget["Method: convert(Object value, DataType source, DataType target)"]:::methodLeaf
-
-    DataTypeManagementController --> DataTypeManagement
-    DataTypeManagementDTO --> DataTypeManagement
-    DataTypeManagementMapper --> DataTypeManagement
-    DataTypeManagement --> DataTypeManagementService
-    DataTypeManagement --> DataTypeManagementRegistry
-    DataTypeManagement --> DataTypeManagementDBMSCore
-
-    DataTypeManagementControllerDataTypeController --> DataTypeManagementController
-    DataTypeManagementDTOValidateDataTypeRequest --> DataTypeManagementDTO
-    DataTypeManagementDTOValidateTypeConversionRequest --> DataTypeManagementDTO
-    DataTypeManagementDTODataTypeResponse --> DataTypeManagementDTO
-    DataTypeManagementDTOTypeConversionResponse --> DataTypeManagementDTO
-    DataTypeManagementMapperDataTypeMapper --> DataTypeManagementMapper
-    DataTypeManagementService --> DataTypeManagementServiceDataTypeService
-    DataTypeManagementService --> DataTypeManagementServiceTypeValidationService
-    DataTypeManagementService --> DataTypeManagementServiceTypeConversionService
-    DataTypeManagementRegistry --> DataTypeManagementRegistryDataTypeRegistry
-    DataTypeManagementRegistry --> DataTypeManagementRegistryBuiltInTypeRegistry
-    DataTypeManagementDBMSCore --> DataTypeManagementDBMSCoreTypeValidator
-    DataTypeManagementDBMSCore --> DataTypeManagementDBMSCoreTypeConverter
-
-    DataTypeManagementControllerDataTypeControllerAttributeDataTypeServicedataTypeService --> DataTypeManagementControllerDataTypeController
-    DataTypeManagementControllerDataTypeControllerAttributeDataTypeMapperdataTypeMapper --> DataTypeManagementControllerDataTypeController
-    DataTypeManagementControllerDataTypeControllerMethodlistDataTypes --> DataTypeManagementControllerDataTypeController
-    DataTypeManagementControllerDataTypeControllerMethodgetDataTypeStringtypeName --> DataTypeManagementControllerDataTypeController
-    DataTypeManagementControllerDataTypeControllerMethodvalidateDefinitionValidateDataTypeRequestrequest --> DataTypeManagementControllerDataTypeController
-    DataTypeManagementControllerDataTypeControllerMethodvalidateConversionValidateTypeConversionRequestrequest --> DataTypeManagementControllerDataTypeController
-    DataTypeManagementDTOValidateDataTypeRequestAttributeStringtypeName --> DataTypeManagementDTOValidateDataTypeRequest
-    DataTypeManagementDTOValidateDataTypeRequestAttributeIntegerlength --> DataTypeManagementDTOValidateDataTypeRequest
-    DataTypeManagementDTOValidateDataTypeRequestAttributeIntegerprecision --> DataTypeManagementDTOValidateDataTypeRequest
-    DataTypeManagementDTOValidateDataTypeRequestAttributeIntegerscale --> DataTypeManagementDTOValidateDataTypeRequest
-    DataTypeManagementDTOValidateTypeConversionRequestAttributeStringsourceType --> DataTypeManagementDTOValidateTypeConversionRequest
-    DataTypeManagementDTOValidateTypeConversionRequestAttributeStringtargetType --> DataTypeManagementDTOValidateTypeConversionRequest
-    DataTypeManagementDTOValidateTypeConversionRequestAttributeObjectsampleValue --> DataTypeManagementDTOValidateTypeConversionRequest
-    DataTypeManagementDTODataTypeResponseAttributeStringname --> DataTypeManagementDTODataTypeResponse
-    DataTypeManagementDTODataTypeResponseAttributeTypeCategorycategory --> DataTypeManagementDTODataTypeResponse
-    DataTypeManagementDTODataTypeResponseAttributebooleansupportsLength --> DataTypeManagementDTODataTypeResponse
-    DataTypeManagementDTODataTypeResponseAttributebooleansupportsPrecision --> DataTypeManagementDTODataTypeResponse
-    DataTypeManagementDTODataTypeResponseAttributebooleansupportsScale --> DataTypeManagementDTODataTypeResponse
-    DataTypeManagementDTOTypeConversionResponseAttributebooleanallowed --> DataTypeManagementDTOTypeConversionResponse
-    DataTypeManagementDTOTypeConversionResponseAttributebooleanlossy --> DataTypeManagementDTOTypeConversionResponse
-    DataTypeManagementDTOTypeConversionResponseAttributeStringreason --> DataTypeManagementDTOTypeConversionResponse
-    DataTypeManagementMapperDataTypeMapperMethodtoDefinitionValidateDataTypeRequestrequest --> DataTypeManagementMapperDataTypeMapper
-    DataTypeManagementMapperDataTypeMapperMethodtoResponseDataTypedataType --> DataTypeManagementMapperDataTypeMapper
-    DataTypeManagementMapperDataTypeMapperMethodtoConversionResponseTypeConversionResultresult --> DataTypeManagementMapperDataTypeMapper
-    DataTypeManagementServiceDataTypeService --> DataTypeManagementServiceDataTypeServiceAttributeDataTypeRegistrydataTypeRegistry
-    DataTypeManagementServiceDataTypeService --> DataTypeManagementServiceDataTypeServiceMethodfindAll
-    DataTypeManagementServiceDataTypeService --> DataTypeManagementServiceDataTypeServiceMethodfindByNameStringtypeName
-    DataTypeManagementServiceDataTypeService --> DataTypeManagementServiceDataTypeServiceMethodvalidateDataTypeDefinitiondefinition
-    DataTypeManagementServiceTypeValidationService --> DataTypeManagementServiceTypeValidationServiceAttributeTypeValidatortypeValidator
-    DataTypeManagementServiceTypeValidationService --> DataTypeManagementServiceTypeValidationServiceMethodvalidateDefinitionDataTypeDefinitiondefinition
-    DataTypeManagementServiceTypeValidationService --> DataTypeManagementServiceTypeValidationServiceMethodvalidateValueDataTypeDefinitiondefinitionObjectvalue
-    DataTypeManagementServiceTypeConversionService --> DataTypeManagementServiceTypeConversionServiceAttributeTypeConvertertypeConverter
-    DataTypeManagementServiceTypeConversionService --> DataTypeManagementServiceTypeConversionServiceMethodvalidateConversionDataTypesourceDataTypetarget
-    DataTypeManagementServiceTypeConversionService --> DataTypeManagementServiceTypeConversionServiceMethodconvertObjectvalueDataTypesourceDataTypetarget
-    DataTypeManagementRegistryDataTypeRegistry --> DataTypeManagementRegistryDataTypeRegistryAttributeMapStringDataTyperegisteredTypes
-    DataTypeManagementRegistryDataTypeRegistry --> DataTypeManagementRegistryDataTypeRegistryMethodregisterDataTypedataType
-    DataTypeManagementRegistryDataTypeRegistry --> DataTypeManagementRegistryDataTypeRegistryMethodfindByNameStringname
-    DataTypeManagementRegistryDataTypeRegistry --> DataTypeManagementRegistryDataTypeRegistryMethodfindAll
-    DataTypeManagementRegistryDataTypeRegistry --> DataTypeManagementRegistryDataTypeRegistryMethodsupportsStringname
-    DataTypeManagementRegistryBuiltInTypeRegistry --> DataTypeManagementRegistryBuiltInTypeRegistryAttributeListDataTypebuiltInTypes
-    DataTypeManagementRegistryBuiltInTypeRegistry --> DataTypeManagementRegistryBuiltInTypeRegistryMethodinitialize
-    DataTypeManagementRegistryBuiltInTypeRegistry --> DataTypeManagementRegistryBuiltInTypeRegistryMethodregisterBuiltInTypesDataTypeRegistryregistry
-    DataTypeManagementDBMSCoreTypeValidator --> DataTypeManagementDBMSCoreTypeValidatorMethodvalidateLengthDataTypeDefinitiondefinition
-    DataTypeManagementDBMSCoreTypeValidator --> DataTypeManagementDBMSCoreTypeValidatorMethodvalidatePrecisionDataTypeDefinitiondefinition
-    DataTypeManagementDBMSCoreTypeValidator --> DataTypeManagementDBMSCoreTypeValidatorMethodvalidateScaleDataTypeDefinitiondefinition
-    DataTypeManagementDBMSCoreTypeConverter --> DataTypeManagementDBMSCoreTypeConverterAttributeMapTypePairConversionRulerules
-    DataTypeManagementDBMSCoreTypeConverter --> DataTypeManagementDBMSCoreTypeConverterMethodcanConvertDataTypesourceDataTypetarget
-    DataTypeManagementDBMSCoreTypeConverter --> DataTypeManagementDBMSCoreTypeConverterMethodconvertObjectvalueDataTypesourceDataTypetarget
-
-    classDef rootStyle fill:#1d3557,stroke:#457b9d,stroke-width:4px,color:#ffffff,font-weight:bold,font-size:17px;
-    classDef controllerGroup fill:#00a6a6,stroke:#007f7f,stroke-width:3px,color:#ffffff,font-weight:bold;
-    classDef dtoGroup fill:#1976d2,stroke:#0d47a1,stroke-width:3px,color:#ffffff,font-weight:bold;
-    classDef mapperGroup fill:#7b61c9,stroke:#5e43ad,stroke-width:3px,color:#ffffff,font-weight:bold;
-    classDef serviceGroup fill:#f9a825,stroke:#d88c00,stroke-width:3px,color:#ffffff,font-weight:bold;
-    classDef catalogGroup fill:#e65100,stroke:#bf360c,stroke-width:3px,color:#ffffff,font-weight:bold;
-    classDef coreGroup fill:#d84315,stroke:#bf360c,stroke-width:3px,color:#ffffff,font-weight:bold;
-    classDef classLeaf fill:#ffffff,stroke:#607d8b,stroke-width:2px,color:#263238,font-weight:bold;
-    classDef attributeLeaf fill:#eef7ff,stroke:#64b5f6,stroke-width:1px,color:#0d47a1;
-    classDef methodLeaf fill:#f3f8e9,stroke:#8bc34a,stroke-width:1px,color:#33691e;
-```
-
-## Index Management
-
-```mermaid
-flowchart LR
-    IndexManagement["Index Management"]:::rootStyle
-
-    IndexManagementController["Controller"]:::controllerGroup
-    IndexManagementControllerIndexController["IndexController"]:::classLeaf
-    IndexManagementControllerIndexControllerAttributeIndexServiceindexService["Attribute: IndexService indexService"]:::attributeLeaf
-    IndexManagementControllerIndexControllerAttributeIndexMapperindexMapper["Attribute: IndexMapper indexMapper"]:::attributeLeaf
-    IndexManagementControllerIndexControllerMethodcreateIndexUUIDtableIdCreateIndexRequestrequest["Method: createIndex(UUID tableId, CreateIndexRequest request)"]:::methodLeaf
-    IndexManagementControllerIndexControllerMethodgetIndexUUIDindexId["Method: getIndex(UUID indexId)"]:::methodLeaf
-    IndexManagementControllerIndexControllerMethodlistIndexesUUIDtableId["Method: listIndexes(UUID tableId)"]:::methodLeaf
-    IndexManagementControllerIndexControllerMethodrenameIndexUUIDindexIdRenameIndexRequestrequest["Method: renameIndex(UUID indexId, RenameIndexRequest request)"]:::methodLeaf
-    IndexManagementControllerIndexControllerMethodrebuildIndexUUIDindexId["Method: rebuildIndex(UUID indexId)"]:::methodLeaf
-    IndexManagementControllerIndexControllerMethoddropIndexUUIDindexId["Method: dropIndex(UUID indexId)"]:::methodLeaf
-    IndexManagementControllerIndexControllerMethodgetStatisticsUUIDindexId["Method: getStatistics(UUID indexId)"]:::methodLeaf
-
-    IndexManagementDTO["DTO"]:::dtoGroup
-    IndexManagementDTOCreateIndexRequest["CreateIndexRequest"]:::classLeaf
-    IndexManagementDTOCreateIndexRequestAttributeStringname["Attribute: String name"]:::attributeLeaf
-    IndexManagementDTOCreateIndexRequestAttributeIndexTypetype["Attribute: IndexType type"]:::attributeLeaf
-    IndexManagementDTOCreateIndexRequestAttributeListUUIDcolumnIds["Attribute: List<UUID> columnIds"]:::attributeLeaf
-    IndexManagementDTOCreateIndexRequestAttributebooleanunique["Attribute: boolean unique"]:::attributeLeaf
-    IndexManagementDTORenameIndexRequest["RenameIndexRequest"]:::classLeaf
-    IndexManagementDTORenameIndexRequestAttributeStringnewName["Attribute: String newName"]:::attributeLeaf
-    IndexManagementDTOIndexResponse["IndexResponse"]:::classLeaf
-    IndexManagementDTOIndexResponseAttributeUUIDid["Attribute: UUID id"]:::attributeLeaf
-    IndexManagementDTOIndexResponseAttributeUUIDtableId["Attribute: UUID tableId"]:::attributeLeaf
-    IndexManagementDTOIndexResponseAttributeStringname["Attribute: String name"]:::attributeLeaf
-    IndexManagementDTOIndexResponseAttributeIndexTypetype["Attribute: IndexType type"]:::attributeLeaf
-    IndexManagementDTOIndexResponseAttributeIndexStatestate["Attribute: IndexState state"]:::attributeLeaf
-    IndexManagementDTOIndexResponseAttributeListUUIDcolumnIds["Attribute: List<UUID> columnIds"]:::attributeLeaf
-    IndexManagementDTOIndexStatisticsResponse["IndexStatisticsResponse"]:::classLeaf
-    IndexManagementDTOIndexStatisticsResponseAttributelongentryCount["Attribute: long entryCount"]:::attributeLeaf
-    IndexManagementDTOIndexStatisticsResponseAttributelongpageCount["Attribute: long pageCount"]:::attributeLeaf
-    IndexManagementDTOIndexStatisticsResponseAttributeinttreeHeight["Attribute: int treeHeight"]:::attributeLeaf
-    IndexManagementDTOIndexStatisticsResponseAttributedoubleselectivity["Attribute: double selectivity"]:::attributeLeaf
-
-    IndexManagementMapper["Mapper"]:::mapperGroup
-    IndexManagementMapperIndexMapper["IndexMapper"]:::classLeaf
-    IndexManagementMapperIndexMapperMethodtoCreateCommandUUIDtableIdCreateIndexRequestrequest["Method: toCreateCommand(UUID tableId, CreateIndexRequest request)"]:::methodLeaf
-    IndexManagementMapperIndexMapperMethodtoResponseIndexMetadataindex["Method: toResponse(IndexMetadata index)"]:::methodLeaf
-    IndexManagementMapperIndexMapperMethodtoStatisticsResponseIndexStatisticsstatistics["Method: toStatisticsResponse(IndexStatistics statistics)"]:::methodLeaf
-
-    IndexManagementService["Service"]:::serviceGroup
-    IndexManagementServiceIndexService["IndexService"]:::classLeaf
-    IndexManagementServiceIndexServiceAttributeIndexCatalogindexCatalog["Attribute: IndexCatalog indexCatalog"]:::attributeLeaf
-    IndexManagementServiceIndexServiceAttributeIndexManagerindexManager["Attribute: IndexManager indexManager"]:::attributeLeaf
-    IndexManagementServiceIndexServiceMethodcreateIndexCreateIndexCommandcommand["Method: createIndex(CreateIndexCommand command)"]:::methodLeaf
-    IndexManagementServiceIndexServiceMethodfindIndexUUIDindexId["Method: findIndex(UUID indexId)"]:::methodLeaf
-    IndexManagementServiceIndexServiceMethodfindIndexesUUIDtableId["Method: findIndexes(UUID tableId)"]:::methodLeaf
-    IndexManagementServiceIndexServiceMethodrenameIndexUUIDindexIdStringnewName["Method: renameIndex(UUID indexId, String newName)"]:::methodLeaf
-    IndexManagementServiceIndexServiceMethoddropIndexUUIDindexId["Method: dropIndex(UUID indexId)"]:::methodLeaf
-    IndexManagementServiceIndexBuildService["IndexBuildService"]:::classLeaf
-    IndexManagementServiceIndexBuildServiceAttributeIndexManagerindexManager["Attribute: IndexManager indexManager"]:::attributeLeaf
-    IndexManagementServiceIndexBuildServiceAttributeRecordManagerrecordManager["Attribute: RecordManager recordManager"]:::attributeLeaf
-    IndexManagementServiceIndexBuildServiceMethodbuildIndexUUIDindexId["Method: buildIndex(UUID indexId)"]:::methodLeaf
-    IndexManagementServiceIndexBuildServiceMethodrebuildIndexUUIDindexId["Method: rebuildIndex(UUID indexId)"]:::methodLeaf
-    IndexManagementServiceIndexMaintenanceService["IndexMaintenanceService"]:::classLeaf
-    IndexManagementServiceIndexMaintenanceServiceAttributeIndexManagerindexManager["Attribute: IndexManager indexManager"]:::attributeLeaf
-    IndexManagementServiceIndexMaintenanceServiceMethodenableIndexUUIDindexId["Method: enableIndex(UUID indexId)"]:::methodLeaf
-    IndexManagementServiceIndexMaintenanceServiceMethoddisableIndexUUIDindexId["Method: disableIndex(UUID indexId)"]:::methodLeaf
-    IndexManagementServiceIndexMaintenanceServiceMethodupdateEntryUUIDindexIdIndexKeykeyRecordIdrecordId["Method: updateEntry(UUID indexId, IndexKey key, RecordId recordId)"]:::methodLeaf
-    IndexManagementServiceIndexStatisticsService["IndexStatisticsService"]:::classLeaf
-    IndexManagementServiceIndexStatisticsServiceAttributeIndexManagerindexManager["Attribute: IndexManager indexManager"]:::attributeLeaf
-    IndexManagementServiceIndexStatisticsServiceMethodgetStatisticsUUIDindexId["Method: getStatistics(UUID indexId)"]:::methodLeaf
-    IndexManagementServiceIndexStatisticsServiceMethodrefreshStatisticsUUIDindexId["Method: refreshStatistics(UUID indexId)"]:::methodLeaf
-
-    IndexManagementCatalog["Catalog"]:::catalogGroup
-    IndexManagementCatalogIndexCatalog["IndexCatalog"]:::classLeaf
-    IndexManagementCatalogIndexCatalogAttributeMapUUIDIndexMetadataindexes["Attribute: Map<UUID, IndexMetadata> indexes"]:::attributeLeaf
-    IndexManagementCatalogIndexCatalogMethodsaveIndexMetadataindex["Method: save(IndexMetadata index)"]:::methodLeaf
-    IndexManagementCatalogIndexCatalogMethodfindByIdUUIDindexId["Method: findById(UUID indexId)"]:::methodLeaf
-    IndexManagementCatalogIndexCatalogMethodfindByTableIdUUIDtableId["Method: findByTableId(UUID tableId)"]:::methodLeaf
-    IndexManagementCatalogIndexCatalogMethodexistsByNameUUIDtableIdStringname["Method: existsByName(UUID tableId, String name)"]:::methodLeaf
-    IndexManagementCatalogIndexCatalogMethoddeleteUUIDindexId["Method: delete(UUID indexId)"]:::methodLeaf
-
-    IndexManagementDBMSCore["DBMS Core"]:::coreGroup
-    IndexManagementDBMSCoreIndexManager["IndexManager"]:::classLeaf
-    IndexManagementDBMSCoreIndexManagerAttributeMapIndexTypeIndexImplementationimplementations["Attribute: Map<IndexType, IndexImplementation> implementations"]:::attributeLeaf
-    IndexManagementDBMSCoreIndexManagerMethodcreateIndexDefinitiondefinition["Method: create(IndexDefinition definition)"]:::methodLeaf
-    IndexManagementDBMSCoreIndexManagerMethodopenUUIDindexId["Method: open(UUID indexId)"]:::methodLeaf
-    IndexManagementDBMSCoreIndexManagerMethoddropUUIDindexId["Method: drop(UUID indexId)"]:::methodLeaf
-    IndexManagementDBMSCoreIndexManagerMethodrebuildUUIDindexId["Method: rebuild(UUID indexId)"]:::methodLeaf
-    IndexManagementDBMSCoreBTreeIndexManager["BTreeIndexManager"]:::classLeaf
-    IndexManagementDBMSCoreBTreeIndexManagerAttributePageManagerpageManager["Attribute: PageManager pageManager"]:::attributeLeaf
-    IndexManagementDBMSCoreBTreeIndexManagerMethodinsertIndexKeykeyRecordIdrecordId["Method: insert(IndexKey key, RecordId recordId)"]:::methodLeaf
-    IndexManagementDBMSCoreBTreeIndexManagerMethodsearchIndexKeykey["Method: search(IndexKey key)"]:::methodLeaf
-    IndexManagementDBMSCoreBTreeIndexManagerMethoddeleteIndexKeykeyRecordIdrecordId["Method: delete(IndexKey key, RecordId recordId)"]:::methodLeaf
-    IndexManagementDBMSCoreHashIndexManager["HashIndexManager"]:::classLeaf
-    IndexManagementDBMSCoreHashIndexManagerAttributeBucketManagerbucketManager["Attribute: BucketManager bucketManager"]:::attributeLeaf
-    IndexManagementDBMSCoreHashIndexManagerMethodinsertIndexKeykeyRecordIdrecordId["Method: insert(IndexKey key, RecordId recordId)"]:::methodLeaf
-    IndexManagementDBMSCoreHashIndexManagerMethodsearchIndexKeykey["Method: search(IndexKey key)"]:::methodLeaf
-    IndexManagementDBMSCoreHashIndexManagerMethoddeleteIndexKeykeyRecordIdrecordId["Method: delete(IndexKey key, RecordId recordId)"]:::methodLeaf
-    IndexManagementDBMSCoreStorageEngine["StorageEngine"]:::classLeaf
-    IndexManagementDBMSCoreStorageEngineAttributePageManagerpageManager["Attribute: PageManager pageManager"]:::attributeLeaf
-    IndexManagementDBMSCoreStorageEngineAttributeBufferPoolbufferPool["Attribute: BufferPool bufferPool"]:::attributeLeaf
-    IndexManagementDBMSCoreStorageEngineMethodallocateIndexStorageUUIDindexId["Method: allocateIndexStorage(UUID indexId)"]:::methodLeaf
-    IndexManagementDBMSCoreStorageEngineMethodreleaseIndexStorageUUIDindexId["Method: releaseIndexStorage(UUID indexId)"]:::methodLeaf
-
-    IndexManagementController --> IndexManagement
-    IndexManagementDTO --> IndexManagement
-    IndexManagementMapper --> IndexManagement
-    IndexManagement --> IndexManagementService
-    IndexManagement --> IndexManagementCatalog
-    IndexManagement --> IndexManagementDBMSCore
-
-    IndexManagementControllerIndexController --> IndexManagementController
-    IndexManagementDTOCreateIndexRequest --> IndexManagementDTO
-    IndexManagementDTORenameIndexRequest --> IndexManagementDTO
-    IndexManagementDTOIndexResponse --> IndexManagementDTO
-    IndexManagementDTOIndexStatisticsResponse --> IndexManagementDTO
-    IndexManagementMapperIndexMapper --> IndexManagementMapper
-    IndexManagementService --> IndexManagementServiceIndexService
-    IndexManagementService --> IndexManagementServiceIndexBuildService
-    IndexManagementService --> IndexManagementServiceIndexMaintenanceService
-    IndexManagementService --> IndexManagementServiceIndexStatisticsService
-    IndexManagementCatalog --> IndexManagementCatalogIndexCatalog
-    IndexManagementDBMSCore --> IndexManagementDBMSCoreIndexManager
-    IndexManagementDBMSCore --> IndexManagementDBMSCoreBTreeIndexManager
-    IndexManagementDBMSCore --> IndexManagementDBMSCoreHashIndexManager
-    IndexManagementDBMSCore --> IndexManagementDBMSCoreStorageEngine
-
-    IndexManagementControllerIndexControllerAttributeIndexServiceindexService --> IndexManagementControllerIndexController
-    IndexManagementControllerIndexControllerAttributeIndexMapperindexMapper --> IndexManagementControllerIndexController
-    IndexManagementControllerIndexControllerMethodcreateIndexUUIDtableIdCreateIndexRequestrequest --> IndexManagementControllerIndexController
-    IndexManagementControllerIndexControllerMethodgetIndexUUIDindexId --> IndexManagementControllerIndexController
-    IndexManagementControllerIndexControllerMethodlistIndexesUUIDtableId --> IndexManagementControllerIndexController
-    IndexManagementControllerIndexControllerMethodrenameIndexUUIDindexIdRenameIndexRequestrequest --> IndexManagementControllerIndexController
-    IndexManagementControllerIndexControllerMethodrebuildIndexUUIDindexId --> IndexManagementControllerIndexController
-    IndexManagementControllerIndexControllerMethoddropIndexUUIDindexId --> IndexManagementControllerIndexController
-    IndexManagementControllerIndexControllerMethodgetStatisticsUUIDindexId --> IndexManagementControllerIndexController
-    IndexManagementDTOCreateIndexRequestAttributeStringname --> IndexManagementDTOCreateIndexRequest
-    IndexManagementDTOCreateIndexRequestAttributeIndexTypetype --> IndexManagementDTOCreateIndexRequest
-    IndexManagementDTOCreateIndexRequestAttributeListUUIDcolumnIds --> IndexManagementDTOCreateIndexRequest
-    IndexManagementDTOCreateIndexRequestAttributebooleanunique --> IndexManagementDTOCreateIndexRequest
-    IndexManagementDTORenameIndexRequestAttributeStringnewName --> IndexManagementDTORenameIndexRequest
-    IndexManagementDTOIndexResponseAttributeUUIDid --> IndexManagementDTOIndexResponse
-    IndexManagementDTOIndexResponseAttributeUUIDtableId --> IndexManagementDTOIndexResponse
-    IndexManagementDTOIndexResponseAttributeStringname --> IndexManagementDTOIndexResponse
-    IndexManagementDTOIndexResponseAttributeIndexTypetype --> IndexManagementDTOIndexResponse
-    IndexManagementDTOIndexResponseAttributeIndexStatestate --> IndexManagementDTOIndexResponse
-    IndexManagementDTOIndexResponseAttributeListUUIDcolumnIds --> IndexManagementDTOIndexResponse
-    IndexManagementDTOIndexStatisticsResponseAttributelongentryCount --> IndexManagementDTOIndexStatisticsResponse
-    IndexManagementDTOIndexStatisticsResponseAttributelongpageCount --> IndexManagementDTOIndexStatisticsResponse
-    IndexManagementDTOIndexStatisticsResponseAttributeinttreeHeight --> IndexManagementDTOIndexStatisticsResponse
-    IndexManagementDTOIndexStatisticsResponseAttributedoubleselectivity --> IndexManagementDTOIndexStatisticsResponse
-    IndexManagementMapperIndexMapperMethodtoCreateCommandUUIDtableIdCreateIndexRequestrequest --> IndexManagementMapperIndexMapper
-    IndexManagementMapperIndexMapperMethodtoResponseIndexMetadataindex --> IndexManagementMapperIndexMapper
-    IndexManagementMapperIndexMapperMethodtoStatisticsResponseIndexStatisticsstatistics --> IndexManagementMapperIndexMapper
-    IndexManagementServiceIndexService --> IndexManagementServiceIndexServiceAttributeIndexCatalogindexCatalog
-    IndexManagementServiceIndexService --> IndexManagementServiceIndexServiceAttributeIndexManagerindexManager
-    IndexManagementServiceIndexService --> IndexManagementServiceIndexServiceMethodcreateIndexCreateIndexCommandcommand
-    IndexManagementServiceIndexService --> IndexManagementServiceIndexServiceMethodfindIndexUUIDindexId
-    IndexManagementServiceIndexService --> IndexManagementServiceIndexServiceMethodfindIndexesUUIDtableId
-    IndexManagementServiceIndexService --> IndexManagementServiceIndexServiceMethodrenameIndexUUIDindexIdStringnewName
-    IndexManagementServiceIndexService --> IndexManagementServiceIndexServiceMethoddropIndexUUIDindexId
-    IndexManagementServiceIndexBuildService --> IndexManagementServiceIndexBuildServiceAttributeIndexManagerindexManager
-    IndexManagementServiceIndexBuildService --> IndexManagementServiceIndexBuildServiceAttributeRecordManagerrecordManager
-    IndexManagementServiceIndexBuildService --> IndexManagementServiceIndexBuildServiceMethodbuildIndexUUIDindexId
-    IndexManagementServiceIndexBuildService --> IndexManagementServiceIndexBuildServiceMethodrebuildIndexUUIDindexId
-    IndexManagementServiceIndexMaintenanceService --> IndexManagementServiceIndexMaintenanceServiceAttributeIndexManagerindexManager
-    IndexManagementServiceIndexMaintenanceService --> IndexManagementServiceIndexMaintenanceServiceMethodenableIndexUUIDindexId
-    IndexManagementServiceIndexMaintenanceService --> IndexManagementServiceIndexMaintenanceServiceMethoddisableIndexUUIDindexId
-    IndexManagementServiceIndexMaintenanceService --> IndexManagementServiceIndexMaintenanceServiceMethodupdateEntryUUIDindexIdIndexKeykeyRecordIdrecordId
-    IndexManagementServiceIndexStatisticsService --> IndexManagementServiceIndexStatisticsServiceAttributeIndexManagerindexManager
-    IndexManagementServiceIndexStatisticsService --> IndexManagementServiceIndexStatisticsServiceMethodgetStatisticsUUIDindexId
-    IndexManagementServiceIndexStatisticsService --> IndexManagementServiceIndexStatisticsServiceMethodrefreshStatisticsUUIDindexId
-    IndexManagementCatalogIndexCatalog --> IndexManagementCatalogIndexCatalogAttributeMapUUIDIndexMetadataindexes
-    IndexManagementCatalogIndexCatalog --> IndexManagementCatalogIndexCatalogMethodsaveIndexMetadataindex
-    IndexManagementCatalogIndexCatalog --> IndexManagementCatalogIndexCatalogMethodfindByIdUUIDindexId
-    IndexManagementCatalogIndexCatalog --> IndexManagementCatalogIndexCatalogMethodfindByTableIdUUIDtableId
-    IndexManagementCatalogIndexCatalog --> IndexManagementCatalogIndexCatalogMethodexistsByNameUUIDtableIdStringname
-    IndexManagementCatalogIndexCatalog --> IndexManagementCatalogIndexCatalogMethoddeleteUUIDindexId
-    IndexManagementDBMSCoreIndexManager --> IndexManagementDBMSCoreIndexManagerAttributeMapIndexTypeIndexImplementationimplementations
-    IndexManagementDBMSCoreIndexManager --> IndexManagementDBMSCoreIndexManagerMethodcreateIndexDefinitiondefinition
-    IndexManagementDBMSCoreIndexManager --> IndexManagementDBMSCoreIndexManagerMethodopenUUIDindexId
-    IndexManagementDBMSCoreIndexManager --> IndexManagementDBMSCoreIndexManagerMethoddropUUIDindexId
-    IndexManagementDBMSCoreIndexManager --> IndexManagementDBMSCoreIndexManagerMethodrebuildUUIDindexId
-    IndexManagementDBMSCoreBTreeIndexManager --> IndexManagementDBMSCoreBTreeIndexManagerAttributePageManagerpageManager
-    IndexManagementDBMSCoreBTreeIndexManager --> IndexManagementDBMSCoreBTreeIndexManagerMethodinsertIndexKeykeyRecordIdrecordId
-    IndexManagementDBMSCoreBTreeIndexManager --> IndexManagementDBMSCoreBTreeIndexManagerMethodsearchIndexKeykey
-    IndexManagementDBMSCoreBTreeIndexManager --> IndexManagementDBMSCoreBTreeIndexManagerMethoddeleteIndexKeykeyRecordIdrecordId
-    IndexManagementDBMSCoreHashIndexManager --> IndexManagementDBMSCoreHashIndexManagerAttributeBucketManagerbucketManager
-    IndexManagementDBMSCoreHashIndexManager --> IndexManagementDBMSCoreHashIndexManagerMethodinsertIndexKeykeyRecordIdrecordId
-    IndexManagementDBMSCoreHashIndexManager --> IndexManagementDBMSCoreHashIndexManagerMethodsearchIndexKeykey
-    IndexManagementDBMSCoreHashIndexManager --> IndexManagementDBMSCoreHashIndexManagerMethoddeleteIndexKeykeyRecordIdrecordId
-    IndexManagementDBMSCoreStorageEngine --> IndexManagementDBMSCoreStorageEngineAttributePageManagerpageManager
-    IndexManagementDBMSCoreStorageEngine --> IndexManagementDBMSCoreStorageEngineAttributeBufferPoolbufferPool
-    IndexManagementDBMSCoreStorageEngine --> IndexManagementDBMSCoreStorageEngineMethodallocateIndexStorageUUIDindexId
-    IndexManagementDBMSCoreStorageEngine --> IndexManagementDBMSCoreStorageEngineMethodreleaseIndexStorageUUIDindexId
-
-    classDef rootStyle fill:#1d3557,stroke:#457b9d,stroke-width:4px,color:#ffffff,font-weight:bold,font-size:17px;
-    classDef controllerGroup fill:#00a6a6,stroke:#007f7f,stroke-width:3px,color:#ffffff,font-weight:bold;
-    classDef dtoGroup fill:#1976d2,stroke:#0d47a1,stroke-width:3px,color:#ffffff,font-weight:bold;
-    classDef mapperGroup fill:#7b61c9,stroke:#5e43ad,stroke-width:3px,color:#ffffff,font-weight:bold;
-    classDef serviceGroup fill:#f9a825,stroke:#d88c00,stroke-width:3px,color:#ffffff,font-weight:bold;
-    classDef catalogGroup fill:#e65100,stroke:#bf360c,stroke-width:3px,color:#ffffff,font-weight:bold;
-    classDef coreGroup fill:#d84315,stroke:#bf360c,stroke-width:3px,color:#ffffff,font-weight:bold;
-    classDef classLeaf fill:#ffffff,stroke:#607d8b,stroke-width:2px,color:#263238,font-weight:bold;
-    classDef attributeLeaf fill:#eef7ff,stroke:#64b5f6,stroke-width:1px,color:#0d47a1;
-    classDef methodLeaf fill:#f3f8e9,stroke:#8bc34a,stroke-width:1px,color:#33691e;
-```
-
-## Relationship Management
-
-```mermaid
-flowchart LR
-    RelationshipManagement["Relationship Management"]:::rootStyle
-
-    RelationshipManagementController["Controller"]:::controllerGroup
-    RelationshipManagementControllerRelationshipController["RelationshipController"]:::classLeaf
-    RelationshipManagementControllerRelationshipControllerAttributeRelationshipServicerelationshipService["Attribute: RelationshipService relationshipService"]:::attributeLeaf
-    RelationshipManagementControllerRelationshipControllerAttributeRelationshipMapperrelationshipMapper["Attribute: RelationshipMapper relationshipMapper"]:::attributeLeaf
-    RelationshipManagementControllerRelationshipControllerMethodcreateRelationshipUUIDtableIdCreateRelationshipRequestrequest["Method: createRelationship(UUID tableId, CreateRelationshipRequest request)"]:::methodLeaf
-    RelationshipManagementControllerRelationshipControllerMethodgetRelationshipUUIDrelationshipId["Method: getRelationship(UUID relationshipId)"]:::methodLeaf
-    RelationshipManagementControllerRelationshipControllerMethodlistRelationshipsUUIDtableId["Method: listRelationships(UUID tableId)"]:::methodLeaf
-    RelationshipManagementControllerRelationshipControllerMethodupdateRelationshipUUIDrelationshipIdUpdateRelationshipRequestrequest["Method: updateRelationship(UUID relationshipId, UpdateRelationshipRequest request)"]:::methodLeaf
-    RelationshipManagementControllerRelationshipControllerMethoddeleteRelationshipUUIDrelationshipId["Method: deleteRelationship(UUID relationshipId)"]:::methodLeaf
-    RelationshipManagementControllerRelationshipControllerMethodgetDependenciesUUIDtableId["Method: getDependencies(UUID tableId)"]:::methodLeaf
-
-    RelationshipManagementDTO["DTO"]:::dtoGroup
-    RelationshipManagementDTOCreateRelationshipRequest["CreateRelationshipRequest"]:::classLeaf
-    RelationshipManagementDTOCreateRelationshipRequestAttributeStringname["Attribute: String name"]:::attributeLeaf
-    RelationshipManagementDTOCreateRelationshipRequestAttributeUUIDparentTableId["Attribute: UUID parentTableId"]:::attributeLeaf
-    RelationshipManagementDTOCreateRelationshipRequestAttributeListUUIDparentColumnIds["Attribute: List<UUID> parentColumnIds"]:::attributeLeaf
-    RelationshipManagementDTOCreateRelationshipRequestAttributeUUIDchildTableId["Attribute: UUID childTableId"]:::attributeLeaf
-    RelationshipManagementDTOCreateRelationshipRequestAttributeListUUIDchildColumnIds["Attribute: List<UUID> childColumnIds"]:::attributeLeaf
-    RelationshipManagementDTOCreateRelationshipRequestAttributeReferentialActiononDelete["Attribute: ReferentialAction onDelete"]:::attributeLeaf
-    RelationshipManagementDTOCreateRelationshipRequestAttributeReferentialActiononUpdate["Attribute: ReferentialAction onUpdate"]:::attributeLeaf
-    RelationshipManagementDTOUpdateRelationshipRequest["UpdateRelationshipRequest"]:::classLeaf
-    RelationshipManagementDTOUpdateRelationshipRequestAttributeReferentialActiononDelete["Attribute: ReferentialAction onDelete"]:::attributeLeaf
-    RelationshipManagementDTOUpdateRelationshipRequestAttributeReferentialActiononUpdate["Attribute: ReferentialAction onUpdate"]:::attributeLeaf
-    RelationshipManagementDTOUpdateRelationshipRequestAttributebooleanenabled["Attribute: boolean enabled"]:::attributeLeaf
-    RelationshipManagementDTORelationshipResponse["RelationshipResponse"]:::classLeaf
-    RelationshipManagementDTORelationshipResponseAttributeUUIDid["Attribute: UUID id"]:::attributeLeaf
-    RelationshipManagementDTORelationshipResponseAttributeStringname["Attribute: String name"]:::attributeLeaf
-    RelationshipManagementDTORelationshipResponseAttributeUUIDparentTableId["Attribute: UUID parentTableId"]:::attributeLeaf
-    RelationshipManagementDTORelationshipResponseAttributeUUIDchildTableId["Attribute: UUID childTableId"]:::attributeLeaf
-    RelationshipManagementDTORelationshipResponseAttributeReferentialActiononDelete["Attribute: ReferentialAction onDelete"]:::attributeLeaf
-    RelationshipManagementDTORelationshipResponseAttributeReferentialActiononUpdate["Attribute: ReferentialAction onUpdate"]:::attributeLeaf
-    RelationshipManagementDTODependencyResponse["DependencyResponse"]:::classLeaf
-    RelationshipManagementDTODependencyResponseAttributeListUUIDparentObjects["Attribute: List<UUID> parentObjects"]:::attributeLeaf
-    RelationshipManagementDTODependencyResponseAttributeListUUIDchildObjects["Attribute: List<UUID> childObjects"]:::attributeLeaf
-
-    RelationshipManagementMapper["Mapper"]:::mapperGroup
-    RelationshipManagementMapperRelationshipMapper["RelationshipMapper"]:::classLeaf
-    RelationshipManagementMapperRelationshipMapperMethodtoCreateCommandUUIDtableIdCreateRelationshipRequestrequest["Method: toCreateCommand(UUID tableId, CreateRelationshipRequest request)"]:::methodLeaf
-    RelationshipManagementMapperRelationshipMapperMethodtoResponseRelationshiprelationship["Method: toResponse(Relationship relationship)"]:::methodLeaf
-    RelationshipManagementMapperRelationshipMapperMethodtoDependencyResponseDependencyGraphgraph["Method: toDependencyResponse(DependencyGraph graph)"]:::methodLeaf
-
-    RelationshipManagementService["Service"]:::serviceGroup
-    RelationshipManagementServiceRelationshipService["RelationshipService"]:::classLeaf
-    RelationshipManagementServiceRelationshipServiceAttributeRelationshipCatalogrelationshipCatalog["Attribute: RelationshipCatalog relationshipCatalog"]:::attributeLeaf
-    RelationshipManagementServiceRelationshipServiceAttributeRelationshipManagerrelationshipManager["Attribute: RelationshipManager relationshipManager"]:::attributeLeaf
-    RelationshipManagementServiceRelationshipServiceMethodcreateRelationshipCreateRelationshipCommandcommand["Method: createRelationship(CreateRelationshipCommand command)"]:::methodLeaf
-    RelationshipManagementServiceRelationshipServiceMethodfindRelationshipUUIDrelationshipId["Method: findRelationship(UUID relationshipId)"]:::methodLeaf
-    RelationshipManagementServiceRelationshipServiceMethodfindRelationshipsUUIDtableId["Method: findRelationships(UUID tableId)"]:::methodLeaf
-    RelationshipManagementServiceRelationshipServiceMethodupdateRelationshipUUIDrelationshipIdRelationshipDefinitiondefinition["Method: updateRelationship(UUID relationshipId, RelationshipDefinition definition)"]:::methodLeaf
-    RelationshipManagementServiceRelationshipServiceMethoddeleteRelationshipUUIDrelationshipId["Method: deleteRelationship(UUID relationshipId)"]:::methodLeaf
-    RelationshipManagementServiceRelationshipValidationService["RelationshipValidationService"]:::classLeaf
-    RelationshipManagementServiceRelationshipValidationServiceAttributeRelationshipManagerrelationshipManager["Attribute: RelationshipManager relationshipManager"]:::attributeLeaf
-    RelationshipManagementServiceRelationshipValidationServiceMethodvalidateDefinitionRelationshipDefinitiondefinition["Method: validateDefinition(RelationshipDefinition definition)"]:::methodLeaf
-    RelationshipManagementServiceRelationshipValidationServiceMethodvalidateNoCycleRelationshipDefinitiondefinition["Method: validateNoCycle(RelationshipDefinition definition)"]:::methodLeaf
-    RelationshipManagementServiceReferentialIntegrityService["ReferentialIntegrityService"]:::classLeaf
-    RelationshipManagementServiceReferentialIntegrityServiceAttributeReferentialIntegrityManagerintegrityManager["Attribute: ReferentialIntegrityManager integrityManager"]:::attributeLeaf
-    RelationshipManagementServiceReferentialIntegrityServiceMethodvalidateInsertUUIDtableIdRowrow["Method: validateInsert(UUID tableId, Row row)"]:::methodLeaf
-    RelationshipManagementServiceReferentialIntegrityServiceMethodvalidateDeleteUUIDtableIdRowrow["Method: validateDelete(UUID tableId, Row row)"]:::methodLeaf
-    RelationshipManagementServiceReferentialIntegrityServiceMethodapplyReferentialActionRelationshiprelationshipRecordIdrecordId["Method: applyReferentialAction(Relationship relationship, RecordId recordId)"]:::methodLeaf
-    RelationshipManagementServiceDependencyService["DependencyService"]:::classLeaf
-    RelationshipManagementServiceDependencyServiceAttributeDependencyManagerdependencyManager["Attribute: DependencyManager dependencyManager"]:::attributeLeaf
-    RelationshipManagementServiceDependencyServiceMethodgetDependenciesUUIDobjectId["Method: getDependencies(UUID objectId)"]:::methodLeaf
-    RelationshipManagementServiceDependencyServiceMethodvalidateDropUUIDobjectId["Method: validateDrop(UUID objectId)"]:::methodLeaf
-
-    RelationshipManagementCatalog["Catalog"]:::catalogGroup
-    RelationshipManagementCatalogRelationshipCatalog["RelationshipCatalog"]:::classLeaf
-    RelationshipManagementCatalogRelationshipCatalogAttributeMapUUIDRelationshiprelationships["Attribute: Map<UUID, Relationship> relationships"]:::attributeLeaf
-    RelationshipManagementCatalogRelationshipCatalogMethodsaveRelationshiprelationship["Method: save(Relationship relationship)"]:::methodLeaf
-    RelationshipManagementCatalogRelationshipCatalogMethodfindByIdUUIDrelationshipId["Method: findById(UUID relationshipId)"]:::methodLeaf
-    RelationshipManagementCatalogRelationshipCatalogMethodfindByTableIdUUIDtableId["Method: findByTableId(UUID tableId)"]:::methodLeaf
-    RelationshipManagementCatalogRelationshipCatalogMethoddeleteUUIDrelationshipId["Method: delete(UUID relationshipId)"]:::methodLeaf
-
-    RelationshipManagementDBMSCore["DBMS Core"]:::coreGroup
-    RelationshipManagementDBMSCoreRelationshipManager["RelationshipManager"]:::classLeaf
-    RelationshipManagementDBMSCoreRelationshipManagerAttributeDependencyManagerdependencyManager["Attribute: DependencyManager dependencyManager"]:::attributeLeaf
-    RelationshipManagementDBMSCoreRelationshipManagerMethodcreateRelationshipDefinitiondefinition["Method: create(RelationshipDefinition definition)"]:::methodLeaf
-    RelationshipManagementDBMSCoreRelationshipManagerMethodupdateUUIDrelationshipIdRelationshipDefinitiondefinition["Method: update(UUID relationshipId, RelationshipDefinition definition)"]:::methodLeaf
-    RelationshipManagementDBMSCoreRelationshipManagerMethoddropUUIDrelationshipId["Method: drop(UUID relationshipId)"]:::methodLeaf
-    RelationshipManagementDBMSCoreDependencyManager["DependencyManager"]:::classLeaf
-    RelationshipManagementDBMSCoreDependencyManagerAttributeDependencyGraphdependencyGraph["Attribute: DependencyGraph dependencyGraph"]:::attributeLeaf
-    RelationshipManagementDBMSCoreDependencyManagerMethodaddDependencyUUIDsourceIdUUIDtargetId["Method: addDependency(UUID sourceId, UUID targetId)"]:::methodLeaf
-    RelationshipManagementDBMSCoreDependencyManagerMethodremoveDependencyUUIDsourceIdUUIDtargetId["Method: removeDependency(UUID sourceId, UUID targetId)"]:::methodLeaf
-    RelationshipManagementDBMSCoreDependencyManagerMethodfindParentsUUIDobjectId["Method: findParents(UUID objectId)"]:::methodLeaf
-    RelationshipManagementDBMSCoreDependencyManagerMethodfindChildrenUUIDobjectId["Method: findChildren(UUID objectId)"]:::methodLeaf
-    RelationshipManagementDBMSCoreReferentialIntegrityManager["ReferentialIntegrityManager"]:::classLeaf
-    RelationshipManagementDBMSCoreReferentialIntegrityManagerAttributeConstraintManagerconstraintManager["Attribute: ConstraintManager constraintManager"]:::attributeLeaf
-    RelationshipManagementDBMSCoreReferentialIntegrityManagerMethodvalidateForeignKeyRelationshiprelationshipRowrow["Method: validateForeignKey(Relationship relationship, Row row)"]:::methodLeaf
-    RelationshipManagementDBMSCoreReferentialIntegrityManagerMethodcascadeDeleteRelationshiprelationshipRecordIdrecordId["Method: cascadeDelete(Relationship relationship, RecordId recordId)"]:::methodLeaf
-    RelationshipManagementDBMSCoreReferentialIntegrityManagerMethodcascadeUpdateRelationshiprelationshipRecordIdrecordId["Method: cascadeUpdate(Relationship relationship, RecordId recordId)"]:::methodLeaf
-
-    RelationshipManagementController --> RelationshipManagement
-    RelationshipManagementDTO --> RelationshipManagement
-    RelationshipManagementMapper --> RelationshipManagement
-    RelationshipManagement --> RelationshipManagementService
-    RelationshipManagement --> RelationshipManagementCatalog
-    RelationshipManagement --> RelationshipManagementDBMSCore
-
-    RelationshipManagementControllerRelationshipController --> RelationshipManagementController
-    RelationshipManagementDTOCreateRelationshipRequest --> RelationshipManagementDTO
-    RelationshipManagementDTOUpdateRelationshipRequest --> RelationshipManagementDTO
-    RelationshipManagementDTORelationshipResponse --> RelationshipManagementDTO
-    RelationshipManagementDTODependencyResponse --> RelationshipManagementDTO
-    RelationshipManagementMapperRelationshipMapper --> RelationshipManagementMapper
-    RelationshipManagementService --> RelationshipManagementServiceRelationshipService
-    RelationshipManagementService --> RelationshipManagementServiceRelationshipValidationService
-    RelationshipManagementService --> RelationshipManagementServiceReferentialIntegrityService
-    RelationshipManagementService --> RelationshipManagementServiceDependencyService
-    RelationshipManagementCatalog --> RelationshipManagementCatalogRelationshipCatalog
-    RelationshipManagementDBMSCore --> RelationshipManagementDBMSCoreRelationshipManager
-    RelationshipManagementDBMSCore --> RelationshipManagementDBMSCoreDependencyManager
-    RelationshipManagementDBMSCore --> RelationshipManagementDBMSCoreReferentialIntegrityManager
-
-    RelationshipManagementControllerRelationshipControllerAttributeRelationshipServicerelationshipService --> RelationshipManagementControllerRelationshipController
-    RelationshipManagementControllerRelationshipControllerAttributeRelationshipMapperrelationshipMapper --> RelationshipManagementControllerRelationshipController
-    RelationshipManagementControllerRelationshipControllerMethodcreateRelationshipUUIDtableIdCreateRelationshipRequestrequest --> RelationshipManagementControllerRelationshipController
-    RelationshipManagementControllerRelationshipControllerMethodgetRelationshipUUIDrelationshipId --> RelationshipManagementControllerRelationshipController
-    RelationshipManagementControllerRelationshipControllerMethodlistRelationshipsUUIDtableId --> RelationshipManagementControllerRelationshipController
-    RelationshipManagementControllerRelationshipControllerMethodupdateRelationshipUUIDrelationshipIdUpdateRelationshipRequestrequest --> RelationshipManagementControllerRelationshipController
-    RelationshipManagementControllerRelationshipControllerMethoddeleteRelationshipUUIDrelationshipId --> RelationshipManagementControllerRelationshipController
-    RelationshipManagementControllerRelationshipControllerMethodgetDependenciesUUIDtableId --> RelationshipManagementControllerRelationshipController
-    RelationshipManagementDTOCreateRelationshipRequestAttributeStringname --> RelationshipManagementDTOCreateRelationshipRequest
-    RelationshipManagementDTOCreateRelationshipRequestAttributeUUIDparentTableId --> RelationshipManagementDTOCreateRelationshipRequest
-    RelationshipManagementDTOCreateRelationshipRequestAttributeListUUIDparentColumnIds --> RelationshipManagementDTOCreateRelationshipRequest
-    RelationshipManagementDTOCreateRelationshipRequestAttributeUUIDchildTableId --> RelationshipManagementDTOCreateRelationshipRequest
-    RelationshipManagementDTOCreateRelationshipRequestAttributeListUUIDchildColumnIds --> RelationshipManagementDTOCreateRelationshipRequest
-    RelationshipManagementDTOCreateRelationshipRequestAttributeReferentialActiononDelete --> RelationshipManagementDTOCreateRelationshipRequest
-    RelationshipManagementDTOCreateRelationshipRequestAttributeReferentialActiononUpdate --> RelationshipManagementDTOCreateRelationshipRequest
-    RelationshipManagementDTOUpdateRelationshipRequestAttributeReferentialActiononDelete --> RelationshipManagementDTOUpdateRelationshipRequest
-    RelationshipManagementDTOUpdateRelationshipRequestAttributeReferentialActiononUpdate --> RelationshipManagementDTOUpdateRelationshipRequest
-    RelationshipManagementDTOUpdateRelationshipRequestAttributebooleanenabled --> RelationshipManagementDTOUpdateRelationshipRequest
-    RelationshipManagementDTORelationshipResponseAttributeUUIDid --> RelationshipManagementDTORelationshipResponse
-    RelationshipManagementDTORelationshipResponseAttributeStringname --> RelationshipManagementDTORelationshipResponse
-    RelationshipManagementDTORelationshipResponseAttributeUUIDparentTableId --> RelationshipManagementDTORelationshipResponse
-    RelationshipManagementDTORelationshipResponseAttributeUUIDchildTableId --> RelationshipManagementDTORelationshipResponse
-    RelationshipManagementDTORelationshipResponseAttributeReferentialActiononDelete --> RelationshipManagementDTORelationshipResponse
-    RelationshipManagementDTORelationshipResponseAttributeReferentialActiononUpdate --> RelationshipManagementDTORelationshipResponse
-    RelationshipManagementDTODependencyResponseAttributeListUUIDparentObjects --> RelationshipManagementDTODependencyResponse
-    RelationshipManagementDTODependencyResponseAttributeListUUIDchildObjects --> RelationshipManagementDTODependencyResponse
-    RelationshipManagementMapperRelationshipMapperMethodtoCreateCommandUUIDtableIdCreateRelationshipRequestrequest --> RelationshipManagementMapperRelationshipMapper
-    RelationshipManagementMapperRelationshipMapperMethodtoResponseRelationshiprelationship --> RelationshipManagementMapperRelationshipMapper
-    RelationshipManagementMapperRelationshipMapperMethodtoDependencyResponseDependencyGraphgraph --> RelationshipManagementMapperRelationshipMapper
-    RelationshipManagementServiceRelationshipService --> RelationshipManagementServiceRelationshipServiceAttributeRelationshipCatalogrelationshipCatalog
-    RelationshipManagementServiceRelationshipService --> RelationshipManagementServiceRelationshipServiceAttributeRelationshipManagerrelationshipManager
-    RelationshipManagementServiceRelationshipService --> RelationshipManagementServiceRelationshipServiceMethodcreateRelationshipCreateRelationshipCommandcommand
-    RelationshipManagementServiceRelationshipService --> RelationshipManagementServiceRelationshipServiceMethodfindRelationshipUUIDrelationshipId
-    RelationshipManagementServiceRelationshipService --> RelationshipManagementServiceRelationshipServiceMethodfindRelationshipsUUIDtableId
-    RelationshipManagementServiceRelationshipService --> RelationshipManagementServiceRelationshipServiceMethodupdateRelationshipUUIDrelationshipIdRelationshipDefinitiondefinition
-    RelationshipManagementServiceRelationshipService --> RelationshipManagementServiceRelationshipServiceMethoddeleteRelationshipUUIDrelationshipId
-    RelationshipManagementServiceRelationshipValidationService --> RelationshipManagementServiceRelationshipValidationServiceAttributeRelationshipManagerrelationshipManager
-    RelationshipManagementServiceRelationshipValidationService --> RelationshipManagementServiceRelationshipValidationServiceMethodvalidateDefinitionRelationshipDefinitiondefinition
-    RelationshipManagementServiceRelationshipValidationService --> RelationshipManagementServiceRelationshipValidationServiceMethodvalidateNoCycleRelationshipDefinitiondefinition
-    RelationshipManagementServiceReferentialIntegrityService --> RelationshipManagementServiceReferentialIntegrityServiceAttributeReferentialIntegrityManagerintegrityManager
-    RelationshipManagementServiceReferentialIntegrityService --> RelationshipManagementServiceReferentialIntegrityServiceMethodvalidateInsertUUIDtableIdRowrow
-    RelationshipManagementServiceReferentialIntegrityService --> RelationshipManagementServiceReferentialIntegrityServiceMethodvalidateDeleteUUIDtableIdRowrow
-    RelationshipManagementServiceReferentialIntegrityService --> RelationshipManagementServiceReferentialIntegrityServiceMethodapplyReferentialActionRelationshiprelationshipRecordIdrecordId
-    RelationshipManagementServiceDependencyService --> RelationshipManagementServiceDependencyServiceAttributeDependencyManagerdependencyManager
-    RelationshipManagementServiceDependencyService --> RelationshipManagementServiceDependencyServiceMethodgetDependenciesUUIDobjectId
-    RelationshipManagementServiceDependencyService --> RelationshipManagementServiceDependencyServiceMethodvalidateDropUUIDobjectId
-    RelationshipManagementCatalogRelationshipCatalog --> RelationshipManagementCatalogRelationshipCatalogAttributeMapUUIDRelationshiprelationships
-    RelationshipManagementCatalogRelationshipCatalog --> RelationshipManagementCatalogRelationshipCatalogMethodsaveRelationshiprelationship
-    RelationshipManagementCatalogRelationshipCatalog --> RelationshipManagementCatalogRelationshipCatalogMethodfindByIdUUIDrelationshipId
-    RelationshipManagementCatalogRelationshipCatalog --> RelationshipManagementCatalogRelationshipCatalogMethodfindByTableIdUUIDtableId
-    RelationshipManagementCatalogRelationshipCatalog --> RelationshipManagementCatalogRelationshipCatalogMethoddeleteUUIDrelationshipId
-    RelationshipManagementDBMSCoreRelationshipManager --> RelationshipManagementDBMSCoreRelationshipManagerAttributeDependencyManagerdependencyManager
-    RelationshipManagementDBMSCoreRelationshipManager --> RelationshipManagementDBMSCoreRelationshipManagerMethodcreateRelationshipDefinitiondefinition
-    RelationshipManagementDBMSCoreRelationshipManager --> RelationshipManagementDBMSCoreRelationshipManagerMethodupdateUUIDrelationshipIdRelationshipDefinitiondefinition
-    RelationshipManagementDBMSCoreRelationshipManager --> RelationshipManagementDBMSCoreRelationshipManagerMethoddropUUIDrelationshipId
-    RelationshipManagementDBMSCoreDependencyManager --> RelationshipManagementDBMSCoreDependencyManagerAttributeDependencyGraphdependencyGraph
-    RelationshipManagementDBMSCoreDependencyManager --> RelationshipManagementDBMSCoreDependencyManagerMethodaddDependencyUUIDsourceIdUUIDtargetId
-    RelationshipManagementDBMSCoreDependencyManager --> RelationshipManagementDBMSCoreDependencyManagerMethodremoveDependencyUUIDsourceIdUUIDtargetId
-    RelationshipManagementDBMSCoreDependencyManager --> RelationshipManagementDBMSCoreDependencyManagerMethodfindParentsUUIDobjectId
-    RelationshipManagementDBMSCoreDependencyManager --> RelationshipManagementDBMSCoreDependencyManagerMethodfindChildrenUUIDobjectId
-    RelationshipManagementDBMSCoreReferentialIntegrityManager --> RelationshipManagementDBMSCoreReferentialIntegrityManagerAttributeConstraintManagerconstraintManager
-    RelationshipManagementDBMSCoreReferentialIntegrityManager --> RelationshipManagementDBMSCoreReferentialIntegrityManagerMethodvalidateForeignKeyRelationshiprelationshipRowrow
-    RelationshipManagementDBMSCoreReferentialIntegrityManager --> RelationshipManagementDBMSCoreReferentialIntegrityManagerMethodcascadeDeleteRelationshiprelationshipRecordIdrecordId
-    RelationshipManagementDBMSCoreReferentialIntegrityManager --> RelationshipManagementDBMSCoreReferentialIntegrityManagerMethodcascadeUpdateRelationshiprelationshipRecordIdrecordId
-
-    classDef rootStyle fill:#1d3557,stroke:#457b9d,stroke-width:4px,color:#ffffff,font-weight:bold,font-size:17px;
-    classDef controllerGroup fill:#00a6a6,stroke:#007f7f,stroke-width:3px,color:#ffffff,font-weight:bold;
-    classDef dtoGroup fill:#1976d2,stroke:#0d47a1,stroke-width:3px,color:#ffffff,font-weight:bold;
-    classDef mapperGroup fill:#7b61c9,stroke:#5e43ad,stroke-width:3px,color:#ffffff,font-weight:bold;
-    classDef serviceGroup fill:#f9a825,stroke:#d88c00,stroke-width:3px,color:#ffffff,font-weight:bold;
-    classDef catalogGroup fill:#e65100,stroke:#bf360c,stroke-width:3px,color:#ffffff,font-weight:bold;
-    classDef coreGroup fill:#d84315,stroke:#bf360c,stroke-width:3px,color:#ffffff,font-weight:bold;
-    classDef classLeaf fill:#ffffff,stroke:#607d8b,stroke-width:2px,color:#263238,font-weight:bold;
-    classDef attributeLeaf fill:#eef7ff,stroke:#64b5f6,stroke-width:1px,color:#0d47a1;
-    classDef methodLeaf fill:#f3f8e9,stroke:#8bc34a,stroke-width:1px,color:#33691e;
-```
+---
 
 ## Constraint Management
 
@@ -1779,512 +1732,551 @@ flowchart LR
 flowchart LR
     ConstraintManagement["Constraint Management"]:::rootStyle
 
-    ConstraintManagementController["Controller"]:::controllerGroup
-    ConstraintManagementControllerConstraintController["ConstraintController"]:::classLeaf
-    ConstraintManagementControllerConstraintControllerAttributeConstraintServiceconstraintService["Attribute: ConstraintService constraintService"]:::attributeLeaf
-    ConstraintManagementControllerConstraintControllerAttributeConstraintMapperconstraintMapper["Attribute: ConstraintMapper constraintMapper"]:::attributeLeaf
-    ConstraintManagementControllerConstraintControllerMethodcreateConstraintUUIDtableIdCreateConstraintRequestrequest["Method: createConstraint(UUID tableId, CreateConstraintRequest request)"]:::methodLeaf
-    ConstraintManagementControllerConstraintControllerMethodgetConstraintUUIDconstraintId["Method: getConstraint(UUID constraintId)"]:::methodLeaf
-    ConstraintManagementControllerConstraintControllerMethodlistConstraintsUUIDtableId["Method: listConstraints(UUID tableId)"]:::methodLeaf
-    ConstraintManagementControllerConstraintControllerMethodrenameConstraintUUIDconstraintIdRenameConstraintRequestrequest["Method: renameConstraint(UUID constraintId, RenameConstraintRequest request)"]:::methodLeaf
-    ConstraintManagementControllerConstraintControllerMethodenableConstraintUUIDconstraintId["Method: enableConstraint(UUID constraintId)"]:::methodLeaf
-    ConstraintManagementControllerConstraintControllerMethoddisableConstraintUUIDconstraintId["Method: disableConstraint(UUID constraintId)"]:::methodLeaf
-    ConstraintManagementControllerConstraintControllerMethodvalidateConstraintUUIDconstraintId["Method: validateConstraint(UUID constraintId)"]:::methodLeaf
-    ConstraintManagementControllerConstraintControllerMethoddropConstraintUUIDconstraintId["Method: dropConstraint(UUID constraintId)"]:::methodLeaf
+    Controller["Controller"]:::controllerGroup
+    DTO["DTO"]:::dtoGroup
+    Mapper["Mapper"]:::mapperGroup
 
-    ConstraintManagementDTO["DTO"]:::dtoGroup
-    ConstraintManagementDTOCreateConstraintRequest["CreateConstraintRequest"]:::classLeaf
-    ConstraintManagementDTOCreateConstraintRequestAttributeStringname["Attribute: String name"]:::attributeLeaf
-    ConstraintManagementDTOCreateConstraintRequestAttributeConstraintTypetype["Attribute: ConstraintType type"]:::attributeLeaf
-    ConstraintManagementDTOCreateConstraintRequestAttributeListUUIDcolumnIds["Attribute: List<UUID> columnIds"]:::attributeLeaf
-    ConstraintManagementDTOCreateConstraintRequestAttributeUUIDreferencedTableId["Attribute: UUID referencedTableId"]:::attributeLeaf
-    ConstraintManagementDTOCreateConstraintRequestAttributeListUUIDreferencedColumnIds["Attribute: List<UUID> referencedColumnIds"]:::attributeLeaf
-    ConstraintManagementDTOCreateConstraintRequestAttributeStringexpression["Attribute: String expression"]:::attributeLeaf
-    ConstraintManagementDTORenameConstraintRequest["RenameConstraintRequest"]:::classLeaf
-    ConstraintManagementDTORenameConstraintRequestAttributeStringnewName["Attribute: String newName"]:::attributeLeaf
-    ConstraintManagementDTOConstraintResponse["ConstraintResponse"]:::classLeaf
-    ConstraintManagementDTOConstraintResponseAttributeUUIDid["Attribute: UUID id"]:::attributeLeaf
-    ConstraintManagementDTOConstraintResponseAttributeUUIDtableId["Attribute: UUID tableId"]:::attributeLeaf
-    ConstraintManagementDTOConstraintResponseAttributeStringname["Attribute: String name"]:::attributeLeaf
-    ConstraintManagementDTOConstraintResponseAttributeConstraintTypetype["Attribute: ConstraintType type"]:::attributeLeaf
-    ConstraintManagementDTOConstraintResponseAttributeConstraintStatestate["Attribute: ConstraintState state"]:::attributeLeaf
-    ConstraintManagementDTOConstraintValidationResponse["ConstraintValidationResponse"]:::classLeaf
-    ConstraintManagementDTOConstraintValidationResponseAttributebooleanvalid["Attribute: boolean valid"]:::attributeLeaf
-    ConstraintManagementDTOConstraintValidationResponseAttributelongviolationCount["Attribute: long violationCount"]:::attributeLeaf
-    ConstraintManagementDTOConstraintValidationResponseAttributeListStringviolations["Attribute: List<String> violations"]:::attributeLeaf
+    Service["Service"]:::serviceGroup
+    Repository["Repository"]:::repositoryGroup
+    BuilderFactory["Builder + Factory"]:::builderGroup
+    Core["Java Core"]:::coreGroup
 
-    ConstraintManagementMapper["Mapper"]:::mapperGroup
-    ConstraintManagementMapperConstraintMapper["ConstraintMapper"]:::classLeaf
-    ConstraintManagementMapperConstraintMapperMethodtoDefinitionUUIDtableIdCreateConstraintRequestrequest["Method: toDefinition(UUID tableId, CreateConstraintRequest request)"]:::methodLeaf
-    ConstraintManagementMapperConstraintMapperMethodtoResponseConstraintconstraint["Method: toResponse(Constraint constraint)"]:::methodLeaf
-    ConstraintManagementMapperConstraintMapperMethodtoValidationResponseConstraintValidationResultresult["Method: toValidationResponse(ConstraintValidationResult result)"]:::methodLeaf
+    ConstraintController["ConstraintController"]:::classLeaf
+    CCService["Attribute: ConstraintService constraintService"]:::attributeLeaf
+    CCMapper["Attribute: ConstraintMapper constraintMapper"]:::attributeLeaf
+    CCCreate["Method: createConstraint(UUID tableId, CreateConstraintRequest request)"]:::methodLeaf
+    CCGet["Method: getConstraint(UUID constraintId)"]:::methodLeaf
+    CCList["Method: listConstraints(UUID tableId)"]:::methodLeaf
+    CCRename["Method: renameConstraint(UUID constraintId, RenameConstraintRequest request)"]:::methodLeaf
+    CCDelete["Method: deleteConstraint(UUID constraintId)"]:::methodLeaf
 
-    ConstraintManagementService["Service"]:::serviceGroup
-    ConstraintManagementServiceConstraintService["ConstraintService"]:::classLeaf
-    ConstraintManagementServiceConstraintServiceAttributeConstraintCatalogconstraintCatalog["Attribute: ConstraintCatalog constraintCatalog"]:::attributeLeaf
-    ConstraintManagementServiceConstraintServiceAttributeConstraintManagerconstraintManager["Attribute: ConstraintManager constraintManager"]:::attributeLeaf
-    ConstraintManagementServiceConstraintServiceMethodcreateConstraintConstraintDefinitiondefinition["Method: createConstraint(ConstraintDefinition definition)"]:::methodLeaf
-    ConstraintManagementServiceConstraintServiceMethodfindConstraintUUIDconstraintId["Method: findConstraint(UUID constraintId)"]:::methodLeaf
-    ConstraintManagementServiceConstraintServiceMethodfindConstraintsUUIDtableId["Method: findConstraints(UUID tableId)"]:::methodLeaf
-    ConstraintManagementServiceConstraintServiceMethodrenameConstraintUUIDconstraintIdStringnewName["Method: renameConstraint(UUID constraintId, String newName)"]:::methodLeaf
-    ConstraintManagementServiceConstraintServiceMethoddropConstraintUUIDconstraintId["Method: dropConstraint(UUID constraintId)"]:::methodLeaf
-    ConstraintManagementServiceConstraintLifecycleService["ConstraintLifecycleService"]:::classLeaf
-    ConstraintManagementServiceConstraintLifecycleServiceAttributeConstraintCatalogconstraintCatalog["Attribute: ConstraintCatalog constraintCatalog"]:::attributeLeaf
-    ConstraintManagementServiceConstraintLifecycleServiceMethodenableConstraintUUIDconstraintId["Method: enableConstraint(UUID constraintId)"]:::methodLeaf
-    ConstraintManagementServiceConstraintLifecycleServiceMethoddisableConstraintUUIDconstraintId["Method: disableConstraint(UUID constraintId)"]:::methodLeaf
-    ConstraintManagementServiceConstraintValidationService["ConstraintValidationService"]:::classLeaf
-    ConstraintManagementServiceConstraintValidationServiceAttributeConstraintManagerconstraintManager["Attribute: ConstraintManager constraintManager"]:::attributeLeaf
-    ConstraintManagementServiceConstraintValidationServiceMethodvalidateDefinitionConstraintDefinitiondefinition["Method: validateDefinition(ConstraintDefinition definition)"]:::methodLeaf
-    ConstraintManagementServiceConstraintValidationServiceMethodvalidateExistingDataUUIDconstraintId["Method: validateExistingData(UUID constraintId)"]:::methodLeaf
-    ConstraintManagementServiceConstraintValidationServiceMethodvalidateRowUUIDtableIdRowrow["Method: validateRow(UUID tableId, Row row)"]:::methodLeaf
+    CreateConstraintRequest["CreateConstraintRequest"]:::classLeaf
+    CCRName["Attribute: String name"]:::attributeLeaf
+    CCRType["Attribute: ConstraintType type"]:::attributeLeaf
+    CCRColumns["Attribute: List<UUID> columnIds"]:::attributeLeaf
+    CCRRefTable["Attribute: UUID referencedTableId"]:::attributeLeaf
+    CCRRefColumns["Attribute: List<UUID> referencedColumnIds"]:::attributeLeaf
+    CCRExpression["Attribute: String expression"]:::attributeLeaf
 
-    ConstraintManagementCatalog["Catalog"]:::catalogGroup
-    ConstraintManagementCatalogConstraintCatalog["ConstraintCatalog"]:::classLeaf
-    ConstraintManagementCatalogConstraintCatalogAttributeMapUUIDConstraintconstraints["Attribute: Map<UUID, Constraint> constraints"]:::attributeLeaf
-    ConstraintManagementCatalogConstraintCatalogMethodsaveConstraintconstraint["Method: save(Constraint constraint)"]:::methodLeaf
-    ConstraintManagementCatalogConstraintCatalogMethodfindByIdUUIDconstraintId["Method: findById(UUID constraintId)"]:::methodLeaf
-    ConstraintManagementCatalogConstraintCatalogMethodfindByTableIdUUIDtableId["Method: findByTableId(UUID tableId)"]:::methodLeaf
-    ConstraintManagementCatalogConstraintCatalogMethoddeleteUUIDconstraintId["Method: delete(UUID constraintId)"]:::methodLeaf
+    RenameConstraintRequest["RenameConstraintRequest"]:::classLeaf
+    RCRName["Attribute: String newName"]:::attributeLeaf
 
-    ConstraintManagementDBMSCore["DBMS Core"]:::coreGroup
-    ConstraintManagementDBMSCoreConstraintManager["ConstraintManager"]:::classLeaf
-    ConstraintManagementDBMSCoreConstraintManagerAttributeMapConstraintTypeConstraintValidatorvalidators["Attribute: Map<ConstraintType, ConstraintValidator> validators"]:::attributeLeaf
-    ConstraintManagementDBMSCoreConstraintManagerMethodcreateConstraintDefinitiondefinition["Method: create(ConstraintDefinition definition)"]:::methodLeaf
-    ConstraintManagementDBMSCoreConstraintManagerMethodvalidateUUIDconstraintId["Method: validate(UUID constraintId)"]:::methodLeaf
-    ConstraintManagementDBMSCoreConstraintManagerMethoddropUUIDconstraintId["Method: drop(UUID constraintId)"]:::methodLeaf
-    ConstraintManagementDBMSCorePrimaryKeyValidator["PrimaryKeyValidator"]:::classLeaf
-    ConstraintManagementDBMSCorePrimaryKeyValidatorMethodvalidateDefinitionConstraintDefinitiondefinition["Method: validateDefinition(ConstraintDefinition definition)"]:::methodLeaf
-    ConstraintManagementDBMSCorePrimaryKeyValidatorMethodvalidateRowRowrow["Method: validateRow(Row row)"]:::methodLeaf
-    ConstraintManagementDBMSCorePrimaryKeyValidatorMethodvalidateExistingDataUUIDtableId["Method: validateExistingData(UUID tableId)"]:::methodLeaf
-    ConstraintManagementDBMSCoreForeignKeyValidator["ForeignKeyValidator"]:::classLeaf
-    ConstraintManagementDBMSCoreForeignKeyValidatorAttributeRelationshipManagerrelationshipManager["Attribute: RelationshipManager relationshipManager"]:::attributeLeaf
-    ConstraintManagementDBMSCoreForeignKeyValidatorMethodvalidateDefinitionConstraintDefinitiondefinition["Method: validateDefinition(ConstraintDefinition definition)"]:::methodLeaf
-    ConstraintManagementDBMSCoreForeignKeyValidatorMethodvalidateRowRowrow["Method: validateRow(Row row)"]:::methodLeaf
-    ConstraintManagementDBMSCoreForeignKeyValidatorMethodvalidateReferenceRowrow["Method: validateReference(Row row)"]:::methodLeaf
-    ConstraintManagementDBMSCoreUniqueConstraintValidator["UniqueConstraintValidator"]:::classLeaf
-    ConstraintManagementDBMSCoreUniqueConstraintValidatorAttributeIndexManagerindexManager["Attribute: IndexManager indexManager"]:::attributeLeaf
-    ConstraintManagementDBMSCoreUniqueConstraintValidatorMethodvalidateDefinitionConstraintDefinitiondefinition["Method: validateDefinition(ConstraintDefinition definition)"]:::methodLeaf
-    ConstraintManagementDBMSCoreUniqueConstraintValidatorMethodvalidateRowRowrow["Method: validateRow(Row row)"]:::methodLeaf
-    ConstraintManagementDBMSCoreCheckConstraintValidator["CheckConstraintValidator"]:::classLeaf
-    ConstraintManagementDBMSCoreCheckConstraintValidatorAttributeExpressionEvaluatorexpressionEvaluator["Attribute: ExpressionEvaluator expressionEvaluator"]:::attributeLeaf
-    ConstraintManagementDBMSCoreCheckConstraintValidatorMethodvalidateDefinitionConstraintDefinitiondefinition["Method: validateDefinition(ConstraintDefinition definition)"]:::methodLeaf
-    ConstraintManagementDBMSCoreCheckConstraintValidatorMethodvalidateRowRowrow["Method: validateRow(Row row)"]:::methodLeaf
+    ConstraintResponse["ConstraintResponse"]:::classLeaf
+    CRId["Attribute: UUID id"]:::attributeLeaf
+    CRTableId["Attribute: UUID tableId"]:::attributeLeaf
+    CRName["Attribute: String name"]:::attributeLeaf
+    CRType["Attribute: ConstraintType type"]:::attributeLeaf
+    CRColumns["Attribute: List<UUID> columnIds"]:::attributeLeaf
 
-    ConstraintManagementController --> ConstraintManagement
-    ConstraintManagementDTO --> ConstraintManagement
-    ConstraintManagementMapper --> ConstraintManagement
-    ConstraintManagement --> ConstraintManagementService
-    ConstraintManagement --> ConstraintManagementCatalog
-    ConstraintManagement --> ConstraintManagementDBMSCore
+    ConstraintMapper["ConstraintMapper"]:::classLeaf
+    CMToDefinition["Method: toDefinition(UUID tableId, CreateConstraintRequest request)"]:::methodLeaf
+    CMToResponse["Method: toResponse(Constraint constraint)"]:::methodLeaf
 
-    ConstraintManagementControllerConstraintController --> ConstraintManagementController
-    ConstraintManagementDTOCreateConstraintRequest --> ConstraintManagementDTO
-    ConstraintManagementDTORenameConstraintRequest --> ConstraintManagementDTO
-    ConstraintManagementDTOConstraintResponse --> ConstraintManagementDTO
-    ConstraintManagementDTOConstraintValidationResponse --> ConstraintManagementDTO
-    ConstraintManagementMapperConstraintMapper --> ConstraintManagementMapper
-    ConstraintManagementService --> ConstraintManagementServiceConstraintService
-    ConstraintManagementService --> ConstraintManagementServiceConstraintLifecycleService
-    ConstraintManagementService --> ConstraintManagementServiceConstraintValidationService
-    ConstraintManagementCatalog --> ConstraintManagementCatalogConstraintCatalog
-    ConstraintManagementDBMSCore --> ConstraintManagementDBMSCoreConstraintManager
-    ConstraintManagementDBMSCore --> ConstraintManagementDBMSCorePrimaryKeyValidator
-    ConstraintManagementDBMSCore --> ConstraintManagementDBMSCoreForeignKeyValidator
-    ConstraintManagementDBMSCore --> ConstraintManagementDBMSCoreUniqueConstraintValidator
-    ConstraintManagementDBMSCore --> ConstraintManagementDBMSCoreCheckConstraintValidator
+    ConstraintService["ConstraintService"]:::classLeaf
+    CSManager["Attribute: MetadataManager metadataManager"]:::attributeLeaf
+    CSRepository["Attribute: ConstraintRepository constraintRepository"]:::attributeLeaf
+    CSFactory["Attribute: ConstraintFactory constraintFactory"]:::attributeLeaf
+    CSCreate["Method: createConstraint(UUID tableId, ConstraintDefinition definition)"]:::methodLeaf
+    CSFind["Method: findConstraint(UUID constraintId)"]:::methodLeaf
+    CSFindAll["Method: findConstraints(UUID tableId)"]:::methodLeaf
+    CSRename["Method: renameConstraint(UUID constraintId, String newName)"]:::methodLeaf
+    CSDelete["Method: deleteConstraint(UUID constraintId)"]:::methodLeaf
 
-    ConstraintManagementControllerConstraintControllerAttributeConstraintServiceconstraintService --> ConstraintManagementControllerConstraintController
-    ConstraintManagementControllerConstraintControllerAttributeConstraintMapperconstraintMapper --> ConstraintManagementControllerConstraintController
-    ConstraintManagementControllerConstraintControllerMethodcreateConstraintUUIDtableIdCreateConstraintRequestrequest --> ConstraintManagementControllerConstraintController
-    ConstraintManagementControllerConstraintControllerMethodgetConstraintUUIDconstraintId --> ConstraintManagementControllerConstraintController
-    ConstraintManagementControllerConstraintControllerMethodlistConstraintsUUIDtableId --> ConstraintManagementControllerConstraintController
-    ConstraintManagementControllerConstraintControllerMethodrenameConstraintUUIDconstraintIdRenameConstraintRequestrequest --> ConstraintManagementControllerConstraintController
-    ConstraintManagementControllerConstraintControllerMethodenableConstraintUUIDconstraintId --> ConstraintManagementControllerConstraintController
-    ConstraintManagementControllerConstraintControllerMethoddisableConstraintUUIDconstraintId --> ConstraintManagementControllerConstraintController
-    ConstraintManagementControllerConstraintControllerMethodvalidateConstraintUUIDconstraintId --> ConstraintManagementControllerConstraintController
-    ConstraintManagementControllerConstraintControllerMethoddropConstraintUUIDconstraintId --> ConstraintManagementControllerConstraintController
-    ConstraintManagementDTOCreateConstraintRequestAttributeStringname --> ConstraintManagementDTOCreateConstraintRequest
-    ConstraintManagementDTOCreateConstraintRequestAttributeConstraintTypetype --> ConstraintManagementDTOCreateConstraintRequest
-    ConstraintManagementDTOCreateConstraintRequestAttributeListUUIDcolumnIds --> ConstraintManagementDTOCreateConstraintRequest
-    ConstraintManagementDTOCreateConstraintRequestAttributeUUIDreferencedTableId --> ConstraintManagementDTOCreateConstraintRequest
-    ConstraintManagementDTOCreateConstraintRequestAttributeListUUIDreferencedColumnIds --> ConstraintManagementDTOCreateConstraintRequest
-    ConstraintManagementDTOCreateConstraintRequestAttributeStringexpression --> ConstraintManagementDTOCreateConstraintRequest
-    ConstraintManagementDTORenameConstraintRequestAttributeStringnewName --> ConstraintManagementDTORenameConstraintRequest
-    ConstraintManagementDTOConstraintResponseAttributeUUIDid --> ConstraintManagementDTOConstraintResponse
-    ConstraintManagementDTOConstraintResponseAttributeUUIDtableId --> ConstraintManagementDTOConstraintResponse
-    ConstraintManagementDTOConstraintResponseAttributeStringname --> ConstraintManagementDTOConstraintResponse
-    ConstraintManagementDTOConstraintResponseAttributeConstraintTypetype --> ConstraintManagementDTOConstraintResponse
-    ConstraintManagementDTOConstraintResponseAttributeConstraintStatestate --> ConstraintManagementDTOConstraintResponse
-    ConstraintManagementDTOConstraintValidationResponseAttributebooleanvalid --> ConstraintManagementDTOConstraintValidationResponse
-    ConstraintManagementDTOConstraintValidationResponseAttributelongviolationCount --> ConstraintManagementDTOConstraintValidationResponse
-    ConstraintManagementDTOConstraintValidationResponseAttributeListStringviolations --> ConstraintManagementDTOConstraintValidationResponse
-    ConstraintManagementMapperConstraintMapperMethodtoDefinitionUUIDtableIdCreateConstraintRequestrequest --> ConstraintManagementMapperConstraintMapper
-    ConstraintManagementMapperConstraintMapperMethodtoResponseConstraintconstraint --> ConstraintManagementMapperConstraintMapper
-    ConstraintManagementMapperConstraintMapperMethodtoValidationResponseConstraintValidationResultresult --> ConstraintManagementMapperConstraintMapper
-    ConstraintManagementServiceConstraintService --> ConstraintManagementServiceConstraintServiceAttributeConstraintCatalogconstraintCatalog
-    ConstraintManagementServiceConstraintService --> ConstraintManagementServiceConstraintServiceAttributeConstraintManagerconstraintManager
-    ConstraintManagementServiceConstraintService --> ConstraintManagementServiceConstraintServiceMethodcreateConstraintConstraintDefinitiondefinition
-    ConstraintManagementServiceConstraintService --> ConstraintManagementServiceConstraintServiceMethodfindConstraintUUIDconstraintId
-    ConstraintManagementServiceConstraintService --> ConstraintManagementServiceConstraintServiceMethodfindConstraintsUUIDtableId
-    ConstraintManagementServiceConstraintService --> ConstraintManagementServiceConstraintServiceMethodrenameConstraintUUIDconstraintIdStringnewName
-    ConstraintManagementServiceConstraintService --> ConstraintManagementServiceConstraintServiceMethoddropConstraintUUIDconstraintId
-    ConstraintManagementServiceConstraintLifecycleService --> ConstraintManagementServiceConstraintLifecycleServiceAttributeConstraintCatalogconstraintCatalog
-    ConstraintManagementServiceConstraintLifecycleService --> ConstraintManagementServiceConstraintLifecycleServiceMethodenableConstraintUUIDconstraintId
-    ConstraintManagementServiceConstraintLifecycleService --> ConstraintManagementServiceConstraintLifecycleServiceMethoddisableConstraintUUIDconstraintId
-    ConstraintManagementServiceConstraintValidationService --> ConstraintManagementServiceConstraintValidationServiceAttributeConstraintManagerconstraintManager
-    ConstraintManagementServiceConstraintValidationService --> ConstraintManagementServiceConstraintValidationServiceMethodvalidateDefinitionConstraintDefinitiondefinition
-    ConstraintManagementServiceConstraintValidationService --> ConstraintManagementServiceConstraintValidationServiceMethodvalidateExistingDataUUIDconstraintId
-    ConstraintManagementServiceConstraintValidationService --> ConstraintManagementServiceConstraintValidationServiceMethodvalidateRowUUIDtableIdRowrow
-    ConstraintManagementCatalogConstraintCatalog --> ConstraintManagementCatalogConstraintCatalogAttributeMapUUIDConstraintconstraints
-    ConstraintManagementCatalogConstraintCatalog --> ConstraintManagementCatalogConstraintCatalogMethodsaveConstraintconstraint
-    ConstraintManagementCatalogConstraintCatalog --> ConstraintManagementCatalogConstraintCatalogMethodfindByIdUUIDconstraintId
-    ConstraintManagementCatalogConstraintCatalog --> ConstraintManagementCatalogConstraintCatalogMethodfindByTableIdUUIDtableId
-    ConstraintManagementCatalogConstraintCatalog --> ConstraintManagementCatalogConstraintCatalogMethoddeleteUUIDconstraintId
-    ConstraintManagementDBMSCoreConstraintManager --> ConstraintManagementDBMSCoreConstraintManagerAttributeMapConstraintTypeConstraintValidatorvalidators
-    ConstraintManagementDBMSCoreConstraintManager --> ConstraintManagementDBMSCoreConstraintManagerMethodcreateConstraintDefinitiondefinition
-    ConstraintManagementDBMSCoreConstraintManager --> ConstraintManagementDBMSCoreConstraintManagerMethodvalidateUUIDconstraintId
-    ConstraintManagementDBMSCoreConstraintManager --> ConstraintManagementDBMSCoreConstraintManagerMethoddropUUIDconstraintId
-    ConstraintManagementDBMSCorePrimaryKeyValidator --> ConstraintManagementDBMSCorePrimaryKeyValidatorMethodvalidateDefinitionConstraintDefinitiondefinition
-    ConstraintManagementDBMSCorePrimaryKeyValidator --> ConstraintManagementDBMSCorePrimaryKeyValidatorMethodvalidateRowRowrow
-    ConstraintManagementDBMSCorePrimaryKeyValidator --> ConstraintManagementDBMSCorePrimaryKeyValidatorMethodvalidateExistingDataUUIDtableId
-    ConstraintManagementDBMSCoreForeignKeyValidator --> ConstraintManagementDBMSCoreForeignKeyValidatorAttributeRelationshipManagerrelationshipManager
-    ConstraintManagementDBMSCoreForeignKeyValidator --> ConstraintManagementDBMSCoreForeignKeyValidatorMethodvalidateDefinitionConstraintDefinitiondefinition
-    ConstraintManagementDBMSCoreForeignKeyValidator --> ConstraintManagementDBMSCoreForeignKeyValidatorMethodvalidateRowRowrow
-    ConstraintManagementDBMSCoreForeignKeyValidator --> ConstraintManagementDBMSCoreForeignKeyValidatorMethodvalidateReferenceRowrow
-    ConstraintManagementDBMSCoreUniqueConstraintValidator --> ConstraintManagementDBMSCoreUniqueConstraintValidatorAttributeIndexManagerindexManager
-    ConstraintManagementDBMSCoreUniqueConstraintValidator --> ConstraintManagementDBMSCoreUniqueConstraintValidatorMethodvalidateDefinitionConstraintDefinitiondefinition
-    ConstraintManagementDBMSCoreUniqueConstraintValidator --> ConstraintManagementDBMSCoreUniqueConstraintValidatorMethodvalidateRowRowrow
-    ConstraintManagementDBMSCoreCheckConstraintValidator --> ConstraintManagementDBMSCoreCheckConstraintValidatorAttributeExpressionEvaluatorexpressionEvaluator
-    ConstraintManagementDBMSCoreCheckConstraintValidator --> ConstraintManagementDBMSCoreCheckConstraintValidatorMethodvalidateDefinitionConstraintDefinitiondefinition
-    ConstraintManagementDBMSCoreCheckConstraintValidator --> ConstraintManagementDBMSCoreCheckConstraintValidatorMethodvalidateRowRowrow
+    ConstraintRepository["ConstraintRepository"]:::classLeaf
+    CRepoSave["Method: save(Constraint constraint)"]:::methodLeaf
+    CRepoFindId["Method: findById(UUID constraintId)"]:::methodLeaf
+    CRepoFindTable["Method: findByTableId(UUID tableId)"]:::methodLeaf
+    CRepoFindName["Method: findByTableIdAndName(UUID tableId, String name)"]:::methodLeaf
+    CRepoFindType["Method: findByType(ConstraintType type)"]:::methodLeaf
+    CRepoDelete["Method: deleteById(UUID constraintId)"]:::methodLeaf
 
-    classDef rootStyle fill:#1d3557,stroke:#457b9d,stroke-width:4px,color:#ffffff,font-weight:bold,font-size:17px;
+    DefinitionBuilder["ConstraintDefinitionBuilder"]:::classLeaf
+    CDBBuilder["Method: builder()"]:::methodLeaf
+    CDBName["Method: name(String name)"]:::methodLeaf
+    CDBType["Method: type(ConstraintType type)"]:::methodLeaf
+    CDBTable["Method: tableId(UUID tableId)"]:::methodLeaf
+    CDBColumns["Method: columnIds(List<UUID> columnIds)"]:::methodLeaf
+    CDBRefTable["Method: referencedTableId(UUID tableId)"]:::methodLeaf
+    CDBRefColumns["Method: referencedColumnIds(List<UUID> columnIds)"]:::methodLeaf
+    CDBExpression["Method: expression(String expression)"]:::methodLeaf
+    CDBBuild["Method: build()"]:::methodLeaf
+
+    ConstraintFactory["ConstraintFactory"]:::classLeaf
+    CFCreate["Method: create(ConstraintDefinition definition)"]:::methodLeaf
+
+    Constraint["Constraint"]:::classLeaf
+    ConstraintId["Attribute: UUID id"]:::attributeLeaf
+    ConstraintName["Attribute: String name"]:::attributeLeaf
+    ConstraintTable["Attribute: UUID tableId"]:::attributeLeaf
+    ConstraintColumns["Attribute: List<UUID> columnIds"]:::attributeLeaf
+    ConstraintTypeField["Attribute: ConstraintType type"]:::attributeLeaf
+    ConstraintValidate["Method: validateDefinition()"]:::methodLeaf
+    ConstraintCopy["Method: copyAs()"]:::methodLeaf
+
+    PrimaryKey["PrimaryKeyConstraint"]:::classLeaf
+    ForeignKey["ForeignKeyConstraint"]:::classLeaf
+    Unique["UniqueConstraint"]:::classLeaf
+    NotNull["NotNullConstraint"]:::classLeaf
+    Check["CheckConstraint"]:::classLeaf
+
+    Controller --> ConstraintManagement
+    DTO --> ConstraintManagement
+    Mapper --> ConstraintManagement
+
+    ConstraintManagement --> Service
+    ConstraintManagement --> Repository
+    ConstraintManagement --> BuilderFactory
+    ConstraintManagement --> Core
+
+    ConstraintController --> Controller
+    CreateConstraintRequest --> DTO
+    RenameConstraintRequest --> DTO
+    ConstraintResponse --> DTO
+    ConstraintMapper --> Mapper
+
+    Service --> ConstraintService
+    Repository --> ConstraintRepository
+    BuilderFactory --> DefinitionBuilder
+    BuilderFactory --> ConstraintFactory
+
+    Core --> Constraint
+    Core --> PrimaryKey
+    Core --> ForeignKey
+    Core --> Unique
+    Core --> NotNull
+    Core --> Check
+
+    CCService --> ConstraintController
+    CCMapper --> ConstraintController
+    CCCreate --> ConstraintController
+    CCGet --> ConstraintController
+    CCList --> ConstraintController
+    CCRename --> ConstraintController
+    CCDelete --> ConstraintController
+
+    CCRName --> CreateConstraintRequest
+    CCRType --> CreateConstraintRequest
+    CCRColumns --> CreateConstraintRequest
+    CCRRefTable --> CreateConstraintRequest
+    CCRRefColumns --> CreateConstraintRequest
+    CCRExpression --> CreateConstraintRequest
+
+    RCRName --> RenameConstraintRequest
+
+    CRId --> ConstraintResponse
+    CRTableId --> ConstraintResponse
+    CRName --> ConstraintResponse
+    CRType --> ConstraintResponse
+    CRColumns --> ConstraintResponse
+
+    CMToDefinition --> ConstraintMapper
+    CMToResponse --> ConstraintMapper
+
+    ConstraintService --> CSManager
+    ConstraintService --> CSRepository
+    ConstraintService --> CSFactory
+    ConstraintService --> CSCreate
+    ConstraintService --> CSFind
+    ConstraintService --> CSFindAll
+    ConstraintService --> CSRename
+    ConstraintService --> CSDelete
+
+    ConstraintRepository --> CRepoSave
+    ConstraintRepository --> CRepoFindId
+    ConstraintRepository --> CRepoFindTable
+    ConstraintRepository --> CRepoFindName
+    ConstraintRepository --> CRepoFindType
+    ConstraintRepository --> CRepoDelete
+
+    DefinitionBuilder --> CDBBuilder
+    DefinitionBuilder --> CDBName
+    DefinitionBuilder --> CDBType
+    DefinitionBuilder --> CDBTable
+    DefinitionBuilder --> CDBColumns
+    DefinitionBuilder --> CDBRefTable
+    DefinitionBuilder --> CDBRefColumns
+    DefinitionBuilder --> CDBExpression
+    DefinitionBuilder --> CDBBuild
+
+    ConstraintFactory --> CFCreate
+
+    Constraint --> ConstraintId
+    Constraint --> ConstraintName
+    Constraint --> ConstraintTable
+    Constraint --> ConstraintColumns
+    Constraint --> ConstraintTypeField
+    Constraint --> ConstraintValidate
+    Constraint --> ConstraintCopy
+
+    Constraint --> PrimaryKey
+    Constraint --> ForeignKey
+    Constraint --> Unique
+    Constraint --> NotNull
+    Constraint --> Check
+
+    classDef rootStyle fill:#1d3557,stroke:#457b9d,stroke-width:4px,color:#ffffff,font-weight:bold;
     classDef controllerGroup fill:#00a6a6,stroke:#007f7f,stroke-width:3px,color:#ffffff,font-weight:bold;
     classDef dtoGroup fill:#1976d2,stroke:#0d47a1,stroke-width:3px,color:#ffffff,font-weight:bold;
     classDef mapperGroup fill:#7b61c9,stroke:#5e43ad,stroke-width:3px,color:#ffffff,font-weight:bold;
     classDef serviceGroup fill:#f9a825,stroke:#d88c00,stroke-width:3px,color:#ffffff,font-weight:bold;
-    classDef catalogGroup fill:#e65100,stroke:#bf360c,stroke-width:3px,color:#ffffff,font-weight:bold;
+    classDef repositoryGroup fill:#e65100,stroke:#bf360c,stroke-width:3px,color:#ffffff,font-weight:bold;
+    classDef builderGroup fill:#8e24aa,stroke:#6a1b9a,stroke-width:3px,color:#ffffff,font-weight:bold;
     classDef coreGroup fill:#d84315,stroke:#bf360c,stroke-width:3px,color:#ffffff,font-weight:bold;
     classDef classLeaf fill:#ffffff,stroke:#607d8b,stroke-width:2px,color:#263238,font-weight:bold;
     classDef attributeLeaf fill:#eef7ff,stroke:#64b5f6,stroke-width:1px,color:#0d47a1;
     classDef methodLeaf fill:#f3f8e9,stroke:#8bc34a,stroke-width:1px,color:#33691e;
 ```
 
-## Programmable Objects
+---
+
+## Index Management
 
 ```mermaid
 flowchart LR
-    ProgrammableObjects["Programmable Objects"]:::rootStyle
+    IndexManagement["Index Management"]:::rootStyle
 
-    ProgrammableObjectsController["Controller"]:::controllerGroup
-    ProgrammableObjectsControllerViewController["ViewController"]:::classLeaf
-    ProgrammableObjectsControllerViewControllerAttributeViewServiceviewService["Attribute: ViewService viewService"]:::attributeLeaf
-    ProgrammableObjectsControllerViewControllerAttributeViewMapperviewMapper["Attribute: ViewMapper viewMapper"]:::attributeLeaf
-    ProgrammableObjectsControllerViewControllerMethodcreateViewUUIDschemaIdViewRequestrequest["Method: createView(UUID schemaId, ViewRequest request)"]:::methodLeaf
-    ProgrammableObjectsControllerViewControllerMethodgetViewUUIDviewId["Method: getView(UUID viewId)"]:::methodLeaf
-    ProgrammableObjectsControllerViewControllerMethodupdateViewUUIDviewIdViewRequestrequest["Method: updateView(UUID viewId, ViewRequest request)"]:::methodLeaf
-    ProgrammableObjectsControllerViewControllerMethoddropViewUUIDviewId["Method: dropView(UUID viewId)"]:::methodLeaf
-    ProgrammableObjectsControllerSequenceController["SequenceController"]:::classLeaf
-    ProgrammableObjectsControllerSequenceControllerAttributeSequenceServicesequenceService["Attribute: SequenceService sequenceService"]:::attributeLeaf
-    ProgrammableObjectsControllerSequenceControllerAttributeSequenceMappersequenceMapper["Attribute: SequenceMapper sequenceMapper"]:::attributeLeaf
-    ProgrammableObjectsControllerSequenceControllerMethodcreateSequenceUUIDschemaIdSequenceRequestrequest["Method: createSequence(UUID schemaId, SequenceRequest request)"]:::methodLeaf
-    ProgrammableObjectsControllerSequenceControllerMethodgetSequenceUUIDsequenceId["Method: getSequence(UUID sequenceId)"]:::methodLeaf
-    ProgrammableObjectsControllerSequenceControllerMethodnextValueUUIDsequenceId["Method: nextValue(UUID sequenceId)"]:::methodLeaf
-    ProgrammableObjectsControllerSequenceControllerMethodrestartSequenceUUIDsequenceId["Method: restartSequence(UUID sequenceId)"]:::methodLeaf
-    ProgrammableObjectsControllerSequenceControllerMethoddropSequenceUUIDsequenceId["Method: dropSequence(UUID sequenceId)"]:::methodLeaf
-    ProgrammableObjectsControllerProcedureController["ProcedureController"]:::classLeaf
-    ProgrammableObjectsControllerProcedureControllerAttributeProcedureServiceprocedureService["Attribute: ProcedureService procedureService"]:::attributeLeaf
-    ProgrammableObjectsControllerProcedureControllerAttributeProcedureMapperprocedureMapper["Attribute: ProcedureMapper procedureMapper"]:::attributeLeaf
-    ProgrammableObjectsControllerProcedureControllerMethodcreateProcedureUUIDschemaIdProcedureRequestrequest["Method: createProcedure(UUID schemaId, ProcedureRequest request)"]:::methodLeaf
-    ProgrammableObjectsControllerProcedureControllerMethodgetProcedureUUIDprocedureId["Method: getProcedure(UUID procedureId)"]:::methodLeaf
-    ProgrammableObjectsControllerProcedureControllerMethodexecuteProcedureUUIDprocedureIdMapStringObjectarguments["Method: executeProcedure(UUID procedureId, Map<String, Object> arguments)"]:::methodLeaf
-    ProgrammableObjectsControllerProcedureControllerMethoddropProcedureUUIDprocedureId["Method: dropProcedure(UUID procedureId)"]:::methodLeaf
-    ProgrammableObjectsControllerFunctionController["FunctionController"]:::classLeaf
-    ProgrammableObjectsControllerFunctionControllerAttributeFunctionServicefunctionService["Attribute: FunctionService functionService"]:::attributeLeaf
-    ProgrammableObjectsControllerFunctionControllerAttributeFunctionMapperfunctionMapper["Attribute: FunctionMapper functionMapper"]:::attributeLeaf
-    ProgrammableObjectsControllerFunctionControllerMethodcreateFunctionUUIDschemaIdFunctionRequestrequest["Method: createFunction(UUID schemaId, FunctionRequest request)"]:::methodLeaf
-    ProgrammableObjectsControllerFunctionControllerMethodgetFunctionUUIDfunctionId["Method: getFunction(UUID functionId)"]:::methodLeaf
-    ProgrammableObjectsControllerFunctionControllerMethodexecuteFunctionUUIDfunctionIdMapStringObjectarguments["Method: executeFunction(UUID functionId, Map<String, Object> arguments)"]:::methodLeaf
-    ProgrammableObjectsControllerFunctionControllerMethoddropFunctionUUIDfunctionId["Method: dropFunction(UUID functionId)"]:::methodLeaf
-    ProgrammableObjectsControllerTriggerController["TriggerController"]:::classLeaf
-    ProgrammableObjectsControllerTriggerControllerAttributeTriggerServicetriggerService["Attribute: TriggerService triggerService"]:::attributeLeaf
-    ProgrammableObjectsControllerTriggerControllerAttributeTriggerMappertriggerMapper["Attribute: TriggerMapper triggerMapper"]:::attributeLeaf
-    ProgrammableObjectsControllerTriggerControllerMethodcreateTriggerUUIDtableIdTriggerRequestrequest["Method: createTrigger(UUID tableId, TriggerRequest request)"]:::methodLeaf
-    ProgrammableObjectsControllerTriggerControllerMethodgetTriggerUUIDtriggerId["Method: getTrigger(UUID triggerId)"]:::methodLeaf
-    ProgrammableObjectsControllerTriggerControllerMethodenableTriggerUUIDtriggerId["Method: enableTrigger(UUID triggerId)"]:::methodLeaf
-    ProgrammableObjectsControllerTriggerControllerMethoddisableTriggerUUIDtriggerId["Method: disableTrigger(UUID triggerId)"]:::methodLeaf
-    ProgrammableObjectsControllerTriggerControllerMethoddropTriggerUUIDtriggerId["Method: dropTrigger(UUID triggerId)"]:::methodLeaf
+    Controller["Controller"]:::controllerGroup
+    DTO["DTO"]:::dtoGroup
+    Mapper["Mapper"]:::mapperGroup
 
-    ProgrammableObjectsDTO["DTO"]:::dtoGroup
-    ProgrammableObjectsDTOViewRequestViewResponse["ViewRequest / ViewResponse"]:::classLeaf
-    ProgrammableObjectsDTOViewRequestViewResponseAttributeStringname["Attribute: String name"]:::attributeLeaf
-    ProgrammableObjectsDTOViewRequestViewResponseAttributeStringqueryDefinition["Attribute: String queryDefinition"]:::attributeLeaf
-    ProgrammableObjectsDTOViewRequestViewResponseAttributebooleanmaterialized["Attribute: boolean materialized"]:::attributeLeaf
-    ProgrammableObjectsDTOSequenceRequestSequenceResponse["SequenceRequest / SequenceResponse"]:::classLeaf
-    ProgrammableObjectsDTOSequenceRequestSequenceResponseAttributeStringname["Attribute: String name"]:::attributeLeaf
-    ProgrammableObjectsDTOSequenceRequestSequenceResponseAttributelongstartValue["Attribute: long startValue"]:::attributeLeaf
-    ProgrammableObjectsDTOSequenceRequestSequenceResponseAttributelongincrement["Attribute: long increment"]:::attributeLeaf
-    ProgrammableObjectsDTOSequenceRequestSequenceResponseAttributeLongminValue["Attribute: Long minValue"]:::attributeLeaf
-    ProgrammableObjectsDTOSequenceRequestSequenceResponseAttributeLongmaxValue["Attribute: Long maxValue"]:::attributeLeaf
-    ProgrammableObjectsDTOSequenceRequestSequenceResponseAttributebooleancycle["Attribute: boolean cycle"]:::attributeLeaf
-    ProgrammableObjectsDTOProcedureRequestProcedureResponse["ProcedureRequest / ProcedureResponse"]:::classLeaf
-    ProgrammableObjectsDTOProcedureRequestProcedureResponseAttributeStringname["Attribute: String name"]:::attributeLeaf
-    ProgrammableObjectsDTOProcedureRequestProcedureResponseAttributeListParameterDefinitionparameters["Attribute: List<ParameterDefinition> parameters"]:::attributeLeaf
-    ProgrammableObjectsDTOProcedureRequestProcedureResponseAttributeStringbody["Attribute: String body"]:::attributeLeaf
-    ProgrammableObjectsDTOProcedureRequestProcedureResponseAttributeStringlanguage["Attribute: String language"]:::attributeLeaf
-    ProgrammableObjectsDTOFunctionRequestFunctionResponse["FunctionRequest / FunctionResponse"]:::classLeaf
-    ProgrammableObjectsDTOFunctionRequestFunctionResponseAttributeStringname["Attribute: String name"]:::attributeLeaf
-    ProgrammableObjectsDTOFunctionRequestFunctionResponseAttributeListParameterDefinitionparameters["Attribute: List<ParameterDefinition> parameters"]:::attributeLeaf
-    ProgrammableObjectsDTOFunctionRequestFunctionResponseAttributeDataTypereturnType["Attribute: DataType returnType"]:::attributeLeaf
-    ProgrammableObjectsDTOFunctionRequestFunctionResponseAttributeStringbody["Attribute: String body"]:::attributeLeaf
-    ProgrammableObjectsDTOTriggerRequestTriggerResponse["TriggerRequest / TriggerResponse"]:::classLeaf
-    ProgrammableObjectsDTOTriggerRequestTriggerResponseAttributeStringname["Attribute: String name"]:::attributeLeaf
-    ProgrammableObjectsDTOTriggerRequestTriggerResponseAttributeTriggerTimingtiming["Attribute: TriggerTiming timing"]:::attributeLeaf
-    ProgrammableObjectsDTOTriggerRequestTriggerResponseAttributeSetTriggerEventevents["Attribute: Set<TriggerEvent> events"]:::attributeLeaf
-    ProgrammableObjectsDTOTriggerRequestTriggerResponseAttributeStringbody["Attribute: String body"]:::attributeLeaf
+    Service["Service"]:::serviceGroup
+    Repository["Repository"]:::repositoryGroup
+    Factory["Factory"]:::builderGroup
+    Core["Java Core"]:::coreGroup
 
-    ProgrammableObjectsMapper["Mapper"]:::mapperGroup
-    ProgrammableObjectsMapperViewMapper["ViewMapper"]:::classLeaf
-    ProgrammableObjectsMapperViewMapperMethodtoDefinitionUUIDschemaIdViewRequestrequest["Method: toDefinition(UUID schemaId, ViewRequest request)"]:::methodLeaf
-    ProgrammableObjectsMapperViewMapperMethodtoResponseViewview["Method: toResponse(View view)"]:::methodLeaf
-    ProgrammableObjectsMapperSequenceMapper["SequenceMapper"]:::classLeaf
-    ProgrammableObjectsMapperSequenceMapperMethodtoDefinitionUUIDschemaIdSequenceRequestrequest["Method: toDefinition(UUID schemaId, SequenceRequest request)"]:::methodLeaf
-    ProgrammableObjectsMapperSequenceMapperMethodtoResponseSequencesequence["Method: toResponse(Sequence sequence)"]:::methodLeaf
-    ProgrammableObjectsMapperProcedureMapper["ProcedureMapper"]:::classLeaf
-    ProgrammableObjectsMapperProcedureMapperMethodtoDefinitionUUIDschemaIdProcedureRequestrequest["Method: toDefinition(UUID schemaId, ProcedureRequest request)"]:::methodLeaf
-    ProgrammableObjectsMapperProcedureMapperMethodtoResponseStoredProcedureprocedure["Method: toResponse(StoredProcedure procedure)"]:::methodLeaf
-    ProgrammableObjectsMapperFunctionMapper["FunctionMapper"]:::classLeaf
-    ProgrammableObjectsMapperFunctionMapperMethodtoDefinitionUUIDschemaIdFunctionRequestrequest["Method: toDefinition(UUID schemaId, FunctionRequest request)"]:::methodLeaf
-    ProgrammableObjectsMapperFunctionMapperMethodtoResponseDatabaseFunctionfunction["Method: toResponse(DatabaseFunction function)"]:::methodLeaf
-    ProgrammableObjectsMapperTriggerMapper["TriggerMapper"]:::classLeaf
-    ProgrammableObjectsMapperTriggerMapperMethodtoDefinitionUUIDtableIdTriggerRequestrequest["Method: toDefinition(UUID tableId, TriggerRequest request)"]:::methodLeaf
-    ProgrammableObjectsMapperTriggerMapperMethodtoResponseTriggertrigger["Method: toResponse(Trigger trigger)"]:::methodLeaf
+    IndexController["IndexController"]:::classLeaf
+    ICService["Attribute: IndexService indexService"]:::attributeLeaf
+    ICMapper["Attribute: IndexMapper indexMapper"]:::attributeLeaf
+    ICCreate["Method: createIndex(UUID tableId, CreateIndexRequest request)"]:::methodLeaf
+    ICGet["Method: getIndex(UUID indexId)"]:::methodLeaf
+    ICList["Method: listIndexes(UUID tableId)"]:::methodLeaf
+    ICRename["Method: renameIndex(UUID indexId, RenameIndexRequest request)"]:::methodLeaf
+    ICDelete["Method: deleteIndex(UUID indexId)"]:::methodLeaf
 
-    ProgrammableObjectsService["Service"]:::serviceGroup
-    ProgrammableObjectsServiceViewService["ViewService"]:::classLeaf
-    ProgrammableObjectsServiceViewServiceAttributeProgrammableObjectCatalogcatalog["Attribute: ProgrammableObjectCatalog catalog"]:::attributeLeaf
-    ProgrammableObjectsServiceViewServiceAttributeViewManagerviewManager["Attribute: ViewManager viewManager"]:::attributeLeaf
-    ProgrammableObjectsServiceViewServiceMethodcreateViewViewDefinitiondefinition["Method: createView(ViewDefinition definition)"]:::methodLeaf
-    ProgrammableObjectsServiceViewServiceMethodfindViewUUIDviewId["Method: findView(UUID viewId)"]:::methodLeaf
-    ProgrammableObjectsServiceViewServiceMethodupdateViewUUIDviewIdViewDefinitiondefinition["Method: updateView(UUID viewId, ViewDefinition definition)"]:::methodLeaf
-    ProgrammableObjectsServiceViewServiceMethoddropViewUUIDviewId["Method: dropView(UUID viewId)"]:::methodLeaf
-    ProgrammableObjectsServiceSequenceService["SequenceService"]:::classLeaf
-    ProgrammableObjectsServiceSequenceServiceAttributeProgrammableObjectCatalogcatalog["Attribute: ProgrammableObjectCatalog catalog"]:::attributeLeaf
-    ProgrammableObjectsServiceSequenceServiceAttributeSequenceManagersequenceManager["Attribute: SequenceManager sequenceManager"]:::attributeLeaf
-    ProgrammableObjectsServiceSequenceServiceMethodcreateSequenceSequenceDefinitiondefinition["Method: createSequence(SequenceDefinition definition)"]:::methodLeaf
-    ProgrammableObjectsServiceSequenceServiceMethodfindSequenceUUIDsequenceId["Method: findSequence(UUID sequenceId)"]:::methodLeaf
-    ProgrammableObjectsServiceSequenceServiceMethodnextValueUUIDsequenceId["Method: nextValue(UUID sequenceId)"]:::methodLeaf
-    ProgrammableObjectsServiceSequenceServiceMethodrestartUUIDsequenceId["Method: restart(UUID sequenceId)"]:::methodLeaf
-    ProgrammableObjectsServiceSequenceServiceMethoddropSequenceUUIDsequenceId["Method: dropSequence(UUID sequenceId)"]:::methodLeaf
-    ProgrammableObjectsServiceProcedureService["ProcedureService"]:::classLeaf
-    ProgrammableObjectsServiceProcedureServiceAttributeProgrammableObjectCatalogcatalog["Attribute: ProgrammableObjectCatalog catalog"]:::attributeLeaf
-    ProgrammableObjectsServiceProcedureServiceAttributeProcedureExecutorexecutor["Attribute: ProcedureExecutor executor"]:::attributeLeaf
-    ProgrammableObjectsServiceProcedureServiceMethodcreateProcedureProcedureDefinitiondefinition["Method: createProcedure(ProcedureDefinition definition)"]:::methodLeaf
-    ProgrammableObjectsServiceProcedureServiceMethodfindProcedureUUIDprocedureId["Method: findProcedure(UUID procedureId)"]:::methodLeaf
-    ProgrammableObjectsServiceProcedureServiceMethodexecuteUUIDprocedureIdMapStringObjectarguments["Method: execute(UUID procedureId, Map<String, Object> arguments)"]:::methodLeaf
-    ProgrammableObjectsServiceProcedureServiceMethoddropProcedureUUIDprocedureId["Method: dropProcedure(UUID procedureId)"]:::methodLeaf
-    ProgrammableObjectsServiceFunctionService["FunctionService"]:::classLeaf
-    ProgrammableObjectsServiceFunctionServiceAttributeProgrammableObjectCatalogcatalog["Attribute: ProgrammableObjectCatalog catalog"]:::attributeLeaf
-    ProgrammableObjectsServiceFunctionServiceAttributeFunctionExecutorexecutor["Attribute: FunctionExecutor executor"]:::attributeLeaf
-    ProgrammableObjectsServiceFunctionServiceMethodcreateFunctionFunctionDefinitiondefinition["Method: createFunction(FunctionDefinition definition)"]:::methodLeaf
-    ProgrammableObjectsServiceFunctionServiceMethodfindFunctionUUIDfunctionId["Method: findFunction(UUID functionId)"]:::methodLeaf
-    ProgrammableObjectsServiceFunctionServiceMethodexecuteUUIDfunctionIdMapStringObjectarguments["Method: execute(UUID functionId, Map<String, Object> arguments)"]:::methodLeaf
-    ProgrammableObjectsServiceFunctionServiceMethoddropFunctionUUIDfunctionId["Method: dropFunction(UUID functionId)"]:::methodLeaf
-    ProgrammableObjectsServiceTriggerService["TriggerService"]:::classLeaf
-    ProgrammableObjectsServiceTriggerServiceAttributeProgrammableObjectCatalogcatalog["Attribute: ProgrammableObjectCatalog catalog"]:::attributeLeaf
-    ProgrammableObjectsServiceTriggerServiceAttributeTriggerExecutorexecutor["Attribute: TriggerExecutor executor"]:::attributeLeaf
-    ProgrammableObjectsServiceTriggerServiceMethodcreateTriggerTriggerDefinitiondefinition["Method: createTrigger(TriggerDefinition definition)"]:::methodLeaf
-    ProgrammableObjectsServiceTriggerServiceMethodfindTriggerUUIDtriggerId["Method: findTrigger(UUID triggerId)"]:::methodLeaf
-    ProgrammableObjectsServiceTriggerServiceMethodenableUUIDtriggerId["Method: enable(UUID triggerId)"]:::methodLeaf
-    ProgrammableObjectsServiceTriggerServiceMethoddisableUUIDtriggerId["Method: disable(UUID triggerId)"]:::methodLeaf
-    ProgrammableObjectsServiceTriggerServiceMethoddropTriggerUUIDtriggerId["Method: dropTrigger(UUID triggerId)"]:::methodLeaf
+    CreateIndexRequest["CreateIndexRequest"]:::classLeaf
+    CIRName["Attribute: String name"]:::attributeLeaf
+    CIRType["Attribute: IndexType type"]:::attributeLeaf
+    CIRColumns["Attribute: List<UUID> columnIds"]:::attributeLeaf
+    CIRUnique["Attribute: boolean unique"]:::attributeLeaf
 
-    ProgrammableObjectsCatalog["Catalog"]:::catalogGroup
-    ProgrammableObjectsCatalogProgrammableObjectCatalog["ProgrammableObjectCatalog"]:::classLeaf
-    ProgrammableObjectsCatalogProgrammableObjectCatalogAttributeMapUUIDProgrammableObjectobjects["Attribute: Map<UUID, ProgrammableObject> objects"]:::attributeLeaf
-    ProgrammableObjectsCatalogProgrammableObjectCatalogMethodsaveProgrammableObjectobject["Method: save(ProgrammableObject object)"]:::methodLeaf
-    ProgrammableObjectsCatalogProgrammableObjectCatalogMethodfindByIdUUIDobjectId["Method: findById(UUID objectId)"]:::methodLeaf
-    ProgrammableObjectsCatalogProgrammableObjectCatalogMethodfindBySchemaIdUUIDschemaId["Method: findBySchemaId(UUID schemaId)"]:::methodLeaf
-    ProgrammableObjectsCatalogProgrammableObjectCatalogMethoddeleteUUIDobjectId["Method: delete(UUID objectId)"]:::methodLeaf
+    RenameIndexRequest["RenameIndexRequest"]:::classLeaf
+    RIRName["Attribute: String newName"]:::attributeLeaf
 
-    ProgrammableObjectsDBMSCore["DBMS Core"]:::coreGroup
-    ProgrammableObjectsDBMSCoreViewManager["ViewManager"]:::classLeaf
-    ProgrammableObjectsDBMSCoreViewManagerAttributeQueryProcessorqueryProcessor["Attribute: QueryProcessor queryProcessor"]:::attributeLeaf
-    ProgrammableObjectsDBMSCoreViewManagerMethodvalidateDefinitionViewDefinitiondefinition["Method: validateDefinition(ViewDefinition definition)"]:::methodLeaf
-    ProgrammableObjectsDBMSCoreViewManagerMethodrefreshUUIDviewId["Method: refresh(UUID viewId)"]:::methodLeaf
-    ProgrammableObjectsDBMSCoreSequenceManager["SequenceManager"]:::classLeaf
-    ProgrammableObjectsDBMSCoreSequenceManagerAttributeMapUUIDAtomicLongcurrentValues["Attribute: Map<UUID, AtomicLong> currentValues"]:::attributeLeaf
-    ProgrammableObjectsDBMSCoreSequenceManagerMethodcreateSequenceDefinitiondefinition["Method: create(SequenceDefinition definition)"]:::methodLeaf
-    ProgrammableObjectsDBMSCoreSequenceManagerMethodnextValueUUIDsequenceId["Method: nextValue(UUID sequenceId)"]:::methodLeaf
-    ProgrammableObjectsDBMSCoreSequenceManagerMethodrestartUUIDsequenceId["Method: restart(UUID sequenceId)"]:::methodLeaf
-    ProgrammableObjectsDBMSCoreProcedureExecutor["ProcedureExecutor"]:::classLeaf
-    ProgrammableObjectsDBMSCoreProcedureExecutorAttributeQueryExecutorqueryExecutor["Attribute: QueryExecutor queryExecutor"]:::attributeLeaf
-    ProgrammableObjectsDBMSCoreProcedureExecutorMethodexecuteStoredProcedureprocedureMapStringObjectarguments["Method: execute(StoredProcedure procedure, Map<String, Object> arguments)"]:::methodLeaf
-    ProgrammableObjectsDBMSCoreFunctionExecutor["FunctionExecutor"]:::classLeaf
-    ProgrammableObjectsDBMSCoreFunctionExecutorAttributeExpressionEvaluatorexpressionEvaluator["Attribute: ExpressionEvaluator expressionEvaluator"]:::attributeLeaf
-    ProgrammableObjectsDBMSCoreFunctionExecutorMethodexecuteDatabaseFunctionfunctionMapStringObjectarguments["Method: execute(DatabaseFunction function, Map<String, Object> arguments)"]:::methodLeaf
-    ProgrammableObjectsDBMSCoreTriggerExecutor["TriggerExecutor"]:::classLeaf
-    ProgrammableObjectsDBMSCoreTriggerExecutorAttributeQueryExecutorqueryExecutor["Attribute: QueryExecutor queryExecutor"]:::attributeLeaf
-    ProgrammableObjectsDBMSCoreTriggerExecutorMethodexecuteBeforeTriggertriggerRowoldRowRownewRow["Method: executeBefore(Trigger trigger, Row oldRow, Row newRow)"]:::methodLeaf
-    ProgrammableObjectsDBMSCoreTriggerExecutorMethodexecuteAfterTriggertriggerRowoldRowRownewRow["Method: executeAfter(Trigger trigger, Row oldRow, Row newRow)"]:::methodLeaf
+    IndexResponse["IndexResponse"]:::classLeaf
+    IRId["Attribute: UUID id"]:::attributeLeaf
+    IRTableId["Attribute: UUID tableId"]:::attributeLeaf
+    IRName["Attribute: String name"]:::attributeLeaf
+    IRType["Attribute: IndexType type"]:::attributeLeaf
+    IRColumns["Attribute: List<UUID> columnIds"]:::attributeLeaf
+    IRUnique["Attribute: boolean unique"]:::attributeLeaf
 
-    ProgrammableObjectsController --> ProgrammableObjects
-    ProgrammableObjectsDTO --> ProgrammableObjects
-    ProgrammableObjectsMapper --> ProgrammableObjects
-    ProgrammableObjects --> ProgrammableObjectsService
-    ProgrammableObjects --> ProgrammableObjectsCatalog
-    ProgrammableObjects --> ProgrammableObjectsDBMSCore
+    IndexMapper["IndexMapper"]:::classLeaf
+    IMToDefinition["Method: toDefinition(UUID tableId, CreateIndexRequest request)"]:::methodLeaf
+    IMToResponse["Method: toResponse(IndexMetadata index)"]:::methodLeaf
 
-    ProgrammableObjectsControllerViewController --> ProgrammableObjectsController
-    ProgrammableObjectsControllerSequenceController --> ProgrammableObjectsController
-    ProgrammableObjectsControllerProcedureController --> ProgrammableObjectsController
-    ProgrammableObjectsControllerFunctionController --> ProgrammableObjectsController
-    ProgrammableObjectsControllerTriggerController --> ProgrammableObjectsController
-    ProgrammableObjectsDTOViewRequestViewResponse --> ProgrammableObjectsDTO
-    ProgrammableObjectsDTOSequenceRequestSequenceResponse --> ProgrammableObjectsDTO
-    ProgrammableObjectsDTOProcedureRequestProcedureResponse --> ProgrammableObjectsDTO
-    ProgrammableObjectsDTOFunctionRequestFunctionResponse --> ProgrammableObjectsDTO
-    ProgrammableObjectsDTOTriggerRequestTriggerResponse --> ProgrammableObjectsDTO
-    ProgrammableObjectsMapperViewMapper --> ProgrammableObjectsMapper
-    ProgrammableObjectsMapperSequenceMapper --> ProgrammableObjectsMapper
-    ProgrammableObjectsMapperProcedureMapper --> ProgrammableObjectsMapper
-    ProgrammableObjectsMapperFunctionMapper --> ProgrammableObjectsMapper
-    ProgrammableObjectsMapperTriggerMapper --> ProgrammableObjectsMapper
-    ProgrammableObjectsService --> ProgrammableObjectsServiceViewService
-    ProgrammableObjectsService --> ProgrammableObjectsServiceSequenceService
-    ProgrammableObjectsService --> ProgrammableObjectsServiceProcedureService
-    ProgrammableObjectsService --> ProgrammableObjectsServiceFunctionService
-    ProgrammableObjectsService --> ProgrammableObjectsServiceTriggerService
-    ProgrammableObjectsCatalog --> ProgrammableObjectsCatalogProgrammableObjectCatalog
-    ProgrammableObjectsDBMSCore --> ProgrammableObjectsDBMSCoreViewManager
-    ProgrammableObjectsDBMSCore --> ProgrammableObjectsDBMSCoreSequenceManager
-    ProgrammableObjectsDBMSCore --> ProgrammableObjectsDBMSCoreProcedureExecutor
-    ProgrammableObjectsDBMSCore --> ProgrammableObjectsDBMSCoreFunctionExecutor
-    ProgrammableObjectsDBMSCore --> ProgrammableObjectsDBMSCoreTriggerExecutor
+    IndexService["IndexService"]:::classLeaf
+    ISManager["Attribute: MetadataManager metadataManager"]:::attributeLeaf
+    ISRepository["Attribute: IndexMetadataRepository indexRepository"]:::attributeLeaf
+    ISFactory["Attribute: IndexFactory indexFactory"]:::attributeLeaf
+    ISCreate["Method: createIndex(UUID tableId, IndexDefinition definition)"]:::methodLeaf
+    ISFind["Method: findIndex(UUID indexId)"]:::methodLeaf
+    ISFindAll["Method: findIndexes(UUID tableId)"]:::methodLeaf
+    ISRename["Method: renameIndex(UUID indexId, String newName)"]:::methodLeaf
+    ISDelete["Method: deleteIndex(UUID indexId)"]:::methodLeaf
 
-    ProgrammableObjectsControllerViewControllerAttributeViewServiceviewService --> ProgrammableObjectsControllerViewController
-    ProgrammableObjectsControllerViewControllerAttributeViewMapperviewMapper --> ProgrammableObjectsControllerViewController
-    ProgrammableObjectsControllerViewControllerMethodcreateViewUUIDschemaIdViewRequestrequest --> ProgrammableObjectsControllerViewController
-    ProgrammableObjectsControllerViewControllerMethodgetViewUUIDviewId --> ProgrammableObjectsControllerViewController
-    ProgrammableObjectsControllerViewControllerMethodupdateViewUUIDviewIdViewRequestrequest --> ProgrammableObjectsControllerViewController
-    ProgrammableObjectsControllerViewControllerMethoddropViewUUIDviewId --> ProgrammableObjectsControllerViewController
-    ProgrammableObjectsControllerSequenceControllerAttributeSequenceServicesequenceService --> ProgrammableObjectsControllerSequenceController
-    ProgrammableObjectsControllerSequenceControllerAttributeSequenceMappersequenceMapper --> ProgrammableObjectsControllerSequenceController
-    ProgrammableObjectsControllerSequenceControllerMethodcreateSequenceUUIDschemaIdSequenceRequestrequest --> ProgrammableObjectsControllerSequenceController
-    ProgrammableObjectsControllerSequenceControllerMethodgetSequenceUUIDsequenceId --> ProgrammableObjectsControllerSequenceController
-    ProgrammableObjectsControllerSequenceControllerMethodnextValueUUIDsequenceId --> ProgrammableObjectsControllerSequenceController
-    ProgrammableObjectsControllerSequenceControllerMethodrestartSequenceUUIDsequenceId --> ProgrammableObjectsControllerSequenceController
-    ProgrammableObjectsControllerSequenceControllerMethoddropSequenceUUIDsequenceId --> ProgrammableObjectsControllerSequenceController
-    ProgrammableObjectsControllerProcedureControllerAttributeProcedureServiceprocedureService --> ProgrammableObjectsControllerProcedureController
-    ProgrammableObjectsControllerProcedureControllerAttributeProcedureMapperprocedureMapper --> ProgrammableObjectsControllerProcedureController
-    ProgrammableObjectsControllerProcedureControllerMethodcreateProcedureUUIDschemaIdProcedureRequestrequest --> ProgrammableObjectsControllerProcedureController
-    ProgrammableObjectsControllerProcedureControllerMethodgetProcedureUUIDprocedureId --> ProgrammableObjectsControllerProcedureController
-    ProgrammableObjectsControllerProcedureControllerMethodexecuteProcedureUUIDprocedureIdMapStringObjectarguments --> ProgrammableObjectsControllerProcedureController
-    ProgrammableObjectsControllerProcedureControllerMethoddropProcedureUUIDprocedureId --> ProgrammableObjectsControllerProcedureController
-    ProgrammableObjectsControllerFunctionControllerAttributeFunctionServicefunctionService --> ProgrammableObjectsControllerFunctionController
-    ProgrammableObjectsControllerFunctionControllerAttributeFunctionMapperfunctionMapper --> ProgrammableObjectsControllerFunctionController
-    ProgrammableObjectsControllerFunctionControllerMethodcreateFunctionUUIDschemaIdFunctionRequestrequest --> ProgrammableObjectsControllerFunctionController
-    ProgrammableObjectsControllerFunctionControllerMethodgetFunctionUUIDfunctionId --> ProgrammableObjectsControllerFunctionController
-    ProgrammableObjectsControllerFunctionControllerMethodexecuteFunctionUUIDfunctionIdMapStringObjectarguments --> ProgrammableObjectsControllerFunctionController
-    ProgrammableObjectsControllerFunctionControllerMethoddropFunctionUUIDfunctionId --> ProgrammableObjectsControllerFunctionController
-    ProgrammableObjectsControllerTriggerControllerAttributeTriggerServicetriggerService --> ProgrammableObjectsControllerTriggerController
-    ProgrammableObjectsControllerTriggerControllerAttributeTriggerMappertriggerMapper --> ProgrammableObjectsControllerTriggerController
-    ProgrammableObjectsControllerTriggerControllerMethodcreateTriggerUUIDtableIdTriggerRequestrequest --> ProgrammableObjectsControllerTriggerController
-    ProgrammableObjectsControllerTriggerControllerMethodgetTriggerUUIDtriggerId --> ProgrammableObjectsControllerTriggerController
-    ProgrammableObjectsControllerTriggerControllerMethodenableTriggerUUIDtriggerId --> ProgrammableObjectsControllerTriggerController
-    ProgrammableObjectsControllerTriggerControllerMethoddisableTriggerUUIDtriggerId --> ProgrammableObjectsControllerTriggerController
-    ProgrammableObjectsControllerTriggerControllerMethoddropTriggerUUIDtriggerId --> ProgrammableObjectsControllerTriggerController
-    ProgrammableObjectsDTOViewRequestViewResponseAttributeStringname --> ProgrammableObjectsDTOViewRequestViewResponse
-    ProgrammableObjectsDTOViewRequestViewResponseAttributeStringqueryDefinition --> ProgrammableObjectsDTOViewRequestViewResponse
-    ProgrammableObjectsDTOViewRequestViewResponseAttributebooleanmaterialized --> ProgrammableObjectsDTOViewRequestViewResponse
-    ProgrammableObjectsDTOSequenceRequestSequenceResponseAttributeStringname --> ProgrammableObjectsDTOSequenceRequestSequenceResponse
-    ProgrammableObjectsDTOSequenceRequestSequenceResponseAttributelongstartValue --> ProgrammableObjectsDTOSequenceRequestSequenceResponse
-    ProgrammableObjectsDTOSequenceRequestSequenceResponseAttributelongincrement --> ProgrammableObjectsDTOSequenceRequestSequenceResponse
-    ProgrammableObjectsDTOSequenceRequestSequenceResponseAttributeLongminValue --> ProgrammableObjectsDTOSequenceRequestSequenceResponse
-    ProgrammableObjectsDTOSequenceRequestSequenceResponseAttributeLongmaxValue --> ProgrammableObjectsDTOSequenceRequestSequenceResponse
-    ProgrammableObjectsDTOSequenceRequestSequenceResponseAttributebooleancycle --> ProgrammableObjectsDTOSequenceRequestSequenceResponse
-    ProgrammableObjectsDTOProcedureRequestProcedureResponseAttributeStringname --> ProgrammableObjectsDTOProcedureRequestProcedureResponse
-    ProgrammableObjectsDTOProcedureRequestProcedureResponseAttributeListParameterDefinitionparameters --> ProgrammableObjectsDTOProcedureRequestProcedureResponse
-    ProgrammableObjectsDTOProcedureRequestProcedureResponseAttributeStringbody --> ProgrammableObjectsDTOProcedureRequestProcedureResponse
-    ProgrammableObjectsDTOProcedureRequestProcedureResponseAttributeStringlanguage --> ProgrammableObjectsDTOProcedureRequestProcedureResponse
-    ProgrammableObjectsDTOFunctionRequestFunctionResponseAttributeStringname --> ProgrammableObjectsDTOFunctionRequestFunctionResponse
-    ProgrammableObjectsDTOFunctionRequestFunctionResponseAttributeListParameterDefinitionparameters --> ProgrammableObjectsDTOFunctionRequestFunctionResponse
-    ProgrammableObjectsDTOFunctionRequestFunctionResponseAttributeDataTypereturnType --> ProgrammableObjectsDTOFunctionRequestFunctionResponse
-    ProgrammableObjectsDTOFunctionRequestFunctionResponseAttributeStringbody --> ProgrammableObjectsDTOFunctionRequestFunctionResponse
-    ProgrammableObjectsDTOTriggerRequestTriggerResponseAttributeStringname --> ProgrammableObjectsDTOTriggerRequestTriggerResponse
-    ProgrammableObjectsDTOTriggerRequestTriggerResponseAttributeTriggerTimingtiming --> ProgrammableObjectsDTOTriggerRequestTriggerResponse
-    ProgrammableObjectsDTOTriggerRequestTriggerResponseAttributeSetTriggerEventevents --> ProgrammableObjectsDTOTriggerRequestTriggerResponse
-    ProgrammableObjectsDTOTriggerRequestTriggerResponseAttributeStringbody --> ProgrammableObjectsDTOTriggerRequestTriggerResponse
-    ProgrammableObjectsMapperViewMapperMethodtoDefinitionUUIDschemaIdViewRequestrequest --> ProgrammableObjectsMapperViewMapper
-    ProgrammableObjectsMapperViewMapperMethodtoResponseViewview --> ProgrammableObjectsMapperViewMapper
-    ProgrammableObjectsMapperSequenceMapperMethodtoDefinitionUUIDschemaIdSequenceRequestrequest --> ProgrammableObjectsMapperSequenceMapper
-    ProgrammableObjectsMapperSequenceMapperMethodtoResponseSequencesequence --> ProgrammableObjectsMapperSequenceMapper
-    ProgrammableObjectsMapperProcedureMapperMethodtoDefinitionUUIDschemaIdProcedureRequestrequest --> ProgrammableObjectsMapperProcedureMapper
-    ProgrammableObjectsMapperProcedureMapperMethodtoResponseStoredProcedureprocedure --> ProgrammableObjectsMapperProcedureMapper
-    ProgrammableObjectsMapperFunctionMapperMethodtoDefinitionUUIDschemaIdFunctionRequestrequest --> ProgrammableObjectsMapperFunctionMapper
-    ProgrammableObjectsMapperFunctionMapperMethodtoResponseDatabaseFunctionfunction --> ProgrammableObjectsMapperFunctionMapper
-    ProgrammableObjectsMapperTriggerMapperMethodtoDefinitionUUIDtableIdTriggerRequestrequest --> ProgrammableObjectsMapperTriggerMapper
-    ProgrammableObjectsMapperTriggerMapperMethodtoResponseTriggertrigger --> ProgrammableObjectsMapperTriggerMapper
-    ProgrammableObjectsServiceViewService --> ProgrammableObjectsServiceViewServiceAttributeProgrammableObjectCatalogcatalog
-    ProgrammableObjectsServiceViewService --> ProgrammableObjectsServiceViewServiceAttributeViewManagerviewManager
-    ProgrammableObjectsServiceViewService --> ProgrammableObjectsServiceViewServiceMethodcreateViewViewDefinitiondefinition
-    ProgrammableObjectsServiceViewService --> ProgrammableObjectsServiceViewServiceMethodfindViewUUIDviewId
-    ProgrammableObjectsServiceViewService --> ProgrammableObjectsServiceViewServiceMethodupdateViewUUIDviewIdViewDefinitiondefinition
-    ProgrammableObjectsServiceViewService --> ProgrammableObjectsServiceViewServiceMethoddropViewUUIDviewId
-    ProgrammableObjectsServiceSequenceService --> ProgrammableObjectsServiceSequenceServiceAttributeProgrammableObjectCatalogcatalog
-    ProgrammableObjectsServiceSequenceService --> ProgrammableObjectsServiceSequenceServiceAttributeSequenceManagersequenceManager
-    ProgrammableObjectsServiceSequenceService --> ProgrammableObjectsServiceSequenceServiceMethodcreateSequenceSequenceDefinitiondefinition
-    ProgrammableObjectsServiceSequenceService --> ProgrammableObjectsServiceSequenceServiceMethodfindSequenceUUIDsequenceId
-    ProgrammableObjectsServiceSequenceService --> ProgrammableObjectsServiceSequenceServiceMethodnextValueUUIDsequenceId
-    ProgrammableObjectsServiceSequenceService --> ProgrammableObjectsServiceSequenceServiceMethodrestartUUIDsequenceId
-    ProgrammableObjectsServiceSequenceService --> ProgrammableObjectsServiceSequenceServiceMethoddropSequenceUUIDsequenceId
-    ProgrammableObjectsServiceProcedureService --> ProgrammableObjectsServiceProcedureServiceAttributeProgrammableObjectCatalogcatalog
-    ProgrammableObjectsServiceProcedureService --> ProgrammableObjectsServiceProcedureServiceAttributeProcedureExecutorexecutor
-    ProgrammableObjectsServiceProcedureService --> ProgrammableObjectsServiceProcedureServiceMethodcreateProcedureProcedureDefinitiondefinition
-    ProgrammableObjectsServiceProcedureService --> ProgrammableObjectsServiceProcedureServiceMethodfindProcedureUUIDprocedureId
-    ProgrammableObjectsServiceProcedureService --> ProgrammableObjectsServiceProcedureServiceMethodexecuteUUIDprocedureIdMapStringObjectarguments
-    ProgrammableObjectsServiceProcedureService --> ProgrammableObjectsServiceProcedureServiceMethoddropProcedureUUIDprocedureId
-    ProgrammableObjectsServiceFunctionService --> ProgrammableObjectsServiceFunctionServiceAttributeProgrammableObjectCatalogcatalog
-    ProgrammableObjectsServiceFunctionService --> ProgrammableObjectsServiceFunctionServiceAttributeFunctionExecutorexecutor
-    ProgrammableObjectsServiceFunctionService --> ProgrammableObjectsServiceFunctionServiceMethodcreateFunctionFunctionDefinitiondefinition
-    ProgrammableObjectsServiceFunctionService --> ProgrammableObjectsServiceFunctionServiceMethodfindFunctionUUIDfunctionId
-    ProgrammableObjectsServiceFunctionService --> ProgrammableObjectsServiceFunctionServiceMethodexecuteUUIDfunctionIdMapStringObjectarguments
-    ProgrammableObjectsServiceFunctionService --> ProgrammableObjectsServiceFunctionServiceMethoddropFunctionUUIDfunctionId
-    ProgrammableObjectsServiceTriggerService --> ProgrammableObjectsServiceTriggerServiceAttributeProgrammableObjectCatalogcatalog
-    ProgrammableObjectsServiceTriggerService --> ProgrammableObjectsServiceTriggerServiceAttributeTriggerExecutorexecutor
-    ProgrammableObjectsServiceTriggerService --> ProgrammableObjectsServiceTriggerServiceMethodcreateTriggerTriggerDefinitiondefinition
-    ProgrammableObjectsServiceTriggerService --> ProgrammableObjectsServiceTriggerServiceMethodfindTriggerUUIDtriggerId
-    ProgrammableObjectsServiceTriggerService --> ProgrammableObjectsServiceTriggerServiceMethodenableUUIDtriggerId
-    ProgrammableObjectsServiceTriggerService --> ProgrammableObjectsServiceTriggerServiceMethoddisableUUIDtriggerId
-    ProgrammableObjectsServiceTriggerService --> ProgrammableObjectsServiceTriggerServiceMethoddropTriggerUUIDtriggerId
-    ProgrammableObjectsCatalogProgrammableObjectCatalog --> ProgrammableObjectsCatalogProgrammableObjectCatalogAttributeMapUUIDProgrammableObjectobjects
-    ProgrammableObjectsCatalogProgrammableObjectCatalog --> ProgrammableObjectsCatalogProgrammableObjectCatalogMethodsaveProgrammableObjectobject
-    ProgrammableObjectsCatalogProgrammableObjectCatalog --> ProgrammableObjectsCatalogProgrammableObjectCatalogMethodfindByIdUUIDobjectId
-    ProgrammableObjectsCatalogProgrammableObjectCatalog --> ProgrammableObjectsCatalogProgrammableObjectCatalogMethodfindBySchemaIdUUIDschemaId
-    ProgrammableObjectsCatalogProgrammableObjectCatalog --> ProgrammableObjectsCatalogProgrammableObjectCatalogMethoddeleteUUIDobjectId
-    ProgrammableObjectsDBMSCoreViewManager --> ProgrammableObjectsDBMSCoreViewManagerAttributeQueryProcessorqueryProcessor
-    ProgrammableObjectsDBMSCoreViewManager --> ProgrammableObjectsDBMSCoreViewManagerMethodvalidateDefinitionViewDefinitiondefinition
-    ProgrammableObjectsDBMSCoreViewManager --> ProgrammableObjectsDBMSCoreViewManagerMethodrefreshUUIDviewId
-    ProgrammableObjectsDBMSCoreSequenceManager --> ProgrammableObjectsDBMSCoreSequenceManagerAttributeMapUUIDAtomicLongcurrentValues
-    ProgrammableObjectsDBMSCoreSequenceManager --> ProgrammableObjectsDBMSCoreSequenceManagerMethodcreateSequenceDefinitiondefinition
-    ProgrammableObjectsDBMSCoreSequenceManager --> ProgrammableObjectsDBMSCoreSequenceManagerMethodnextValueUUIDsequenceId
-    ProgrammableObjectsDBMSCoreSequenceManager --> ProgrammableObjectsDBMSCoreSequenceManagerMethodrestartUUIDsequenceId
-    ProgrammableObjectsDBMSCoreProcedureExecutor --> ProgrammableObjectsDBMSCoreProcedureExecutorAttributeQueryExecutorqueryExecutor
-    ProgrammableObjectsDBMSCoreProcedureExecutor --> ProgrammableObjectsDBMSCoreProcedureExecutorMethodexecuteStoredProcedureprocedureMapStringObjectarguments
-    ProgrammableObjectsDBMSCoreFunctionExecutor --> ProgrammableObjectsDBMSCoreFunctionExecutorAttributeExpressionEvaluatorexpressionEvaluator
-    ProgrammableObjectsDBMSCoreFunctionExecutor --> ProgrammableObjectsDBMSCoreFunctionExecutorMethodexecuteDatabaseFunctionfunctionMapStringObjectarguments
-    ProgrammableObjectsDBMSCoreTriggerExecutor --> ProgrammableObjectsDBMSCoreTriggerExecutorAttributeQueryExecutorqueryExecutor
-    ProgrammableObjectsDBMSCoreTriggerExecutor --> ProgrammableObjectsDBMSCoreTriggerExecutorMethodexecuteBeforeTriggertriggerRowoldRowRownewRow
-    ProgrammableObjectsDBMSCoreTriggerExecutor --> ProgrammableObjectsDBMSCoreTriggerExecutorMethodexecuteAfterTriggertriggerRowoldRowRownewRow
+    IndexRepository["IndexMetadataRepository"]:::classLeaf
+    IRepoSave["Method: save(IndexMetadata index)"]:::methodLeaf
+    IRepoFindId["Method: findById(UUID indexId)"]:::methodLeaf
+    IRepoFindTable["Method: findByTableId(UUID tableId)"]:::methodLeaf
+    IRepoFindName["Method: findByTableIdAndName(UUID tableId, String name)"]:::methodLeaf
+    IRepoDelete["Method: deleteById(UUID indexId)"]:::methodLeaf
 
-    classDef rootStyle fill:#1d3557,stroke:#457b9d,stroke-width:4px,color:#ffffff,font-weight:bold,font-size:17px;
+    IndexFactory["IndexFactory"]:::classLeaf
+    IFCreate["Method: createIndex(IndexDefinition definition)"]:::methodLeaf
+
+    IndexDefinition["IndexDefinition"]:::classLeaf
+    IDName["Attribute: String name"]:::attributeLeaf
+    IDTable["Attribute: UUID tableId"]:::attributeLeaf
+    IDColumns["Attribute: List<UUID> columnIds"]:::attributeLeaf
+    IDUnique["Attribute: boolean unique"]:::attributeLeaf
+    IDType["Attribute: IndexType type"]:::attributeLeaf
+
+    IndexMetadata["IndexMetadata"]:::classLeaf
+    IndexId["Attribute: UUID id"]:::attributeLeaf
+    IndexName["Attribute: String name"]:::attributeLeaf
+    IndexTable["Attribute: UUID tableId"]:::attributeLeaf
+    IndexColumns["Attribute: List<UUID> columnIds"]:::attributeLeaf
+    IndexTypeField["Attribute: IndexType type"]:::attributeLeaf
+    IndexInsert["Method: insert(Object key, RecordId recordId)"]:::methodLeaf
+    IndexSearch["Method: search(Object key)"]:::methodLeaf
+    IndexDelete["Method: delete(Object key, RecordId recordId)"]:::methodLeaf
+    IndexCopy["Method: copy()"]:::methodLeaf
+
+    BTreeIndex["BTreeIndex"]:::classLeaf
+    HashIndex["HashIndex"]:::classLeaf
+    BitmapIndex["BitmapIndex"]:::classLeaf
+
+    Controller --> IndexManagement
+    DTO --> IndexManagement
+    Mapper --> IndexManagement
+
+    IndexManagement --> Service
+    IndexManagement --> Repository
+    IndexManagement --> Factory
+    IndexManagement --> Core
+
+    IndexController --> Controller
+    CreateIndexRequest --> DTO
+    RenameIndexRequest --> DTO
+    IndexResponse --> DTO
+    IndexMapper --> Mapper
+
+    Service --> IndexService
+    Repository --> IndexRepository
+    Factory --> IndexFactory
+    Factory --> IndexDefinition
+
+    Core --> IndexMetadata
+    Core --> BTreeIndex
+    Core --> HashIndex
+    Core --> BitmapIndex
+
+    ICService --> IndexController
+    ICMapper --> IndexController
+    ICCreate --> IndexController
+    ICGet --> IndexController
+    ICList --> IndexController
+    ICRename --> IndexController
+    ICDelete --> IndexController
+
+    CIRName --> CreateIndexRequest
+    CIRType --> CreateIndexRequest
+    CIRColumns --> CreateIndexRequest
+    CIRUnique --> CreateIndexRequest
+    RIRName --> RenameIndexRequest
+
+    IRId --> IndexResponse
+    IRTableId --> IndexResponse
+    IRName --> IndexResponse
+    IRType --> IndexResponse
+    IRColumns --> IndexResponse
+    IRUnique --> IndexResponse
+
+    IMToDefinition --> IndexMapper
+    IMToResponse --> IndexMapper
+
+    IndexService --> ISManager
+    IndexService --> ISRepository
+    IndexService --> ISFactory
+    IndexService --> ISCreate
+    IndexService --> ISFind
+    IndexService --> ISFindAll
+    IndexService --> ISRename
+    IndexService --> ISDelete
+
+    IndexRepository --> IRepoSave
+    IndexRepository --> IRepoFindId
+    IndexRepository --> IRepoFindTable
+    IndexRepository --> IRepoFindName
+    IndexRepository --> IRepoDelete
+
+    IndexFactory --> IFCreate
+
+    IndexDefinition --> IDName
+    IndexDefinition --> IDTable
+    IndexDefinition --> IDColumns
+    IndexDefinition --> IDUnique
+    IndexDefinition --> IDType
+
+    IndexMetadata --> IndexId
+    IndexMetadata --> IndexName
+    IndexMetadata --> IndexTable
+    IndexMetadata --> IndexColumns
+    IndexMetadata --> IndexTypeField
+    IndexMetadata --> IndexInsert
+    IndexMetadata --> IndexSearch
+    IndexMetadata --> IndexDelete
+    IndexMetadata --> IndexCopy
+
+    IndexMetadata --> BTreeIndex
+    IndexMetadata --> HashIndex
+    IndexMetadata --> BitmapIndex
+
+    classDef rootStyle fill:#1d3557,stroke:#457b9d,stroke-width:4px,color:#ffffff,font-weight:bold;
     classDef controllerGroup fill:#00a6a6,stroke:#007f7f,stroke-width:3px,color:#ffffff,font-weight:bold;
     classDef dtoGroup fill:#1976d2,stroke:#0d47a1,stroke-width:3px,color:#ffffff,font-weight:bold;
     classDef mapperGroup fill:#7b61c9,stroke:#5e43ad,stroke-width:3px,color:#ffffff,font-weight:bold;
     classDef serviceGroup fill:#f9a825,stroke:#d88c00,stroke-width:3px,color:#ffffff,font-weight:bold;
-    classDef catalogGroup fill:#e65100,stroke:#bf360c,stroke-width:3px,color:#ffffff,font-weight:bold;
+    classDef repositoryGroup fill:#e65100,stroke:#bf360c,stroke-width:3px,color:#ffffff,font-weight:bold;
+    classDef builderGroup fill:#8e24aa,stroke:#6a1b9a,stroke-width:3px,color:#ffffff,font-weight:bold;
     classDef coreGroup fill:#d84315,stroke:#bf360c,stroke-width:3px,color:#ffffff,font-weight:bold;
     classDef classLeaf fill:#ffffff,stroke:#607d8b,stroke-width:2px,color:#263238,font-weight:bold;
     classDef attributeLeaf fill:#eef7ff,stroke:#64b5f6,stroke-width:1px,color:#0d47a1;
     classDef methodLeaf fill:#f3f8e9,stroke:#8bc34a,stroke-width:1px,color:#33691e;
 ```
+
+---
+
+## View Management
+
+```mermaid
+flowchart LR
+    ViewManagement["View Management"]:::rootStyle
+
+    Controller["Controller"]:::controllerGroup
+    DTO["DTO"]:::dtoGroup
+    Mapper["Mapper"]:::mapperGroup
+
+    Service["Service"]:::serviceGroup
+    Core["Java Core"]:::coreGroup
+
+    ViewController["ViewController"]:::classLeaf
+    VCService["Attribute: ViewService viewService"]:::attributeLeaf
+    VCMapper["Attribute: ViewMapper viewMapper"]:::attributeLeaf
+    VCCreate["Method: createView(UUID schemaId, CreateViewRequest request)"]:::methodLeaf
+    VCGet["Method: getView(UUID schemaId, UUID viewId)"]:::methodLeaf
+    VCList["Method: listViews(UUID schemaId)"]:::methodLeaf
+    VCRename["Method: renameView(UUID schemaId, UUID viewId, RenameViewRequest request)"]:::methodLeaf
+    VCUpdate["Method: updateDefinition(UUID schemaId, UUID viewId, UpdateViewDefinitionRequest request)"]:::methodLeaf
+    VCDelete["Method: deleteView(UUID schemaId, UUID viewId)"]:::methodLeaf
+
+    CreateViewRequest["CreateViewRequest"]:::classLeaf
+    CVRName["Attribute: String name"]:::attributeLeaf
+    CVRDefinition["Attribute: String definition"]:::attributeLeaf
+    CVRMaterialized["Attribute: boolean materialized"]:::attributeLeaf
+
+    RenameViewRequest["RenameViewRequest"]:::classLeaf
+    RVRName["Attribute: String newName"]:::attributeLeaf
+
+    UpdateViewRequest["UpdateViewDefinitionRequest"]:::classLeaf
+    UVRDefinition["Attribute: String definition"]:::attributeLeaf
+
+    ViewResponse["ViewResponse"]:::classLeaf
+    VRId["Attribute: UUID id"]:::attributeLeaf
+    VRSchemaId["Attribute: UUID schemaId"]:::attributeLeaf
+    VRName["Attribute: String name"]:::attributeLeaf
+    VRDefinition["Attribute: String definition"]:::attributeLeaf
+    VRDependencies["Attribute: Set<UUID> dependencyIds"]:::attributeLeaf
+    VRMaterialized["Attribute: boolean materialized"]:::attributeLeaf
+    VRValid["Attribute: boolean valid"]:::attributeLeaf
+
+    ViewMapper["ViewMapper"]:::classLeaf
+    VMToDomain["Method: toDomain(UUID schemaId, CreateViewRequest request)"]:::methodLeaf
+    VMToResponse["Method: toResponse(View view)"]:::methodLeaf
+
+    ViewService["ViewService"]:::classLeaf
+    VSManager["Attribute: MetadataManager metadataManager"]:::attributeLeaf
+    VSSchemaRepo["Attribute: SchemaRepository schemaRepository"]:::attributeLeaf
+    VSCreate["Method: createView(UUID schemaId, CreateViewRequest request)"]:::methodLeaf
+    VSFind["Method: findView(UUID schemaId, UUID viewId)"]:::methodLeaf
+    VSFindAll["Method: findViews(UUID schemaId)"]:::methodLeaf
+    VSRename["Method: renameView(UUID schemaId, UUID viewId, String newName)"]:::methodLeaf
+    VSUpdate["Method: updateDefinition(UUID schemaId, UUID viewId, String definition)"]:::methodLeaf
+    VSDelete["Method: deleteView(UUID schemaId, UUID viewId)"]:::methodLeaf
+
+    Schema["Schema"]:::classLeaf
+    SchemaViews["Attribute: List<View> views"]:::attributeLeaf
+    SchemaAddView["Method: addView(View view)"]:::methodLeaf
+    SchemaGetView["Method: getView(String name)"]:::methodLeaf
+    SchemaRemoveView["Method: removeView(String name)"]:::methodLeaf
+
+    View["View"]:::classLeaf
+    ViewId["Attribute: UUID id"]:::attributeLeaf
+    ViewName["Attribute: String name"]:::attributeLeaf
+    ViewSchema["Attribute: UUID schemaId"]:::attributeLeaf
+    ViewDefinition["Attribute: String definition"]:::attributeLeaf
+    ViewDependencies["Attribute: Set<UUID> dependencyIds"]:::attributeLeaf
+    ViewMaterialized["Attribute: boolean materialized"]:::attributeLeaf
+    ViewValid["Attribute: boolean valid"]:::attributeLeaf
+    ViewRename["Method: rename(String newName)"]:::methodLeaf
+    ViewUpdate["Method: updateDefinition(String definition)"]:::methodLeaf
+    ViewAddDependency["Method: addDependency(UUID objectId)"]:::methodLeaf
+    ViewRemoveDependency["Method: removeDependency(UUID objectId)"]:::methodLeaf
+    ViewValidate["Method: validateDefinition()"]:::methodLeaf
+    ViewRefresh["Method: refresh()"]:::methodLeaf
+
+    Controller --> ViewManagement
+    DTO --> ViewManagement
+    Mapper --> ViewManagement
+
+    ViewManagement --> Service
+    ViewManagement --> Core
+
+    ViewController --> Controller
+    CreateViewRequest --> DTO
+    RenameViewRequest --> DTO
+    UpdateViewRequest --> DTO
+    ViewResponse --> DTO
+    ViewMapper --> Mapper
+
+    Service --> ViewService
+    Core --> Schema
+    Core --> View
+
+    VCService --> ViewController
+    VCMapper --> ViewController
+    VCCreate --> ViewController
+    VCGet --> ViewController
+    VCList --> ViewController
+    VCRename --> ViewController
+    VCUpdate --> ViewController
+    VCDelete --> ViewController
+
+    CVRName --> CreateViewRequest
+    CVRDefinition --> CreateViewRequest
+    CVRMaterialized --> CreateViewRequest
+    RVRName --> RenameViewRequest
+    UVRDefinition --> UpdateViewRequest
+
+    VRId --> ViewResponse
+    VRSchemaId --> ViewResponse
+    VRName --> ViewResponse
+    VRDefinition --> ViewResponse
+    VRDependencies --> ViewResponse
+    VRMaterialized --> ViewResponse
+    VRValid --> ViewResponse
+
+    VMToDomain --> ViewMapper
+    VMToResponse --> ViewMapper
+
+    ViewService --> VSManager
+    ViewService --> VSSchemaRepo
+    ViewService --> VSCreate
+    ViewService --> VSFind
+    ViewService --> VSFindAll
+    ViewService --> VSRename
+    ViewService --> VSUpdate
+    ViewService --> VSDelete
+
+    Schema --> SchemaViews
+    Schema --> SchemaAddView
+    Schema --> SchemaGetView
+    Schema --> SchemaRemoveView
+
+    View --> ViewId
+    View --> ViewName
+    View --> ViewSchema
+    View --> ViewDefinition
+    View --> ViewDependencies
+    View --> ViewMaterialized
+    View --> ViewValid
+    View --> ViewRename
+    View --> ViewUpdate
+    View --> ViewAddDependency
+    View --> ViewRemoveDependency
+    View --> ViewValidate
+    View --> ViewRefresh
+
+    classDef rootStyle fill:#1d3557,stroke:#457b9d,stroke-width:4px,color:#ffffff,font-weight:bold;
+    classDef controllerGroup fill:#00a6a6,stroke:#007f7f,stroke-width:3px,color:#ffffff,font-weight:bold;
+    classDef dtoGroup fill:#1976d2,stroke:#0d47a1,stroke-width:3px,color:#ffffff,font-weight:bold;
+    classDef mapperGroup fill:#7b61c9,stroke:#5e43ad,stroke-width:3px,color:#ffffff,font-weight:bold;
+    classDef serviceGroup fill:#f9a825,stroke:#d88c00,stroke-width:3px,color:#ffffff,font-weight:bold;
+    classDef coreGroup fill:#d84315,stroke:#bf360c,stroke-width:3px,color:#ffffff,font-weight:bold;
+    classDef classLeaf fill:#ffffff,stroke:#607d8b,stroke-width:2px,color:#263238,font-weight:bold;
+    classDef attributeLeaf fill:#eef7ff,stroke:#64b5f6,stroke-width:1px,color:#0d47a1;
+    classDef methodLeaf fill:#f3f8e9,stroke:#8bc34a,stroke-width:1px,color:#33691e;
+```
+
+---
+
