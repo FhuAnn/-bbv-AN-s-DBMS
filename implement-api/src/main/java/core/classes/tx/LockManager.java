@@ -5,7 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import enums.LockMode;
+import core.enums.LockMode;
 
 public class LockManager {
 

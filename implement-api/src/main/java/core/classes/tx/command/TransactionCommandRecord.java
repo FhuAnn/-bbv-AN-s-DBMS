@@ -3,8 +3,8 @@ package core.classes.tx.command;
 import java.time.Instant;
 import java.util.UUID;
 
-import enums.transaction.TransactionCommandStatus;
-import enums.transaction.TransactionCommandType;
+import core.enums.transaction.TransactionCommandStatus;
+import core.enums.transaction.TransactionCommandType;
 
 public class TransactionCommandRecord {
 

@@ -3,7 +3,7 @@ package core.classes.tx.command;
 import java.util.List;
 import java.util.Queue;
 
-import interfaces.tx.ITransactionCommand;
+import core.interfaces.tx.ITransactionCommand;
 
 public class TransactionCommandInvoker {
     private Queue<ITransactionCommand> commandQueue;

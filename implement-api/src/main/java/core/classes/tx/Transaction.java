@@ -4,9 +4,9 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-import classes.tx.state.ITransactionOperation;
-import enums.TransactionState;
-import enums.TransactionStateType;
+import core.classes.tx.state.ITransactionOperation;
+import core.enums.TransactionState;
+import core.enums.TransactionStateType;
 
 public class Transaction {
 

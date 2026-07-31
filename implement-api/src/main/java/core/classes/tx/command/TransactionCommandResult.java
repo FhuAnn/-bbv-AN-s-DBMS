@@ -2,9 +2,9 @@ package core.classes.tx.command;
 
 import java.util.UUID;
 
-import classes.tx.Transaction;
-import enums.transaction.TransactionCommandStatus;
-import enums.transaction.TransactionCommandType;
+import core.classes.tx.Transaction;
+import core.enums.transaction.TransactionCommandStatus;
+import core.enums.transaction.TransactionCommandType;
 
 public class TransactionCommandResult {
     private boolean successful;

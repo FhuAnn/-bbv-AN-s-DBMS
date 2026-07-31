@@ -2,7 +2,7 @@ package core.classes.tx.concurrency;
 
 import java.util.List;
 
-import interfaces.tx.IConcurrencyControlStrategy;
+import core.interfaces.tx.IConcurrencyControlStrategy;
 
 public class ConcurrencyStrategySelector {
     private List<IConcurrencyControlStrategy> strategies;

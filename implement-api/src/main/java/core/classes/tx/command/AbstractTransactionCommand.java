@@ -3,8 +3,8 @@ package core.classes.tx.command;
 import java.time.Instant;
 import java.util.UUID;
 
-import classes.tx.TransactionManager;
-import interfaces.tx.ITransactionCommand;
+import core.classes.tx.TransactionManager;
+import core.interfaces.tx.ITransactionCommand;
 
 public abstract class AbstractTransactionCommand
         implements ITransactionCommand {

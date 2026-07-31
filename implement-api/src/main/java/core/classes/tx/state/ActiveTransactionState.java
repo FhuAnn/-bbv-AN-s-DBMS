@@ -2,8 +2,8 @@ package core.classes.tx.state;
 
 import java.util.concurrent.locks.Lock;
 
-import classes.tx.Transaction;
-import enums.TransactionStateType;
+import core.classes.tx.Transaction;
+import core.enums.TransactionStateType;
 
 public class ActiveTransactionState implements ITransactionState {
     public ActiveTransactionState() {

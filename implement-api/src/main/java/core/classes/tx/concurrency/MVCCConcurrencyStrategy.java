@@ -1,11 +1,11 @@
 package core.classes.tx.concurrency;
 
-import classes.tx.MVCCManager;
-import classes.tx.Resource;
-import classes.tx.Transaction;
-import classes.tx.VersionManager;
-import enums.strategy.ConcurrencyStrategyType;
-import interfaces.tx.IConcurrencyControlStrategy;
+import core.classes.tx.MVCCManager;
+import core.classes.tx.Resource;
+import core.classes.tx.Transaction;
+import core.classes.tx.VersionManager;
+import core.enums.strategy.ConcurrencyStrategyType;
+import core.interfaces.tx.IConcurrencyControlStrategy;
 
 public class MVCCConcurrencyStrategy
         implements IConcurrencyControlStrategy {

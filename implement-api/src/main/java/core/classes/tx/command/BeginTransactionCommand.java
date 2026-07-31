@@ -1,7 +1,7 @@
 package core.classes.tx.command;
 
-import classes.tx.TransactionManager;
-import enums.transaction.TransactionCommandType;
+import core.classes.tx.TransactionManager;
+import core.enums.transaction.TransactionCommandType;
 
 public class BeginTransactionCommand extends AbstractTransactionCommand {
     public BeginTransactionCommand(
