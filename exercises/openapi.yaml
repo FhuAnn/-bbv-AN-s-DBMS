@@ -1,0 +1,179 @@
+openapi: 3.1.0
+
+info:
+  title: Mock API for the example UI screen design 
+  version: 1.0.0
+  description: |
+    REST API for managing the customer management screen in Store Management system
+
+    Supported resources:
+
+    * Customers
+    * Companys
+    * Users
+
+
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development server
+
+tags:
+  - name: Customers
+    description: Customer metadata operations
+
+  - name: Companys
+    description: Company metadata operations
+
+  - name: Users
+    description: User metadata operations
+
+paths:
+
+  # =========================================================
+  # Database
+  # =========================================================
+
+  /customers/metrics:
+    get: 
+      tags: 
+        - Customers
+      summary: Get metrics dashboard
+      operationId: getCustomerMetrics
+      responses: 
+        '200':
+          description: Get general metrics successfully
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerMetricsResponse'
+              example:
+                status: success,
+                data: 
+                  total_customers: 
+                    value: 8468,
+                    change_percentage: 20.0
+                    trend: up
+                  members: 
+                    value: 1210
+                    change_percentage: 15.0
+                    trend: up
+                  active_now:
+                    value: 316,
+                    recent_active_users: 
+                      - id: "usr_101"
+                        name: "Olivia"
+                        avatar_url: "https://images.unsplash.com/photo-15252532-23235586-bec356"
+                      - id: "usr_102"
+                        name: Phoenix"
+                        avatar_url: "https://images.unsplash.com/photo-132as1das546-112dsd3s55"
+                      - id: "usr_103"
+                        name: "Lana"
+                        avatar_url: "https://images.unsplash.com/photo-12312321ece-1212321d3ed"
+                      - id: "usr_104"
+                        name: "Demi"
+                        avatar_url: "https://images.unsplash.com/photo-212312321c3e-83832329832d"
+                      - id: "usr_105"
+                        name: "Candice"
+                        avatar_url: "https://images/unsplash.com/photo-21312312ce-21e21da32323"
+
+  /customers:
+    get: 
+      tags:
+        - Customers
+      summary: Get customer list (pagination, searching, arrange)
+      operationId: getCustomerList
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: Integer
+            default: 1
+          example: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 7
+          example: 7
+        - name: search
+          in: query
+          required: false
+          schema: 
+            type: string
+          example: "Framer"
+        - name: sort_by
+          in: query
+          required: false
+          schema:   
+            type: string
+            enum: [company_name,status, created_at]
+            default: company_name
+        - name: order
+          in: query
+          required: false
+          schema: 
+            type: string
+            enum: [asc, desc]
+            default: asc
+
+      responses: 
+        '200': 
+          description: Get customer list
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/compoents/schemas/CustomerListResponse"
+
+    post:
+      summary: Add new customer
+      operationId: createCustomer
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              $ref:'#/components/schemas/CreateCustomerRequest'
+      responses:
+        '201': 
+          desciption: Create new customer successfully
+          content:
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/CustomerItem"
+  
+  /customers/export:
+    get:
+      summary: "Export customer list"
+      operationId: exportCustomers
+      parametters:
+        - name: format
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [csv, xlsx]
+            default: csv
+      responses:
+        '200': 
+          description: Export file successfully
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+
+
+
+components:
+
+  # =========================================================
+  # Parameters
+  # =========================================================
+
+  
