@@ -280,7 +280,23 @@ public class Schema extends AbstractMetadataComponent implements MetadataPrototy
     }
 
     public Schema copyAs(String newName, UUID targetSchemaId) {
-        return null; // TODO: Implement
+        Schema copiedSchema = new Schema();
+        copiedSchema.setId(UUID.randomUUID());
+        copiedSchema.setName(newName);
+        copiedSchema.setDatabaseId(this.databaseId);
+        copiedSchema.setOwnerId(this.ownerId);
+
+        for (Table table : this.tables) {
+            Table copiedTable = table.copyAs(table.getName(), copiedSchema.getId());
+            copiedSchema.addTable(copiedTable);
+        }
+
+        for (View view : this.views) {
+            View copiedView = view.copyAs(view.getName(), copiedSchema.getId());
+            copiedSchema.addView(copiedView);
+        }
+
+        return copiedSchema;
     }
 
 }
