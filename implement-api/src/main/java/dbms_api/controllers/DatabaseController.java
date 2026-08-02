@@ -28,50 +28,55 @@ public class DatabaseController {
         this.databaseService = databaseService;
     }
 
+    // Done
     @PostMapping
     public ResponseEntity<DatabaseResponse> createDatabase(@RequestBody CreateDatabaseRequest request) {
         return ResponseEntity.ok(databaseService.createDatabase(request));
     }
 
+    // Done
     @GetMapping("/{databaseId}")
     public ResponseEntity<DatabaseResponse> getDatabase(@PathVariable UUID databaseId) {
         return ResponseEntity.ok(databaseService.getDatabase(databaseId));
     }
 
+    // Done
     @GetMapping
     public ResponseEntity<List<DatabaseResponse>> listDatabases() {
         var result = databaseService.listDatabases();
         return ResponseEntity.ok(result);
     }
 
+    // Done
     @PatchMapping("/{databaseId}/name")
     public ResponseEntity<DatabaseResponse> renameDatabase(@PathVariable UUID databaseId,
             @RequestBody RenameDatabaseRequest request) {
-        return null;
+        var result = databaseService.renameDatabase(databaseId, request);
+        return ResponseEntity.ok(result);
     }
 
+    // Done
     @PostMapping("/{databaseId}/close")
     public ResponseEntity<DatabaseResponse> closeDatabase(
             @PathVariable UUID databaseId) {
-
-        // TODO
-        return null;
+        var result = databaseService.closeDatabase(databaseId);
+        return ResponseEntity.ok(result);
     }
 
+    // Done
     @PatchMapping("/{databaseId}/read-only")
     public ResponseEntity<DatabaseResponse> setReadOnly(
             @PathVariable UUID databaseId,
             @RequestBody SetReadOnlyRequest request) {
-
-        // TODO
-        return null;
+        var result = databaseService.setReadOnly(databaseId, false);
+        return ResponseEntity.ok(result);
     }
 
+    // Done
     @DeleteMapping("/{databaseId}")
     public ResponseEntity<Void> deleteDatabase(
             @PathVariable UUID databaseId) {
-
-        // TODO
+        databaseService.deleteDatabase(databaseId);
         return null;
     }
 }

@@ -155,4 +155,10 @@ public class View extends AbstractMetadataComponent {
     public void refresh() {
         // TODO: Implement
     }
+    public View copyAs(String newName, UUID newSchemaId) {
+        View copiedView = new View(newName, newSchemaId, this.definition, this.materialized);
+        copiedView.setValid(this.valid);
+        copiedView.dependencyIds.addAll(this.dependencyIds);
+        return copiedView;
+    }
 }

@@ -31,33 +31,39 @@ public class SchemaController {
     @PostMapping("/databases/{databaseId}/schemas")
     public ResponseEntity<SchemaResponse> createSchema(@PathVariable UUID databaseId,
             @RequestBody CreateSchemaRequest request) {
-        return null;
+        var result = schemaService.createSchema(databaseId, request);
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/schemas/{schemaId}")
     public ResponseEntity<SchemaResponse> getSchema(@PathVariable UUID schemaId) {
-        return null;
+        var result = schemaService.getSchema(schemaId);
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/databases/{databaseId}/schemas")
     public ResponseEntity<List<SchemaResponse>> listSchemas(@PathVariable UUID databaseId) {
-        return null;
+        var result = schemaService.listSchemas(databaseId);
+        return ResponseEntity.ok(result);
     }
 
     @PatchMapping("/schemas/{schemaId}/name")
     public ResponseEntity<SchemaResponse> renameSchema(@PathVariable UUID schemaId,
             @RequestBody RenameSchemaRequest request) {
-        return null;
+        var result = schemaService.renameSchema(schemaId, request.name());
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping("/schemas/{schemaId}/copies")
     public ResponseEntity<SchemaResponse> copySchema(@PathVariable UUID schemaId,
             @RequestBody CopySchemaRequest request) {
-        return null;
+        var result = schemaService.copySchema(schemaId, request.newName());
+        return ResponseEntity.ok(result);
     }
 
     @DeleteMapping("/schemas/{schemaId}")
     public ResponseEntity<Void> deleteSchema(@PathVariable UUID schemaId) {
-        return null;
+        schemaService.deleteSchema(schemaId);
+        return ResponseEntity.noContent().build();
     }
 }

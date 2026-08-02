@@ -114,7 +114,11 @@ public class Table extends AbstractMetadataComponent implements MetadataPrototyp
     }
 
     public Table copyAs(String newName, UUID targetSchemaId) {
-        return null; // TODO: Implement
+        var copiedTable = new Table(newName, targetSchemaId);
+        copiedTable.columns.addAll(this.columns);
+        copiedTable.indexes.addAll(this.indexes);
+        copiedTable.constraints.addAll(this.constraints);
+        return copiedTable;
     }
 
     public Integer getColumnCount() {
