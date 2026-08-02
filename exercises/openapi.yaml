@@ -370,7 +370,65 @@ paths:
                 type: string
                 format: binary
 
+  /users/me:
+    get:
+      tags:
+        - Current user
+      summary: Get current autheticated user
+      operationId: getCurrentUser
+      security:
+        - bearerAuth: []
+      responses:
+        "200": 
+          description: Current authenticated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CurrentUser"
+              example:
+                - id: "user-001"
+                  fullName: "Sophia Munn",
+                  email: "sophia@untitled.com",
+                  avatarUrl: "https://example.com/avatars/sophia.png"
+                  role: "STORE_ADMIN",
+                  storeId: "store-001"
+        "401":
+          description: User is not authenticated
 
+      patch:
+        tags:
+          - Current id
+        summary: Update current user profile
+        operationId: updateCurrentUser
+        security:
+          - bearerAuth: []
+        requestBody:
+          required: true
+          content: 
+            application/json:
+              schema:
+                $ref: "#components/schemas/UpdateCurrentUserRequest"
+        responses:
+          "200":
+            description: User profile updated successfully
+            content: 
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/CurrentUser"
+      
+  /auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: Log out current user
+      operationId: logout
+      security:
+       - bearerAuth: []
+      responses:
+        "204":
+          description: Logged out successfully
+
+        
 
 components:
 
@@ -533,3 +591,52 @@ components:
         has_previous:
           type: boolean
           example: false
+      
+    CurrentUser:
+      type: object
+      required:
+        - id 
+        - fullname
+        - email
+        - role
+      properties:
+        id:
+          type: string
+          example: user-001
+        fullName:
+          type: string
+          example: Sophia Munn
+        email:
+          type: string
+          format: email
+          example: sophia@untitled.com
+        avatarUrl:
+          type: string
+          formar: uri
+        role:
+          type: string
+          enum: 
+            - STORE_OWNER
+            - STORE_ADMIN
+            - STORE_MEMBER
+        storeId:
+          type: string
+          example: store-001
+    
+    UpdateCurrentUserRequest:
+      type: object
+      properties:
+        fullName:
+          type: string
+          example: Sophia Munn
+        
+        avatarUrl:
+          type: string
+          format: uri
+    
+    securitySchemes:
+      bearAuth:
+        type: http
+        scheme: bearer
+        bearerFormat: JWT
+            
