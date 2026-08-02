@@ -27,22 +27,21 @@ public class DatabaseService {
 
     public DatabaseResponse createDatabase(
             CreateDatabaseRequest request) {
-
-        // TODO
-        // Database database = databaseMapper.toDomain(request);
-        // database = databaseRepository.save(database);
-        // return databaseMapper.toResponse(database);
-        return null;
+        Database database = databaseMapper.toDomain(request);
+        database = databaseRepository.save(database);
+        return databaseMapper.toResponse(database);
     }
 
     public DatabaseResponse getDatabase(UUID databaseId) {
-        // TODO
-        return null;
+
+        Database database = databaseRepository.findById(databaseId).orElseThrow();
+        return databaseMapper.toResponse(database);
     }
 
     public List<DatabaseResponse> listDatabases() {
-        // TODO
-        return List.of();
+        return databaseRepository.findAll().stream()
+                .map(databaseMapper::toResponse)
+                .toList();
     }
 
     public DatabaseResponse renameDatabase(

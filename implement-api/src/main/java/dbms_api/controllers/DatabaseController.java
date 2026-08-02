@@ -1,6 +1,7 @@
 package dbms_api.controllers;
 
 import java.util.UUID;
+import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,17 +30,18 @@ public class DatabaseController {
 
     @PostMapping
     public ResponseEntity<DatabaseResponse> createDatabase(@RequestBody CreateDatabaseRequest request) {
-        return null;
+        return ResponseEntity.ok(databaseService.createDatabase(request));
     }
 
     @GetMapping("/{databaseId}")
     public ResponseEntity<DatabaseResponse> getDatabase(@PathVariable UUID databaseId) {
-        return null;
+        return ResponseEntity.ok(databaseService.getDatabase(databaseId));
     }
 
     @GetMapping
-    public ResponseEntity<DatabaseResponse> listDatabases() {
-        return null;
+    public ResponseEntity<List<DatabaseResponse>> listDatabases() {
+        var result = databaseService.listDatabases();
+        return ResponseEntity.ok(result);
     }
 
     @PatchMapping("/{databaseId}/name")

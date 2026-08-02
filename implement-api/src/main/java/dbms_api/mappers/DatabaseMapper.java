@@ -11,11 +11,17 @@ public class DatabaseMapper {
     public DatabaseMapper() {
 
     }
+
     public Database toDomain(CreateDatabaseRequest request) {
         return new Database(request.name());
     }
 
     public DatabaseResponse toResponse(Database database) {
-        return null;
+        return new DatabaseResponse(
+                database.getId(),
+                database.getName(),
+                database.getState().name(),
+                database.isReadOnly(),
+                database.getSchemas().size());
     }
 }

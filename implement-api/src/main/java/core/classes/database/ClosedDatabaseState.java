@@ -49,6 +49,6 @@ public class ClosedDatabaseState implements IDatabaseState {
 
     @Override
     public DatabaseStateType getType() {
-        return null;
+        return DatabaseStateType.CLOSED;
     }
 }
