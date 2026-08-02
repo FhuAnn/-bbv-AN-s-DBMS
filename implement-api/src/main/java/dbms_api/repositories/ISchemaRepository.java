@@ -7,25 +7,25 @@ import java.util.UUID;
 import core.classes.metadata.Schema;
 
 public interface ISchemaRepository {
-    Schema save(Schema schema);
-    Optional<Schema> findById(UUID id);
-    Optional<Schema> findByDatabaseIdAndName(
-            UUID databaseId,
-            String name
-    );
+        Schema save(Schema schema);
 
-    List<Schema> findByDatabaseId(UUID databaseId);
+        Optional<Schema> findById(UUID id);
 
-    boolean existsById(UUID schemaId);
+        Optional<Schema> findByDatabaseIdAndName(
+                        UUID databaseId,
+                        String name);
 
-    boolean existsByDatabaseIdAndName(
-            UUID databaseId,
-            String name
-    );
+        List<Schema> findByDatabaseId(UUID databaseId);
 
-    void deleteById(UUID schemaId);
+        boolean existsById(UUID schemaId);
 
-    long countByDatabaseId(UUID databaseId);
+        boolean existsByDatabaseIdAndName(
+                        UUID databaseId,
+                        String name);
 
-    void clear();
+        void deleteById(UUID schemaId);
+
+        long countByDatabaseId(UUID databaseId);
+
+        void clear();
 }

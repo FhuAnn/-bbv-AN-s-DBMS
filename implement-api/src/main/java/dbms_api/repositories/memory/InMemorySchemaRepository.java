@@ -1,24 +1,32 @@
 package dbms_api.repositories.memory;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
+import core.classes.database.Database;
 import core.classes.metadata.Schema;
 import dbms_api.repositories.ISchemaRepository;
 
 @Repository
+@Profile("mock")
 public class InMemorySchemaRepository implements ISchemaRepository {
+    private final Map<UUID, Schema> storage = new LinkedHashMap<>();
+
     public InMemorySchemaRepository() {
         // TODO
     }
 
     @Override
     public Schema save(Schema schema) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'save'");
+
+        storage.put(schema.getId(), schema);
+        return schema;
     }
 
     @Override
