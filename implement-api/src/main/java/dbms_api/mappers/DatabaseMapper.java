@@ -11,7 +11,6 @@ public class DatabaseMapper {
     public DatabaseMapper() {
 
     }
-
     public Database toDomain(CreateDatabaseRequest request) {
         return new Database(request.name());
     }
