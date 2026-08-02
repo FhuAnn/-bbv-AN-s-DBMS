@@ -9,23 +9,14 @@ import java.util.UUID;
 import core.classes.abstraction.AbstractMetadataComponent;
 import core.classes.metadata.Catalog;
 import core.classes.metadata.Schema;
-import core.classes.queryprocessor.QueryResult;
-import core.classes.storageengine.StorageEngine;
-import core.classes.tx.TransactionManager;
 import core.enums.DatabaseStateType;
 import core.enums.MetadataType;
-import core.exception.InvalidSchemaException;
-import core.exception.ReadOnlyDatabaseException;
-import core.exception.SchemaAlreadyExistsException;
-import core.exception.SchemaNotEmptyException;
-import core.exception.SchemaNotFoundException;
 import core.interfaces.IDatabaseState;
 import core.interfaces.MetadataComponent;
 
 public class Database extends AbstractMetadataComponent {
 
     private final UUID id;
-    private String name;
     private boolean readOnly;
     private final Catalog catalog;
     private final List<Schema> schemas;
@@ -33,16 +24,13 @@ public class Database extends AbstractMetadataComponent {
     private static final int MAX_NAME_LENGTH = 128;
 
     public Database(String name) {
+        super(name);
         validateName(name);
 
         this.id = UUID.randomUUID();
-        this.name = name;
         this.readOnly = false;
         this.catalog = new Catalog();
         this.schemas = new ArrayList<>();
-        /*
-         * Trạng thái ban đầu của Database.
-         */
         this.state = new ClosedDatabaseState();
     }
 
@@ -117,13 +105,13 @@ public class Database extends AbstractMetadataComponent {
     }
 
     public void doRename(String newName) {
-
+        rename(newName);
     }
 
     /*
      * =====================================================
      * Read operations
-     * Những thao tác đọc không cần delegate qua State. 
+     * Những thao tác đọc không cần delegate qua State.
      * =====================================================
      */
 
@@ -136,7 +124,7 @@ public class Database extends AbstractMetadataComponent {
     }
 
     public List<Schema> getSchemas() {
-        return null;
+        return this.schemas;
     }
 
     @Override

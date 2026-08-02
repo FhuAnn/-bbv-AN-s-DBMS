@@ -16,6 +16,11 @@ public class DatabaseMapper {
     }
 
     public DatabaseResponse toResponse(Database database) {
-        return null;
+        return new DatabaseResponse(
+                database.getId(),
+                database.getName(),
+                database.getState().name(),
+                database.isReadOnly(),
+                database.getSchemas().size());
     }
 }

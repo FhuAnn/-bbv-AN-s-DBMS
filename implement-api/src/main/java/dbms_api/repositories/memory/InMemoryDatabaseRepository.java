@@ -1,70 +1,72 @@
 package dbms_api.repositories.memory;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
 import java.util.UUID;
 
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import core.classes.database.Database;
 import dbms_api.repositories.IDatabaseRepository;
 
 @Repository
+@Profile("mock")
 public class InMemoryDatabaseRepository implements IDatabaseRepository {
+    private final Map<UUID, Database> storage = new LinkedHashMap<>();
+
     public InMemoryDatabaseRepository() {
     }
 
     @Override
     public Database save(Database database) {
-        // TODO
-        return null;
+        storage.put(database.getId(), database);
+        return database;
     }
 
     @Override
     public Optional<Database> findById(UUID databaseId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'findById'");
+        return Optional.ofNullable(storage.get(databaseId));
     }
 
     @Override
     public Optional<Database> findByName(String name) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'findByName'");
+        return storage.values().stream()
+                .filter(database -> database.getName().equals(name))
+                .findFirst();
     }
 
     @Override
     public List<Database> findAll() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'findAll'");
+        return new ArrayList<>(storage.values());
     }
 
     @Override
     public boolean existsById(UUID databaseId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'existsById'");
+        return storage.containsKey(databaseId);
     }
 
     @Override
     public boolean existsByName(String name) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'existsByName'");
+        return storage.values().stream()
+                .anyMatch(database -> database.getName().equals(name));
     }
 
     @Override
     public void deleteById(UUID databaseId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'deleteById'");
+        storage.remove(databaseId);
     }
 
     @Override
     public long count() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'count'");
+        return storage.size();
     }
 
     @Override
     public void clear() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'clear'");
+        storage.clear();
     }
 }
