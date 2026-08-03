@@ -10,7 +10,7 @@ import dbms_api.dtos.column.UpdateColumnRequest;
 
 public class ColumnMapper {
     public ColumnMetadata toDomain(UUID tableId, CreateColumnRequest request) {
-        return ColumnMetadataBuilder.builder()
+        return new ColumnMetadataBuilder().builder()
                 .tableId(tableId)
                 .name(request.name())
                 .dataType(request.dataType())
@@ -20,19 +20,23 @@ public class ColumnMapper {
                 .length(request.length())
                 .precision(request.precision())
                 .scale(request.scale())
+                .generated(request.generated())
                 .build();
     }
 
     public ColumnResponse toResponse(ColumnMetadata column) {
         return new ColumnResponse(
                 column.getId(),
+                column.getTableId(),
                 column.getName(),
                 column.getDataType(),
-                column.getLength(),
                 column.isNullable(),
+                column.getDefaultValue(),
                 column.getPosition(),
+                column.getLength(),
                 column.getPrecision(),
-                column.getScale());
+                column.getScale(),
+                column.isGenerated());
     }
 
     public void updateDomain(
