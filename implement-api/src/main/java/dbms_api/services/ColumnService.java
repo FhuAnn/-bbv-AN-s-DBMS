@@ -11,21 +11,17 @@ import dbms_api.dtos.column.ColumnResponse;
 import dbms_api.dtos.column.CreateColumnRequest;
 import dbms_api.dtos.column.UpdateColumnRequest;
 import dbms_api.mappers.ColumnMapper;
-import dbms_api.repositories.IColumnRepository;
 import dbms_api.repositories.ITableRepository;
 
 @Service
 public class ColumnService {
-    private final IColumnRepository columnRepository;
     private final ITableRepository tableRepository;
     private final ColumnMapper columnMapper;
 
     public ColumnService(
-            IColumnRepository columnRepository,
             ITableRepository tableRepository,
             ColumnMapper columnMapper) {
 
-        this.columnRepository = columnRepository;
         this.tableRepository = tableRepository;
         this.columnMapper = columnMapper;
     }
@@ -42,7 +38,7 @@ public class ColumnService {
                         .equalsIgnoreCase(request.name()));
 
         if (duplicated) {
-            throw new RuntimeException(
+            throw new DuplicateResourceException(
                     "Column already exists: " + request.name());
         }
 
@@ -89,7 +85,7 @@ public class ColumnService {
                         .equalsIgnoreCase(newName));
 
         if (duplicated) {
-            throw new RuntimeException(
+            throw new DuplicateResourceException(
                     "Column already exists: " + newName);
         }
 
@@ -130,7 +126,8 @@ public class ColumnService {
 
     private Table findTable(UUID tableId) {
         return tableRepository.findById(tableId)
-                .orElseThrow(() -> new RuntimeException("Table not found " + tableId));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Table not found: " + tableId));
     }
 
     private ColumnMetadata findColumn(
