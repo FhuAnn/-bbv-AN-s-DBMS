@@ -387,10 +387,10 @@ paths:
                 $ref: "#/components/schemas/CurrentUser"
               example:
                 - id: "user-001"
-                  fullName: "Sophia Munn",
-                  email: "sophia@untitled.com",
+                  fullName: "Sophia Munn"
+                  email: "sophia@untitled.com"
                   avatarUrl: "https://example.com/avatars/sophia.png"
-                  role: "STORE_ADMIN",
+                  role: "STORE_ADMIN"
                   storeId: "store-001"
         "401":
           description: User is not authenticated
