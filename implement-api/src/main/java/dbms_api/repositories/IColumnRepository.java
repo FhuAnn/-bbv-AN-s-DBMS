@@ -28,5 +28,4 @@ public interface IColumnRepository {
         long countBySchemaId(UUID schemaId);
 
         void clear();
-
 }
