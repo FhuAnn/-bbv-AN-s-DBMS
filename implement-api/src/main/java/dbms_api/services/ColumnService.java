@@ -138,7 +138,7 @@ public class ColumnService {
                 .stream()
                 .filter(column -> column.getId().equals(columnId))
                 .findFirst()
-                .orElseThrow(() -> new ResourceNotFoundException(
+                .orElseThrow(() -> new RuntimeException(
                         "Column not found: " + columnId));
     }
 }
