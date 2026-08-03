@@ -195,7 +195,7 @@ public class Table extends AbstractMetadataComponent implements MetadataPrototyp
         return null;
     }
 
-    public ColumnMetadata removeColumn(String columnName) {
+    public ColumnMetadata removeColumn(UUID idCol) {
         return null;
     }
 

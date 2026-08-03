@@ -1,9 +1,12 @@
 package core.classes.builder;
 
+import java.util.UUID;
+
 import core.classes.metadata.ColumnMetadata;
 import core.enums.DataType;
 
 public class ColumnMetadataBuilder {
+    private UUID tableId;
     private String name;
     private DataType dataType;
 
@@ -32,6 +35,11 @@ public class ColumnMetadataBuilder {
 
     public ColumnMetadataBuilder dataType(DataType dataType) {
         this.dataType = dataType;
+        return this;
+    }
+
+    public ColumnMetadataBuilder tableId(UUID tableId) {
+        this.tableId = tableId;
         return this;
     }
 

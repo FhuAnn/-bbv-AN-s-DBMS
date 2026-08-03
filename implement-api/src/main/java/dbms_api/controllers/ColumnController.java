@@ -37,18 +37,18 @@ public class ColumnController {
 
     @GetMapping("/tables/{tableId}/columns")
     public ResponseEntity<List<ColumnResponse>> listColumns(@PathVariable UUID tableId) {
-
+        return ResponseEntity.ok(columnService.listColumns(tableId));
     }
 
     @GetMapping("/tables/{tableId}/columns/{columnId}")
     public ResponseEntity<ColumnResponse> getColumn(@PathVariable UUID tableId, @PathVariable UUID columnID) {
-
+        return ResponseEntity.ok(columnService.getColumn(tableId, columnID));
     }
 
     @PatchMapping("/tables/{tableId}/columns/{columnId}")
     public ResponseEntity<ColumnResponse> updateColumn(@PathVariable UUID tableId, @PathVariable UUID columnId,
             @RequestBody UpdateColumnRequest requestBody) {
-
+        return ResponseEntity.ok(columnService.updateColumn(tableId, columnId, requestBody));
     }
 
     @DeleteMapping("/tables/{tableId}/columns/{columnId}")
@@ -60,5 +60,6 @@ public class ColumnController {
     @PatchMapping("/tables/{tableId}/columns/{columnId}/name")
     public ResponseEntity<ColumnResponse> renameColumn(@PathVariable UUID tableId, @PathVariable UUID columnId,
             @RequestBody RenameColumnRequest requestBody) {
+        return ResponseEntity.ok(columnService.renameColumn(tableId, columnId, requestBody.newNAme()));
     }
 }
