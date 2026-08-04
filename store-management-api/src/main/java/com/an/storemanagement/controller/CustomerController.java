@@ -1,19 +1,24 @@
 package com.an.storemanagement.controller;
 
+import com.an.storemanagement.dto.customer.BulkCustomerIdsRequest;
+import com.an.storemanagement.dto.customer.BulkOperationResponse;
 import com.an.storemanagement.dto.customer.CreateCustomerRequest;
-import com.an.storemanagement.dto.customer.CustomerItemResponse;
-import com.an.storemanagement.dto.customer.CustomerListResponse;
-import com.an.storemanagement.dto.customer.CustomerMetricsResponse;
+import com.an.storemanagement.dto.customer.CustomerPageResponse;
+import com.an.storemanagement.dto.customer.CustomerResponse;
+import com.an.storemanagement.dto.customer.CustomerSummaryResponse;
+import com.an.storemanagement.dto.customer.UpdateCustomerRequest;
+import com.an.storemanagement.enums.CustomerStatus;
 import com.an.storemanagement.service.CustomerService;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import java.net.URI;
+import java.util.UUID;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,7 +26,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@Validated
 @RequestMapping("/api/v1/customers")
 public class CustomerController {
 
@@ -31,33 +35,69 @@ public class CustomerController {
         this.customerService = customerService;
     }
 
-    @GetMapping("/metrics")
-    public CustomerMetricsResponse getMetrics() {
-        return customerService.getMetrics();
+    @GetMapping("/summary")
+    public CustomerSummaryResponse getSummary() {
+        return customerService.getSummary();
     }
 
     @GetMapping
-    public CustomerListResponse getCustomers(
-            @RequestParam(defaultValue = "1") @Min(1) int page,
-            @RequestParam(defaultValue = "7") @Min(1) @Max(100) int limit,
+    public CustomerPageResponse getCustomers(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false, name = "size") Integer pageSize,
             @RequestParam(required = false) String search,
-            @RequestParam(name = "sort_by", defaultValue = "company_name") String sortBy,
-            @RequestParam(defaultValue = "asc") String order) {
-        return customerService.listCustomers(page, limit, search, sortBy, order);
+            @RequestParam(required = false) CustomerStatus status,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDirection) {
+        return customerService.getCustomers(page, pageSize, search, status, sortBy, sortDirection);
+    }
+
+    @GetMapping("/{customerId}")
+    public CustomerResponse getCustomer(@PathVariable UUID customerId) {
+        return customerService.getCustomer(customerId);
     }
 
     @PostMapping
-    public ResponseEntity<CustomerItemResponse> createCustomer(@Valid @RequestBody CreateCustomerRequest request) {
-        CustomerItemResponse created = customerService.createCustomer(request);
-        return ResponseEntity.created(URI.create("/api/v1/customers/" + created.id())).body(created);
+    public ResponseEntity<CustomerResponse> createCustomer(@Valid @RequestBody CreateCustomerRequest request) {
+        CustomerResponse response = customerService.createCustomer(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .header(HttpHeaders.LOCATION, "/api/v1/customers/" + response.data().id())
+                .body(response);
     }
 
-    @GetMapping(value = "/export", produces = "text/csv")
-    public ResponseEntity<String> exportCustomers(@RequestParam(defaultValue = "csv") String format) {
-        String fileName = "xlsx".equalsIgnoreCase(format) ? "customers.xlsx" : "customers.csv";
-        String csv = customerService.exportCustomersCsv();
+    @PatchMapping("/{customerId}")
+    public CustomerResponse updateCustomer(
+            @PathVariable UUID customerId,
+            @Valid @RequestBody UpdateCustomerRequest request) {
+        return customerService.updateCustomer(customerId, request);
+    }
+
+    @DeleteMapping("/{customerId}")
+    public ResponseEntity<Void> deleteCustomer(@PathVariable UUID customerId) {
+        customerService.deleteCustomer(customerId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/bulk-delete")
+    public BulkOperationResponse bulkDelete(@Valid @RequestBody BulkCustomerIdsRequest request) {
+        return customerService.bulkDelete(request);
+    }
+
+    @GetMapping(value = "/export", produces = { "text/csv",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" })
+    public ResponseEntity<byte[]> exportCustomers(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) CustomerStatus status,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDirection,
+            @RequestParam(required = false, defaultValue = "csv") String format) {
+        byte[] file = customerService.exportCustomers(search, status, sortBy, sortDirection, format);
+        MediaType mediaType = "xlsx".equalsIgnoreCase(format)
+                ? MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                : MediaType.parseMediaType("text/csv");
+
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName)
-                .body(csv);
+                .contentType(mediaType)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=customers." + format.toLowerCase())
+                .body(file);
     }
 }
